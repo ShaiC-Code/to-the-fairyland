@@ -5,7 +5,7 @@
   "main": "./dist/main.js",
   "scripts": {
     "test": "jest --verbose=false --noStackTrace --passWithNoTests",
-    "build": "gulp build",
+    "build": "gulp",
     "dev": "gulp dev"
   },
   "author": "Richard McKenna, Joe Weaver, Zachary Grandison, Peter Walsh, Andrew Ojeda",
