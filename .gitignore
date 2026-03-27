@@ -67,3 +67,12 @@ node_modules/
 
 # dataconnect generated files
 .dataconnect
+
+# Game Files
+dist/*
+
+!dist/demo_assets
+
+!dist/game_assets
+
+**/.DS_store
