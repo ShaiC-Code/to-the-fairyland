@@ -34,14 +34,26 @@ function bundle(bundler) {
 }
 
 gulp.task('copy-html', function (done) {
-    const src = path.join(__dirname, 'src', 'index.html');
-    const dest = path.join(__dirname, 'dist', 'index.html');
-    
     if (!fs.existsSync(path.join(__dirname, 'dist'))) {
         fs.mkdirSync(path.join(__dirname, 'dist'));
     }
-    
-    fs.copyFileSync(src, dest);
+
+    fs.copyFileSync(
+        path.join(__dirname, 'src', 'index.html'),
+        path.join(__dirname, 'dist', 'index.html')
+    );
+
+    ['benchmark1', 'benchmark2', 'benchmark3'].forEach(function(benchmark) {
+        const destDir = path.join(__dirname, 'dist', benchmark);
+        if (!fs.existsSync(destDir)) {
+            fs.mkdirSync(destDir);
+        }
+        fs.copyFileSync(
+            path.join(__dirname, 'src', benchmark, 'index.html'),
+            path.join(destDir, 'index.html')
+        );
+    });
+
     done();
 });
 
