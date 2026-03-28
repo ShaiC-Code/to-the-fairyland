@@ -236,11 +236,10 @@
       <h3>Main Menu</h3>
       <ul>
         <li><strong>New Game</strong> - If a game is in progress, first we'll pop up a dialog to make sure the user really wants to quit the current game. If we conclude the user really wants to start a game, then the game state is reset and begun.</li>
-        <li><strong>Pause Game</strong> - This button is deactivated when a game is not in progress. If pressed, it will produce the same effect as the ESC key.</li>
-        <li><strong>Display Controls</strong> - If pressed, the game will display an info screen that includes a description of all game controls.</li>
-        <li><strong>Best Times</strong> - If pressed, the game will display an info screen with the fastest times for clearing the level.</li>
-        <li><strong>About</strong> - If pressed, the game will display an info screen with information about the game author.</li>
-        <li><strong>Exit</strong> - If pressed, the game program will exit.</li>
+        <li><strong>Continue</strong> - If a game is in progress, this option will allow the player to resume from where they left off.</li>
+        <li><strong>Level Select</strong> - If pressed, the game will display a screen to select which level to play.</li>
+        <li><strong>Controls</strong> - If pressed, the game will display an info screen that includes a description of all game controls.</li>
+        <li><strong>Help</strong> - If pressed, the game will display an info screen with the game's backstory, the credits, and the cheat codes (if the player has unlocked them). The cheat codes will be available for developers and unlocked for players after completing the game.</li>
       </ul>
 
       <h3>Level Selection Screen</h3>
@@ -286,6 +285,22 @@
         However, when the player is near an interactable object or NPC a prompt may appear to notify them.
         When a player is interacting with an object or NPC, a dialogue box UI element will appear at the bottom of the screen.
         If the dialogue box has appeared to display the words spoken by a character or NPC, then an enlarged sprite will appear behind the dialogue box to indicate the speaker(s).
+      </p>
+
+      <h3>In-Game Menu</h3>
+      <p>
+        This is the menu that appears when the player presses the C for their Menu/Inventory key during gameplay.
+        This is a seperate menu that is not the same as the pause menu that appears when the player presses ESC.
+        This menu will show the player their current health and the items they have in their inventory.
+        Time will stop while this menu is open, but the player will not be considered to be "paused" and thus the pause menu will not be accessible while this menu is open.
+      </p>
+
+      <h3>Pause Menu</h3>
+      <p>
+        This is the menu that appears when the player presses the ESC key during gameplay.
+        This is a seperate menu that is not the same as the in-game menu that appears when the player presses C.
+        This menu will have options to resume the game, view the controls, or return to the main menu.
+        Time will stop while this menu is open, and the player will be considered to be "paused" and thus the in-game menu will not be accessible while this menu is open.
       </p>
     </section>
 
