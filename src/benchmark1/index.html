@@ -3,9 +3,466 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Benchmark 1</title>
+  <title>To the Fairyland - Benchmark 1 Game Design Document</title>
+  <style>
+    :root {
+      --page-bg: #f7f3ea;
+      --surface: #fffdf8;
+      --text: #2d241b;
+      --accent: #5f7f4f;
+      --accent-dark: #445c39;
+      --border: #d9ceb7;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      background: linear-gradient(180deg, #efe5d3 0%, var(--page-bg) 100%);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 48px 20px 72px;
+    }
+
+    header {
+      text-align: center;
+      padding: 32px 24px;
+      margin-bottom: 32px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+    }
+
+    h1, h2, h3 {
+      color: var(--accent-dark);
+    }
+
+    h1 {
+      margin-bottom: 8px;
+      font-size: clamp(2rem, 4vw, 3rem);
+    }
+
+    h2 {
+      margin-top: 0;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .logo {
+      display: block;
+      width: min(100%, 200px);
+      height: auto;
+      margin: 0 auto 20px;
+    }
+
+    section {
+      margin-bottom: 28px;
+      padding: 24px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+    }
+
+    .placeholder {
+      color: #6e5e4d;
+      font-style: italic;
+    }
+
+    .wireframe-slot {
+      min-height: 180px;
+      display: grid;
+      place-items: center;
+      margin-top: 12px;
+      border: 2px dashed var(--border);
+      border-radius: 14px;
+      background: #fcf8ef;
+    }
+  </style>
 </head>
 <body>
-  Benchmark 1
+  <main>
+    <header>
+      <img
+        class="logo"
+        src="../game_assets/branding/ToTheFairylandLogo.png"
+        alt="To the Fairyland logo"
+        onerror="this.onerror=null;this.src='../../dist/game_assets/branding/ToTheFairylandLogo.png';"
+      >
+      <h1>To the Fairyland</h1>
+      <p><strong>Game Design Document</strong></p>
+      <p class="placeholder">Created by <a href="https://github.com/yucanchen678">Yucan Chen</a>, <a href="https://github.com/ShaiC-Code">Shai Crespo</a></p>
+    </header>
+
+    <section>
+      <h2>Introduction</h2>
+      <p>
+        This document describes a game called "To The FairyLand", which is designed to be a simple, Top Down 2D Pixel RPG.
+        The game will employ sprite-based animation, tiled backgrounds, collision detection, AI, efficient memory management, render threading, and more basic 2D game techniques.
+        The game is story based and will utilize a dialogue systems and UI.
+      </p>
+    </section>
+
+    <section>
+      <h2>Technology</h2>
+      <p>
+        To The FairyLand will be developed for Browsers using the <a href="https://github.com/WolfieEngine">Wolfie2D</a> game engine, developed by <a href="http://www.cs.sunysb.edu/~richard">Richard McKenna</a> for teaching 2D Game Programming.
+        WebGL will be used as the underlying rendering technology. Cakewalk Sonar will be used for developing the music.
+        Sound effects and Artwork will be developed using various editing tools.
+      </p>
+    </section>
+
+    <section>
+      <h2>Back Story</h2>
+      <p>
+        <strong>The Fall of Humanity:</strong> Humanity fought a war against 3 Monster Kingdoms and lost.
+        The 3 Monster Kingdoms carved up human land, resulting in the deaths of most humans.
+        The few survivors are scattered across the land.
+      </p>
+      <p>
+        <strong>The Antagonists:</strong> The human kingdom was decimated by 3 Great Lords who initiated the battle.
+        The human survivors are entirely outmatched and do not have the power to defeat them.
+      </p>
+      <p>
+        <strong>The Current Threat:</strong> Humans must hide as the Monster Kingdoms are actively sending troops to conquer the remaining territory and hunt down the survivors.
+      </p>
+      <p>
+        <strong>The Destination & Hope:</strong> "TheFairyLand" is located far outside the borders of the three monster kingdoms.
+        Because the fairies did not participate in the attack on the human kingdom, they are humanity's last hope.
+        The overarching goal of the game is to survive the journey to Fairyland and beg for their assistance.
+      </p>
+      <p>
+        <strong>The Protagonist:</strong> The player plays as Fate.
+        A child playing pretend.
+        He is a "fake knight" wearing a suit of armor who greatly admires the human expedition team.
+        His origins are unknown, where the player is introduced to Fate living in a wooden shelter alone on a Snowy mountain.
+        Fate comes across a dying member of the Human Expedition team who entrusts him with the task of reaching Fairyland and asking for their help to save humanity.
+      </p>
+    </section>
+
+    <section>
+      <h2>Objective</h2>
+      <p>
+        The player (Fate) must complete the Human Expedition team's mission to reach the Fairyland and ask for their help to save humanity.
+        However, the 3 Monster Kingdoms will not let him do this easily, and will actively try to stop him.
+      </p>
+    </section>
+
+    <section>
+      <h2>Gameplay</h2>
+      <p>
+        The game has the style and gameplay resembling RPG Maker games. The game is played from a top down perspective.
+        Movement is done in a strict cardinal system with no diagonal movement.
+        Interacting with elements of the world and other characters will prompt a dialogue system which displays the text at the bottom of the screen with a close up sprite of the character (if there is one).
+        The player proceeds through sections by solving puzzles and progressing the story through interactions.
+        The player will have to avoid enemies and obstacles, but there will not be a combat system.
+        Should the player take damage, they will lose health which they can heal via items in their inventory (accessed through the menu).
+        If the player loses all their health, they will be sent back to the last checkpoint they reached.
+      </p>
+    </section>
+
+    <section>
+      <h2>Level Design</h2>
+      <p>
+        The game will have 6 Acts, each with a unique environment and set of challenges.
+        Each act will either act as an expositiory chapter to build the world and story, or introduce a new enemy corresponding to the area or monster kingdom.
+      </p>
+      <p>
+        <strong>Act 1</strong> - will be the Snowy Mountain, which serves as a tutorial and introduction to the game mechanics and story.
+        This area is where the player learns about the human expedition team and their mission.
+      </p>
+      <p>
+        <strong>Act 2</strong> - will be the Human Village, which introduces the player to NPC interactions and builds the world.
+        This area has basic puzzles and weak enemies which set the baseline for the game's difficulty.
+        This area is where the player is introduced to enemies from The Lycan Kingdom.
+      </p>
+      <p>
+        <strong>Act 3</strong> - will be the Rat Forest, which introduces more difficult puzzles and stronger enemies.
+        This area is where the player is introduced to enemies from The Ratkin Kingdom.
+      </p>
+      <p>
+        <strong>Act 4</strong> - will be the Crow Nest, which introduces stealth mechanics and the faster/stronger enemies.
+        This area is where the player is introduced to enemies from The Corvan Kingdom.
+      </p>
+      <p>
+        <strong>Act 5</strong> - will be a vast desert landscape, which introduces smarter enemies which can hide their presense underground.
+        These enemies are the most powerful, and can only be detected right before they unburrow and when they are above ground.
+        This area is where the player is introduced to the desert centipede enemies.
+      </p>
+      <p>
+        <strong>Act 6</strong> - will be the FairyLand, as this is the final act of the game.
+        This area is wont have additional challenges, and will serve to conclude the story.
+      </p>
+    </section>
+
+    <section>
+      <h2>Controls</h2>
+      <p>This game will be played using keyboard. Once started, use the following:</p>
+      <ul>
+        <li><strong>W</strong> - Move Up</li>
+        <li><strong>A</strong> - Move Left</li>
+        <li><strong>S</strong> - Move Down</li>
+        <li><strong>D</strong> - Move Right</li>
+        <li><strong>UP-ARROW</strong> - Move Up (same as W)</li>
+        <li><strong>LEFT-ARROW</strong> - Move Left (same as A)</li>
+        <li><strong>DOWN-ARROW</strong> - Move Down (same as S)</li>
+        <li><strong>RIGHT-ARROW</strong> - Move Right (same as D)</li>
+        <li><strong>SHIFT</strong> - Run (Hold to move faster)</li>
+        <li><strong>Z</strong> - Interact/Confirm</li>
+        <li><strong>X</strong> - Cancel</li>
+        <li><strong>C</strong> - Open Menu/Inventory</li>
+        <li><strong>ESC</strong> - This pauses the game and presents a pop-up window to the player asking them to continue when they are ready. If a game is not in progress, ESC does nothing.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Graphical User Interface</h2>
+
+      <h3>Splash Screen</h3>
+      <p>
+        The splash screen GUI simply presents a game logo and a Start button for the user to press when they are ready to play.
+        Upon pressing it, a brief scripted sequence is played explaining a little about Spike and the back story for the game.
+        While playing the message "Press ESC to Skip" should be displayed at the bottom of the screen.
+        If pressed, the game should immediately start.
+      </p>
+
+      <h3>Main Menu</h3>
+      <ul>
+        <li><strong>New Game</strong> - If a game is in progress, first we'll pop up a dialog to make sure the user really wants to quit the current game. If we conclude the user really wants to start a game, then the game state is reset and begun.</li>
+        <li><strong>Pause Game</strong> - This button is deactivated when a game is not in progress. If pressed, it will produce the same effect as the ESC key.</li>
+        <li><strong>Display Controls</strong> - If pressed, the game will display an info screen that includes a description of all game controls.</li>
+        <li><strong>Best Times</strong> - If pressed, the game will display an info screen with the fastest times for clearing the level.</li>
+        <li><strong>About</strong> - If pressed, the game will display an info screen with information about the game author.</li>
+        <li><strong>Exit</strong> - If pressed, the game program will exit.</li>
+      </ul>
+
+      <h3>Level Selection Screen</h3>
+      <p>
+        The main game has 6 Acts, which will be unlocked sequentially as the player completes each one.
+        The level selection screen will display the 6 Acts in a list, with the locked Acts grayed out and unselectable until they are unlocked.
+        For developers, all Acts will be unlocked from the start.
+      </p>
+
+      <h3>Controls Screen</h3>
+      <p>
+        The controls screen will list the controls as well as have a visual diagram depicting a keyboard with the corresponding keys marked.
+        The menu will be viewable from the Main Menu as well as in the in-game pause menu.
+      </p>
+
+        <ul>
+          <li><strong>W</strong> - Move Up</li>
+          <li><strong>A</strong> - Move Left</li>
+          <li><strong>S</strong> - Move Down</li>
+          <li><strong>D</strong> - Move Right</li>
+          <li><strong>UP-ARROW</strong> - Move Up (same as W)</li>
+          <li><strong>LEFT-ARROW</strong> - Move Left (same as A)</li>
+          <li><strong>DOWN-ARROW</strong> - Move Down (same as S)</li>
+          <li><strong>RIGHT-ARROW</strong> - Move Right (same as D)</li>
+          <li><strong>SHIFT</strong> - Run (Hold to move faster)</li>
+          <li><strong>Z</strong> - Interact/Confirm</li>
+          <li><strong>X</strong> - Cancel</li>
+          <li><strong>C</strong> - Open Menu/Inventory</li>
+          <li><strong>ESC</strong> - This pauses the game and presents a pop-up window to the player asking them to continue when they are ready. If a game is not in progress, ESC does nothing.</li>
+        </ul>
+
+      <h3>Help Screen</h3>
+      <p>
+        The help screen will first explain the backstory of the game if players want to reread it.
+        Below the backstory will be the developer credits which will have names and links to the team members' Github Pages.
+        Below the credits will be a list of cheat codes for developers.
+        The list of cheat codes will always be available for developers, and will be unlocked after completing the game for players.
+      </p>
+
+      <h3>In-Game Screen</h3>
+      <p>
+        There will not be an overlaying HUD.
+        However, when the player is near an interactable object or NPC a prompt may appear to notify them.
+        When a player is interacting with an object or NPC, a dialogue box UI element will appear at the bottom of the screen.
+        If the dialogue box has appeared to display the words spoken by a character or NPC, then an enlarged sprite will appear behind the dialogue box to indicate the speaker(s).
+      </p>
+    </section>
+
+    <section>
+      <h2>Wireframes</h2>
+      <p class="placeholder">Insert your wireframe images for each screen in this section.</p>
+      <div class="wireframe-slot">Wireframe images go here</div>
+    </section>
+
+    <section>
+      <h2>Artwork</h2>
+      <p>All artwork in the game will either be original or assets created by other undergraduate students at SBU:</p>
+      <ul>
+        <li><strong>Splash Screen</strong> - The Splash Screen will be the first thing players see when they launch the game.</li>
+        <br>
+
+        <li><strong>Main Menu</strong> - The Main Menu will be the first thing players see after the splash screen, and will have an unfocused version of the splash screen art in the background.</li>
+        <br>
+
+        <li><strong>TileSets</strong> - Each tile set will contain a variety of tiles for different environments and scenarios.</li>
+        <br>
+
+        <li>
+          <strong>Environmental Objects</strong> - Static elements in the environment.
+          These elements may be interactable in some cases and will have a form of indicator.
+        </li>
+        <br>
+
+        <li><strong>Fate</strong> - [Design TBD]:
+          <ul>
+            <li>Idle Up</li>
+            <li>Idle Left</li>
+            <li>Idle Down</li>
+            <li>Idle Right</li>
+            <li>Walking Up</li>
+            <li>Walking Left</li>
+            <li>Walking Down</li>
+            <li>Walking Right</li>
+            <li>Running Up</li>
+            <li>Running Left</li>
+            <li>Running Down</li>
+            <li>Running Right</li>
+            <li>Close-up Dialogue Sprite</li>
+          </ul>
+        </li>
+        <br>
+
+        <li><strong>Humans</strong> - [Design TBD]:
+          <ul>
+            <li>Idle Up</li>
+            <li>Idle Left</li>
+            <li>Idle Down</li>
+            <li>Idle Right</li>
+            <li>Walking Up</li>
+            <li>Walking Left</li>
+            <li>Walking Down</li>
+            <li>Walking Right</li>
+            <li>Close-up Dialogue Sprite</li>
+          </ul>
+        </li>
+        <br>
+
+        <li><strong>Lycan (Wolf-Humanoids)</strong> - [Design TBD]:
+          <ul>
+            <li>Idle Up</li>
+            <li>Idle Left</li>
+            <li>Idle Down</li>
+            <li>Idle Right</li>
+            <li>Walking Up</li>
+            <li>Walking Left</li>
+            <li>Walking Down</li>
+            <li>Walking Right</li>
+            <li>Attacking Up</li>
+            <li>Attacking Left</li>
+            <li>Attacking Down</li>
+            <li>Attacking Right</li>
+          </ul>
+        </li>
+        <br>
+
+        <li><strong>Ratkin/Golems (Rat-Humanoids)</strong> - [Design TBD]:
+          <ul>
+            <li>Idle Up</li>
+            <li>Idle Left</li>
+            <li>Idle Down</li>
+            <li>Idle Right</li>
+            <li>Walking Up</li>
+            <li>Walking Left</li>
+            <li>Walking Down</li>
+            <li>Walking Right</li>
+            <li>Attacking Up</li>
+            <li>Attacking Left</li>
+            <li>Attacking Down</li>
+            <li>Attacking Right</li>
+          </ul>
+        </li>
+        <br>
+
+        <li><strong>Corvans (Crow-Humanoids)</strong> - [Design TBD]:
+          <ul>
+            <li>Idle Up</li>
+            <li>Idle Left</li>
+            <li>Idle Down</li>
+            <li>Idle Right</li>
+            <li>Walking Up</li>
+            <li>Walking Left</li>
+            <li>Walking Down</li>
+            <li>Walking Right</li>
+            <li>Attacking Up</li>
+            <li>Attacking Left</li>
+            <li>Attacking Down</li>
+            <li>Attacking Right</li>
+          </ul>
+        </li>
+        <br>
+
+        <li><strong>Desert Centipedes</strong> - [Design TBD]:
+          <ul>
+            <li>Crawling Up</li>
+            <li>Crawling Left</li>
+            <li>Crawling Down</li>
+            <li>Crawling Right</li>
+            <li>Burrow Up</li>
+            <li>Burrow Left</li>
+            <li>Burrow Down</li>
+            <li>Burrow Right</li>
+            <li>Unburrow Up</li>
+            <li>Unburrow Left</li>
+            <li>Unburrow Down</li>
+            <li>Unburrow Right</li>
+            <li>Attacking Up</li>
+            <li>Attacking Left</li>
+            <li>Attacking Down</li>
+            <li>Attacking Right</li>
+          </ul>
+        </li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Sound Effects</h2>
+      <p>All sound effects will either be original or assets created by other undergraduate students at SBU:</p>
+      <ul>
+        <li><strong>Walking</strong></li>
+        <li><strong>Interacting</strong></li>
+        <li><strong>Intense Winds Blowing</strong></li>
+        <li><strong>Fire Crackling</strong></li>
+        <li><strong>Swords Clashing</strong></li>
+        <li><strong>Exploding</strong></li>
+        <li><strong>Ground Shaking</strong></li>
+        <li><strong>Golems Stomping</strong></li>
+        <li><strong>Wings Flapping</strong></li>
+        <li><strong>Dialogue Displaying</strong></li>
+        <li><strong>Menu Navigation</strong></li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Music</h2>
+      <p>All sound music will either be original or created by other undergraduate students at SBU:</p>
+      <ul>
+        <li><strong>Main Menu</strong></li>
+        <li><strong>Snowy Mountain</strong></li>
+        <li><strong>Human Village</strong></li>
+        <li><strong>Rat Forest</strong></li>
+        <li><strong>Crow Nest</strong></li>
+        <li><strong>FairyLand</strong></li>
+        <li>Ambietic songs to be played in certain scenarios:
+          <ul>
+            <li><strong>Song of Hope</strong></li>
+            <li><strong>Song of Despair</strong></li>
+            <li><strong>Song of Suspense</strong></li>
+            <li><strong>Song of Intense</strong></li>
+          </ul>
+        </li>
+      </ul>
+    </section>
+  </main>
 </body>
 </html>
