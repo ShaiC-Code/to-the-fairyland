@@ -79,11 +79,32 @@
     .wireframe-slot {
       min-height: 180px;
       display: grid;
+      gap: 12px;
       place-items: center;
+      padding: 16px;
       margin-top: 12px;
       border: 2px dashed var(--border);
       border-radius: 14px;
       background: #fcf8ef;
+    }
+
+    .wireframe-image {
+      display: block;
+      width: min(100%, 720px);
+      height: auto;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 10px 24px rgba(45, 36, 27, 0.12);
+    }
+
+    .wireframe-caption {
+      margin: 0;
+      width: min(100%, 720px);
+      text-align: left;
+      color: var(--accent-dark);
+      font-size: 1.25rem;
+      font-weight: 700;
+      line-height: 1.2;
     }
   </style>
 </head>
@@ -215,8 +236,8 @@
         <li><strong>DOWN-ARROW</strong> - Move Down (same as S)</li>
         <li><strong>RIGHT-ARROW</strong> - Move Right (same as D)</li>
         <li><strong>SHIFT</strong> - Run (Hold to move faster)</li>
-        <li><strong>Z</strong> - Interact/Confirm</li>
-        <li><strong>X</strong> - Cancel</li>
+        <li><strong>J/Z</strong> - Interact/Confirm</li>
+        <li><strong>K/X</strong> - Cancel</li>
         <li><strong>C</strong> - Open Menu/Inventory</li>
         <li><strong>ESC</strong> - This pauses the game and presents a pop-up window to the player asking them to continue when they are ready. If a game is not in progress, ESC does nothing.</li>
       </ul>
@@ -265,8 +286,8 @@
           <li><strong>DOWN-ARROW</strong> - Move Down (same as S)</li>
           <li><strong>RIGHT-ARROW</strong> - Move Right (same as D)</li>
           <li><strong>SHIFT</strong> - Run (Hold to move faster)</li>
-          <li><strong>Z</strong> - Interact/Confirm</li>
-          <li><strong>X</strong> - Cancel</li>
+          <li><strong>J/Z</strong> - Interact/Confirm</li>
+          <li><strong>K/X</strong> - Cancel</li>
           <li><strong>C</strong> - Open Menu/Inventory</li>
           <li><strong>ESC</strong> - This pauses the game and presents a pop-up window to the player asking them to continue when they are ready. If a game is not in progress, ESC does nothing.</li>
         </ul>
@@ -307,7 +328,26 @@
     <section>
       <h2>Wireframes</h2>
       <p class="placeholder">Insert your wireframe images for each screen in this section.</p>
-      <div class="wireframe-slot">Wireframe images go here</div>
+      <div class="wireframe-slot">
+        <p class="wireframe-caption">Splash screen</p>
+        <img
+          class="wireframe-image"
+          src="../../dist/game_assets/ui/FlashScreen.png"
+          alt="Splash screen wireframe for To the Fairyland"
+        >
+        <p class="wireframe-caption">Main Screen</p>
+        <img
+          class="wireframe-image"
+          src="../../dist/game_assets/ui/MainScreen.png"
+          alt="Splash screen wireframe for To the Fairyland"
+        >
+        <p class="wireframe-caption">Level Selection Screen</p>
+        <img
+          class="wireframe-image"
+          src="../../dist/game_assets/ui/LevelSelectionScreen.png"
+          alt="Splash screen wireframe for To the Fairyland"
+        >
+      </div>
     </section>
 
     <section>
