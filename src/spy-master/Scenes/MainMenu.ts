@@ -12,6 +12,7 @@ import GuardDemoScene from "./GuardDemoScene";
 import SMSceneMapMain from "./SMSceneMapMain";
 import SMSceneMap1 from "./SMSceneMap1";
 import SMSceneMap2 from "./SMSceneMap2";
+import Chapter1Scene from "./Chapter1Scene";
 
 export default class MainMenu extends Scene {
     private mainMenu!: Layer;
