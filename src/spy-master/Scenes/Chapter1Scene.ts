@@ -48,7 +48,8 @@ export default class Chapter1Scene extends Scene {
         //Camera setting
         this.viewport.setBounds(0, 0, mapSize.x, mapSize.y);
         this.viewport.follow(player);
-        this.viewport.setZoomLevel(1);
+        this.viewport.setZoomLevel(1.25);
+
 
     }
 
