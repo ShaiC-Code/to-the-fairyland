@@ -15,6 +15,11 @@ export enum PlayerInput {
     DROP_ITEM = "DROP_ITEM"
 }
 
+type VerticalDirection = "up" | "down";
+type HorizontalDirection = "left" | "right";
+type HeldDirection = VerticalDirection | HorizontalDirection;
+
+
 /**
  * The PlayerController class handles processing the input recieved from the user and exposes  
  * a set of methods to make dealing with the user input a bit simpler.
@@ -26,6 +31,59 @@ export default class PlayerController {
 
     constructor(owner: AnimatedSprite) {
         this.owner = owner;
+    }
+
+    //End of the array is the highest priority
+    private heldVertical: VerticalDirection[] = [];
+    private heldHorizontal: HorizontalDirection[] = [];
+
+    // Hold the state of if the key is pressed or not, multiple keys can be held at the same time
+    private previousPressed: Record<HeldDirection, boolean> = {
+        up: false,
+        down: false,
+        left: false,
+        right: false
+    };
+
+    public update(): void {
+        this.syncDirection("up", Input.isPressed(PlayerInput.MOVE_UP));
+        this.syncDirection("down", Input.isPressed(PlayerInput.MOVE_DOWN));
+        this.syncDirection("left", Input.isPressed(PlayerInput.MOVE_LEFT));
+        this.syncDirection("right", Input.isPressed(PlayerInput.MOVE_RIGHT));
+    }
+
+    private syncDirection(direction: HeldDirection, pressed: boolean): void {
+        const wasPressed = this.previousPressed[direction];
+
+        // Newly pressed key 
+        if (pressed && !wasPressed) {
+            this.removeDirection(direction);
+            this.pushDirection(direction);
+        }
+
+        // Key was released
+        if (!pressed && wasPressed) {
+            this.removeDirection(direction);
+        }
+
+        this.previousPressed[direction] = pressed;
+    }
+
+    
+    private pushDirection(direction: HeldDirection): void {
+        if (direction === "up" || direction === "down") {
+            this.heldVertical.push(direction);
+        } else {
+            this.heldHorizontal.push(direction);
+        }
+    }
+
+    private removeDirection(direction: HeldDirection): void {
+        if (direction === "up" || direction === "down") {
+            this.heldVertical = this.heldVertical.filter(dir => dir !== direction);
+        } else {
+            this.heldHorizontal = this.heldHorizontal.filter(dir => dir !== direction);
+        }
     }
 
     /**
@@ -70,5 +128,16 @@ export default class PlayerController {
      * @return true if the player is attempting to drop their held item; false otherwise.
      */
     public get dropping(): boolean { return Input.isJustPressed(PlayerInput.DROP_ITEM); }
+
+    public get tileInput(): Vec2 {
+        const vertical = this.heldVertical[this.heldVertical.length - 1];
+        const horizontal = this.heldHorizontal[this.heldHorizontal.length - 1];
+
+        return new Vec2(
+            horizontal === "left" ? -1 : horizontal === "right" ? 1 : 0,
+            vertical === "up" ? -1 : vertical === "down" ? 1 : 0
+        );
+    }
+    
 
 }

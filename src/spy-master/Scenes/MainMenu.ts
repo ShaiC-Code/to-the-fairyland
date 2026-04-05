@@ -44,6 +44,8 @@ export default class MainMenu extends Scene {
         this.receiver.subscribe("openControlsMenu");
         this.receiver.subscribe("openHelpMenu");
         this.receiver.subscribe("backToMain");
+        this.receiver.subscribe("level1");
+
     }
 
     public updateScene(){
@@ -70,6 +72,11 @@ export default class MainMenu extends Scene {
                 this.showScreen("mainMenu");
                 break;
             }
+            case "level1": {
+                this.sceneManager.changeToScene(Chapter1Scene);
+                break;
+            }
+            
         }
     }
 

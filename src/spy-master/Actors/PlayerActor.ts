@@ -9,6 +9,7 @@ import BasicTargetable from "../GameSystems/Targeting/BasicTargetable";
 import { TargetableEntity } from "../GameSystems/Targeting/TargetableEntity";
 import { TargetingEntity } from "../GameSystems/Targeting/TargetingEntity";
 import SMScene from "../Scenes/SMScene";
+import Vec2 from "../../Wolfie2D/DataTypes/Vec2";
 
 
 export default class PlayerActor extends AnimatedSprite implements Battler {
@@ -21,6 +22,13 @@ export default class PlayerActor extends AnimatedSprite implements Battler {
     protected targetable: TargetableEntity;
 
     protected heldItem: SMItem;
+
+    public spriteOffset = new Vec2(0, 20);
+
+    public getCenterForFeetPosition(feetX: number, feetY: number): Vec2 {
+        return new Vec2(feetX, feetY - this.size.y / 2).add(this.spriteOffset);
+    }
+
 
     constructor(sheet: Spritesheet) {
         super(sheet);

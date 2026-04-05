@@ -9,6 +9,7 @@ import AABB from "../../DataTypes/Shapes/AABB";
  * The representation of an orthogonal tilemap - i.e. a top down or platformer tilemap
  */
 export default class OrthogonalTilemap extends Tilemap {
+    protected layerOffset!: Vec2;
 
     public override getMinColRow(region: AABB): Vec2 {
         return this.getTilemapPosition(region.topLeft.x, region.topLeft.y);
@@ -18,22 +19,22 @@ export default class OrthogonalTilemap extends Tilemap {
     }
 
     public override getTilemapPosition(x: number, y: number): Vec2 {
-        let col = Math.floor(x / this.tileSize.x / this.scale.x);
-        let row = Math.floor(y / this.tileSize.y / this.scale.y);
+        let col = Math.floor((x - this.layerOffset.x) / this.tileSize.x / this.scale.x);
+        let row = Math.floor((y - this.layerOffset.y) / this.tileSize.y / this.scale.y);
         return new Vec2(col, row);
     }
 
     public override getWorldPosition(col: number, row: number): Vec2 {
-        let x = col * this.tileSize.x * this.scale.x;
-        let y = row * this.tileSize.y * this.scale.y;
+        let x = this.layerOffset.x + col * this.tileSize.x * this.scale.x;
+        let y = this.layerOffset.y + row * this.tileSize.y * this.scale.y;
         return new Vec2(x, y);
     }
 
     public override getTileCollider(col: number, row: number): AABB {
         let tileSize = this.getScaledTileSize();
 
-        let centerX = col * tileSize.x + tileSize.x / 2;
-        let centerY = row * tileSize.y + tileSize.y / 2;
+        let centerX = this.layerOffset.x + col * tileSize.x + tileSize.x / 2;
+        let centerY = this.layerOffset.y + row * tileSize.y + tileSize.y / 2;
 
         let center = new Vec2(centerX, centerY);
         let halfSize = tileSize.scaled(0.5);
@@ -48,6 +49,9 @@ export default class OrthogonalTilemap extends Tilemap {
 
         // The size of tiles
         this.tileSize.set(tilemapData.tilewidth, tilemapData.tileheight);
+
+        // Store Tiled's per-layer offset
+        this.layerOffset = new Vec2(layer.offsetx ?? 0, layer.offsety ?? 0);
 
         // The size of the tilemap on the canvas
         this.size.set(this.numCols * this.tileSize.x, this.numRows * this.tileSize.y);

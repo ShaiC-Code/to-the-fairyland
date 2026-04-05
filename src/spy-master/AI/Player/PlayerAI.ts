@@ -8,6 +8,8 @@ import Inventory from "../../GameSystems/ItemSystem/Inventory";
 import Item from "../../GameSystems/ItemSystem/Item";
 import PlayerController from "./PlayerController";
 import { Idle, Invincible, Moving, Dead, PlayerStateType } from "./PlayerStates/PlayerState";
+import OrthogonalTilemap from "../../../Wolfie2D/Nodes/Tilemaps/OrthogonalTilemap";
+
 
 /**
  * The AI that controls the player. The players AI has been configured as a Finite State Machine (FSM)
@@ -23,10 +25,35 @@ export default class PlayerAI extends StateMachineAI implements AI {
     public inventory: Inventory;
     /** The players held item */
     public item: Item | null;
+
+    public currentTile!: Vec2;
+    public targetTile: Vec2 | null = null;
+    public moving = false;
+    public facing: Vec2 = Vec2.DOWN;
+
+    public tilemap!: OrthogonalTilemap;
+    public moveStart!: Vec2;
+    public moveEnd!: Vec2;
+    public moveProgress = 0; //Percentage moved
+    public moveDuration = 0.16; //Player speed, time to finish moving 1 tile
+    public currentMoveDuration = this.moveDuration; //for diagonal normalization where speed changes
     
     public initializeAI(owner: PlayerActor, opts: Record<string, any>): void {
+        this.currentMoveDuration = this.moveDuration;
+
         this.owner = owner;
         this.controller = new PlayerController(owner);
+
+        this.currentTile = opts.startTile.clone();
+        this.targetTile = null;
+        this.moving = false;
+        this.facing = Vec2.DOWN;
+
+        this.tilemap = opts.tilemap;
+        this.moveStart = owner.position.clone();
+        this.moveEnd = owner.position.clone();
+        this.moveProgress = 0;
+        this.currentMoveDuration = this.moveDuration;
 
         // Add the players states to it's StateMachine
         this.addState(PlayerStateType.IDLE, new Idle(this, this.owner));
@@ -41,6 +68,7 @@ export default class PlayerAI extends StateMachineAI implements AI {
     public activate(options: Record<string, any>): void { }
 
     public update(deltaT: number): void {
+        this.controller.update();
         super.update(deltaT);
     }
 

@@ -46,6 +46,8 @@ export class TiledLayerData {
     data: number[];
     x: number;
     y: number;
+    offsetx?: number;
+    offsety?: number;
     width: number;
     height: number;
     name: string;
