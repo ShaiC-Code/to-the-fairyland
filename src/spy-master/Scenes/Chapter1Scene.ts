@@ -10,26 +10,37 @@ export default class Chapter1Scene extends Scene {
     public loadScene(): void {
         this.load.tilemap("chapter1", "game_assets/tilemaps/Chapter1/Chapter1.json");
         this.load.spritesheet("fate", "game_assets/spritesheets/Fate.json");
+        this.load.image("snowTree1", "game_assets/sprites/SnowTree1.png");
+
     }
 
     public startScene(): void {
-        this.add.tilemap("chapter1");
+        this.add.tilemap("chapter1");        
+        this.addLayer("actors", 10);
+        this.getLayer("Trees").setDepth(20);
 
         const ground = this.getTilemap("Ground") as OrthogonalTilemap;
         const collision = this.getTilemap("CollisionLayer") as OrthogonalTilemap;
-        const mapSize = ground.size;
+        const mapBoundsLayer = this.getTilemap("MapBoundLayer") as OrthogonalTilemap;
 
-        //Layer to place any actors
-        this.addLayer("actors", 10);
+        const mapSize = ground.size;
 
         // Read the raw Tiled data
         const tilemapData = this.resourceManager.getTilemap("chapter1");
         const spawnLayer = tilemapData.layers.find(layer => layer.name === "SpawnPoint");
         const spawn = spawnLayer?.objects?.[0];
-
+       
         if (!spawn) {
             throw new Error("SpawnPoint layer is missing or empty");
+        } 
+
+        const treeLayer = tilemapData.layers.find(layer => layer.name === "Trees");
+        const treePoints = treeLayer?.objects ?? [];
+        for (const point of treePoints) {
+            const tree = this.add.sprite("snowTree1", "Trees");
+            tree.position.set(point.x, point.y - tree.size.y / 2);
         }
+
 
         //Create player sprite
         const player = this.add.animatedSprite(PlayerActor, "fate", "actors");
@@ -47,8 +58,41 @@ export default class Chapter1Scene extends Scene {
         // Start facing down
         player.animation.play("IDLE_DOWN", true);
 
-        //Camera setting
-        this.viewport.setBounds(0, 0, mapSize.x, mapSize.y);
+        //===================== Camera setting ===========================
+
+        const boundsSize = mapBoundsLayer.getDimensions();
+        const boundTileSize = mapBoundsLayer.getScaledTileSize();
+
+        let minCol = boundsSize.x;
+        let minRow = boundsSize.y;
+        let maxCol = -1;
+        let maxRow = -1;
+
+        for (let row = 0; row < boundsSize.y; row++) {
+            for (let col = 0; col < boundsSize.x; col++) {
+                if (mapBoundsLayer.getTile(col, row) !== 0) {
+                    minCol = Math.min(minCol, col);
+                    minRow = Math.min(minRow, row);
+                    maxCol = Math.max(maxCol, col);
+                    maxRow = Math.max(maxRow, row);
+                }
+            }
+        }
+
+        if (maxCol < 0 || maxRow < 0) {
+            throw new Error("MapBoundLayer has no painted tiles");
+        }
+
+        const topLeft = mapBoundsLayer.getWorldPosition(minCol, minRow);
+        const bottomRight = mapBoundsLayer.getWorldPosition(maxCol, maxRow);
+
+        this.viewport.setBounds(
+            topLeft.x,
+            topLeft.y,
+            bottomRight.x + boundTileSize.x,
+            bottomRight.y + boundTileSize.y
+        );
+
         this.viewport.follow(player);
         this.viewport.setZoomLevel(1);
 
