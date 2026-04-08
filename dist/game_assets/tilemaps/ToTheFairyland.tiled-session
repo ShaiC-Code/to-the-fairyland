@@ -1,0 +1,103 @@
+{
+    "activeFile": "",
+    "expandedProjectPaths": [
+        "."
+    ],
+    "file.lastUsedOpenFilter": "All Files (*)",
+    "fileStates": {
+        "Chapter1.json": {
+            "scale": 0.5,
+            "selectedLayer": 6,
+            "viewCenter": {
+                "x": 1484,
+                "y": 1787
+            }
+        },
+        "Chapter1.json#Chapter1_Tilemap1": {
+            "scaleInDock": 1
+        },
+        "Chapter1/Chapter1.json": {
+            "scale": 0.3298611111111111,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 1791.663157894737,
+                "y": 1823.4947368421053
+            }
+        },
+        "Chapter1/Chapter1.json#Chapter1_Tilemap1": {
+            "scaleInDock": 1
+        },
+        "Chapter1/Shelter.json": {
+            "scale": 0.34635416666666663,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 1920,
+                "y": 1918.5563909774437
+            }
+        },
+        "Chapter1/Shelter.json#Shelter": {
+            "scaleInDock": 1
+        },
+        "Chapter2.json": {
+            "scale": 0.34635416666666663,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 1920,
+                "y": 1918.5563909774437
+            }
+        },
+        "SPY_Tilemap1.json": {
+            "scale": 2.59765625,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 256,
+                "y": 255.80751879699255
+            }
+        },
+        "SPY_Tilemap1.json#SPY_Tiles": {
+            "scaleInDock": 1
+        },
+        "SPY_Tilemap2.json": {
+            "scale": 2,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 248.5,
+                "y": 248.75
+            }
+        },
+        "SPY_Tilemap2.json#SPY_Tiles": {
+            "scaleInDock": 1
+        },
+        "Shelter.json": {
+            "scale": 0.75,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 1592,
+                "y": 1607.333333333333
+            }
+        },
+        "Shelter.json#Shelter": {
+            "scaleInDock": 1
+        }
+    },
+    "last.imagePath": "D:/GameDev/CSE380/Project/to-the-fairyland/dist/game_assets/tilemaps/Chapter1",
+    "map.height": 60,
+    "map.lastUsedFormat": "json",
+    "map.tileHeight": 64,
+    "map.tileWidth": 64,
+    "map.width": 60,
+    "openFiles": [
+    ],
+    "project": "ToTheFairyland.tiled-project",
+    "recentFiles": [
+        "SPY_Tilemap1.json",
+        "SPY_Tilemap2.json",
+        "Chapter2.json",
+        "Chapter1.json"
+    ],
+    "tileset.embedInMap": true,
+    "tileset.tileSize": {
+        "height": 64,
+        "width": 64
+    }
+}

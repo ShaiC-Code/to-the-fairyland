@@ -1,9 +1,9 @@
-import Scene from "../../Wolfie2D/Scene/Scene";
-import OrthogonalTilemap from "../../Wolfie2D/Nodes/Tilemaps/OrthogonalTilemap";
-import Vec2 from "../../Wolfie2D/DataTypes/Vec2";
-import PlayerActor from "../Actors/PlayerActor";
-import AABB from "../../Wolfie2D/DataTypes/Shapes/AABB";
-import PlayerAI from "../AI/Player/PlayerAI";
+import Scene from "../../../Wolfie2D/Scene/Scene";
+import OrthogonalTilemap from "../../../Wolfie2D/Nodes/Tilemaps/OrthogonalTilemap";
+import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
+import PlayerActor from "../../Actors/PlayerActor";
+import AABB from "../../../Wolfie2D/DataTypes/Shapes/AABB";
+import PlayerAI from "../../AI/Player/PlayerAI";
 
 
 export default class Chapter1Scene extends Scene {
