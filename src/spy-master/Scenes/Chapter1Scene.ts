@@ -13,9 +13,11 @@ export default class Chapter1Scene extends Scene {
     }
 
     public startScene(): void {
-        const tilemapLayers = this.add.tilemap("chapter1");
-        const firstLayer = tilemapLayers[0].getItems()[0] as OrthogonalTilemap;
-        const mapSize = firstLayer.size;
+        this.add.tilemap("chapter1");
+
+        const ground = this.getTilemap("Ground") as OrthogonalTilemap;
+        const collision = this.getTilemap("CollisionLayer") as OrthogonalTilemap;
+        const mapSize = ground.size;
 
         //Layer to place any actors
         this.addLayer("actors", 10);
@@ -32,15 +34,15 @@ export default class Chapter1Scene extends Scene {
         //Create player sprite
         const player = this.add.animatedSprite(PlayerActor, "fate", "actors");
 
-        const spawnTile = firstLayer.getTilemapPosition(spawn.x, spawn.y);
-        const tileTopLeft = firstLayer.getWorldPosition(spawnTile.x, spawnTile.y);
-        const tileSize = firstLayer.getScaledTileSize();
+        const spawnTile = ground.getTilemapPosition(spawn.x, spawn.y);
+        const tileTopLeft = ground.getWorldPosition(spawnTile.x, spawnTile.y);
+        const tileSize = ground.getScaledTileSize();
 
         const feetX = tileTopLeft.x + tileSize.x / 2;
         const feetY = tileTopLeft.y + tileSize.y / 2;
 
         player.position.copy(player.getCenterForFeetPosition(feetX, feetY));
-        player.addAI(PlayerAI, { startTile: spawnTile, tilemap: firstLayer });
+        player.addAI(PlayerAI, { startTile: spawnTile, tilemap: collision });
 
         // Start facing down
         player.animation.play("IDLE_DOWN", true);
@@ -48,7 +50,7 @@ export default class Chapter1Scene extends Scene {
         //Camera setting
         this.viewport.setBounds(0, 0, mapSize.x, mapSize.y);
         this.viewport.follow(player);
-        this.viewport.setZoomLevel(1.25);
+        this.viewport.setZoomLevel(1);
 
 
     }

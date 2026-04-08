@@ -9,7 +9,7 @@ import { PlayerInput } from "./spy-master/AI/Player/PlayerController";
 
     // Set up options for our game
     let options = {
-        canvasSize: {x: 1600, y: 900},          // The size of the game
+        canvasSize: {x: 1280, y: 900},          // The size of the game
         clearColor: {r: 0.1, g: 0.1, b: 0.1},   // The color the game clears to
         inputs: [
             {name: PlayerInput.MOVE_UP, keys: ["w"]},

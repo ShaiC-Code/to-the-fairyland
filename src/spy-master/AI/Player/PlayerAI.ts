@@ -35,7 +35,7 @@ export default class PlayerAI extends StateMachineAI implements AI {
     public moveStart!: Vec2;
     public moveEnd!: Vec2;
     public moveProgress = 0; //Percentage moved
-    public moveDuration = 0.16; //Player speed, time to finish moving 1 tile
+    public moveDuration = 0.12; //Player speed, time to finish moving 1 tile
     public currentMoveDuration = this.moveDuration; //for diagonal normalization where speed changes
     
     public initializeAI(owner: PlayerActor, opts: Record<string, any>): void {
