@@ -225,7 +225,7 @@
                 {
                  "height":64,
                  "id":283,
-                 "name":"Door",
+                 "name":"DoorToShelter",
                  "opacity":1,
                  "rotation":0,
                  "type":"",
@@ -1534,7 +1534,7 @@
                 {
                  "height":0,
                  "id":33,
-                 "name":"",
+                 "name":"Outside",
                  "opacity":1,
                  "point":true,
                  "rotation":0,
@@ -1542,7 +1542,7 @@
                  "visible":true,
                  "width":0,
                  "x":1952,
-                 "y":2016
+                 "y":1824
                 }],
          "opacity":1,
          "type":"objectgroup",

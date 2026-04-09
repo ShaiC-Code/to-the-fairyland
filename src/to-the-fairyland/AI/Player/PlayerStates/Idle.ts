@@ -27,6 +27,7 @@ export default class Idle extends PlayerState {
         }
 
         this.parent.facing = dir;
+        this.playFacingAnimation();
 
 
         if (!this.canMoveToTile(this.parent.currentTile, dir)) {

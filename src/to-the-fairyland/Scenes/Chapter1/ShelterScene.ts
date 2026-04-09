@@ -1,4 +1,8 @@
 import MappedAdventureScene from "../MappedAdventureScene";
+import { TiledObject } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData";
+import Chapter1Scene from "./Chapter1Scene";
+import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
+
 
 export default class ShelterScene extends MappedAdventureScene {
     protected readonly tilemap = {
@@ -8,4 +12,10 @@ export default class ShelterScene extends MappedAdventureScene {
 
     // Shelter.json currently uses "Shelter" as its main walkable/render layer.
     protected readonly movementLayerName = "Ground";
+
+    protected override handleInteraction(obj: TiledObject): void {
+        if (obj.name === "DoorToOutside") {
+            this.sceneManager.changeToScene(Chapter1Scene, {spawnName: "Shelter", facing: Vec2.DOWN});
+        }
+    }
 }

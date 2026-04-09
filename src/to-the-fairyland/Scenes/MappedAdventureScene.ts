@@ -11,6 +11,11 @@ type AssetRef = Readonly<{
     path: string;
 }>;
 
+type SceneEntranceData = {
+    spawnName?: string;
+    facing?: Vec2;
+};
+
 export default abstract class MappedAdventureScene extends Scene {
     // The tilemap to load for the scene, pass from sub scenes
     protected abstract readonly tilemap: AssetRef;
@@ -35,10 +40,12 @@ export default abstract class MappedAdventureScene extends Scene {
     protected collision!: OrthogonalTilemap;
     protected interactables: TiledObject[] = [];
     protected spawnName?: string;
+    protected startFacing?: Vec2;
 
     // lets the scene receive data, ex: {spawnName: "Door1"}
-    public override initScene(init: Record<string, any>): void {
+    public override initScene(init: SceneEntranceData = {}): void {
         this.spawnName = init?.spawnName;
+        this.startFacing = init.facing?.clone();
     }
 
     public override loadScene(): void {
@@ -69,7 +76,8 @@ export default abstract class MappedAdventureScene extends Scene {
 
         this.player = this.add.animatedSprite(PlayerActor, this.playerSheet.key, this.actorLayerName);
         this.spawnPlayerAt(spawn);
-        this.player.animation.play("IDLE_DOWN", true);
+        const ai = this.player.ai as PlayerAI;
+        this.playIdleForFacing(ai.facing);
 
         this.applyCameraBounds();
         this.viewport.follow(this.player);
@@ -145,6 +153,21 @@ export default abstract class MappedAdventureScene extends Scene {
         return spawnLayer.objects[0];
     }
 
+    protected playIdleForFacing(facing: Vec2): void {
+        if (facing.y < 0) {
+            this.player.animation.play("IDLE_UP", true);
+        } else if (facing.y > 0) {
+            this.player.animation.play("IDLE_DOWN", true);
+        } else if (facing.x < 0) {
+            this.player.animation.play("IDLE_LEFT", true);
+        } else if (facing.x > 0) {
+            this.player.animation.play("IDLE_RIGHT", true);
+        } else {
+            this.player.animation.play("IDLE_DOWN", true);
+        }
+    }
+    
+
 
     /**
      * Returns the tile (col, row) occupied by the given Tiled object.
@@ -174,6 +197,11 @@ export default abstract class MappedAdventureScene extends Scene {
 
         this.player.position.copy(this.player.getCenterForFeetPosition(feetX, feetY));
         this.player.addAI(PlayerAI, { startTile: spawnTile, tilemap: this.collision });
+
+        const ai = this.player.ai as PlayerAI;
+        if (this.startFacing) {
+            ai.facing = this.startFacing.clone();
+        }
     }
 
 
