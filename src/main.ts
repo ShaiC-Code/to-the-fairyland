@@ -1,6 +1,6 @@
 import Game from "./Wolfie2D/Loop/Game";
-import MainMenu from "./spy-master/Scenes/MainMenu";
-import { PlayerInput } from "./spy-master/AI/Player/PlayerController";
+import MainMenu from "./to-the-fairyland/Scenes/MainMenu";
+import { PlayerInput } from "./to-the-fairyland/AI/Player/PlayerController";
 
 // The main function is your entrypoint into Wolfie2D. Specify your first scene and any options here.
 (function main(){

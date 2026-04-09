@@ -17,21 +17,27 @@
             "scaleInDock": 1
         },
         "Chapter1/Chapter1.json": {
-            "scale": 1.5,
-            "selectedLayer": 4,
+            "expandedObjectLayers": [
+                13
+            ],
+            "scale": 2,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 1934,
-                "y": 1969.6666666666665
+                "x": 2054.5,
+                "y": 1744.25
             }
         },
         "Chapter1/Chapter1.json#Chapter1_Tilemap1": {
             "scaleInDock": 1
         },
         "Chapter1/Shelter.json": {
+            "expandedObjectLayers": [
+                3
+            ],
             "scale": 1.5,
-            "selectedLayer": 1,
+            "selectedLayer": 0,
             "viewCenter": {
-                "x": 1447.3333333333333,
+                "x": 1390,
                 "y": 1661.6666666666665
             }
         },
