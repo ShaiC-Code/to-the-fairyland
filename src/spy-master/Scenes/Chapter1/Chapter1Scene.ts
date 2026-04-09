@@ -4,9 +4,18 @@ import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 import PlayerActor from "../../Actors/PlayerActor";
 import AABB from "../../../Wolfie2D/DataTypes/Shapes/AABB";
 import PlayerAI from "../../AI/Player/PlayerAI";
+import Input from "../../../Wolfie2D/Input/Input";
+import { TiledObject } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData";
+import ShelterScene from "./ShelterScene";
+
 
 
 export default class Chapter1Scene extends Scene {
+
+    private player!: PlayerActor;
+    private ground!: OrthogonalTilemap;
+    private interactables: TiledObject[] = [];
+
     public loadScene(): void {
         this.load.tilemap("chapter1", "game_assets/tilemaps/Chapter1/Chapter1.json");
         this.load.spritesheet("fate", "game_assets/spritesheets/Fate.json");
@@ -19,44 +28,46 @@ export default class Chapter1Scene extends Scene {
         this.addLayer("actors", 10);
         this.getLayer("Trees").setDepth(20);
 
-        const ground = this.getTilemap("Ground") as OrthogonalTilemap;
-        const collision = this.getTilemap("CollisionLayer") as OrthogonalTilemap;
+        const collision = this.getTilemap("CollisionLayer") as OrthogonalTilemap;        
         const mapBoundsLayer = this.getTilemap("MapBoundLayer") as OrthogonalTilemap;
-
-        const mapSize = ground.size;
+        this.ground = this.getTilemap("Ground") as OrthogonalTilemap;
 
         // Read the raw Tiled data
         const tilemapData = this.resourceManager.getTilemap("chapter1");
+
+        const treeLayer = tilemapData.layers.find(layer => layer.name === "Trees");
         const spawnLayer = tilemapData.layers.find(layer => layer.name === "SpawnPoint");
+        const interactLayer = tilemapData.layers.find(layer => layer.name === "Interactables");
+
         const spawn = spawnLayer?.objects?.[0];
-       
         if (!spawn) {
             throw new Error("SpawnPoint layer is missing or empty");
         } 
 
-        const treeLayer = tilemapData.layers.find(layer => layer.name === "Trees");
+        
         const treePoints = treeLayer?.objects ?? [];
         for (const point of treePoints) {
             const tree = this.add.sprite("snowTree1", "Trees");
             tree.position.set(point.x, point.y - tree.size.y / 2);
         }
 
+        this.interactables = interactLayer?.objects ?? [];
 
         //Create player sprite
-        const player = this.add.animatedSprite(PlayerActor, "fate", "actors");
+        this.player = this.add.animatedSprite(PlayerActor, "fate", "actors");
 
-        const spawnTile = ground.getTilemapPosition(spawn.x, spawn.y);
-        const tileTopLeft = ground.getWorldPosition(spawnTile.x, spawnTile.y);
-        const tileSize = ground.getScaledTileSize();
+        const spawnTile = this.ground.getTilemapPosition(spawn.x, spawn.y);
+        const tileTopLeft = this.ground.getWorldPosition(spawnTile.x, spawnTile.y);
+        const tileSize = this.ground.getScaledTileSize();
 
         const feetX = tileTopLeft.x + tileSize.x / 2;
         const feetY = tileTopLeft.y + tileSize.y / 2;
 
-        player.position.copy(player.getCenterForFeetPosition(feetX, feetY));
-        player.addAI(PlayerAI, { startTile: spawnTile, tilemap: collision });
+        this.player.position.copy(this.player.getCenterForFeetPosition(feetX, feetY));
+        this.player.addAI(PlayerAI, { startTile: spawnTile, tilemap: collision });
 
         // Start facing down
-        player.animation.play("IDLE_DOWN", true);
+        this.player.animation.play("IDLE_DOWN", true);
 
         //===================== Camera setting ===========================
 
@@ -93,11 +104,34 @@ export default class Chapter1Scene extends Scene {
             bottomRight.y + boundTileSize.y
         );
 
-        this.viewport.follow(player);
+        this.viewport.follow(this.player);
         this.viewport.setZoomLevel(1);
-
-
     }
 
-    public updateScene(): void {}
+    public updateScene(): void {
+        const ai = this.player.ai as PlayerAI;
+        if (ai.moving) {
+            return;
+        }
+        
+        if (Input.isKeyJustPressed("j") || Input.isKeyJustPressed("e") || Input.isKeyJustPressed("z")) {
+            const nextTile = ai.currentTile.clone().add(ai.facing);
+
+            const hit = this.interactables.find(obj => {
+                const objTile = this.ground.getTilemapPosition(
+                    obj.x + obj.width / 2,
+                    obj.y + obj.height / 2
+                );
+        
+                return objTile.x === nextTile.x && objTile.y === nextTile.y;
+            });
+        
+            if (hit?.name === "Door") {
+                this.sceneManager.changeToScene(ShelterScene);
+            }
+        }
+
+        return;
+
+    }
 }

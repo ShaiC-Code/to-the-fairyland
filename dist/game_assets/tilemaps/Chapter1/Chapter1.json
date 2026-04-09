@@ -219,6 +219,29 @@
         }, 
         {
          "draworder":"topdown",
+         "id":13,
+         "name":"Interactables",
+         "objects":[
+                {
+                 "height":64,
+                 "id":283,
+                 "name":"Door",
+                 "opacity":1,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":64,
+                 "x":1920,
+                 "y":1728
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "draworder":"topdown",
          "id":6,
          "name":"Trees",
          "objects":[
@@ -1675,8 +1698,8 @@
          "x":0,
          "y":0
         }],
- "nextlayerid":13,
- "nextobjectid":282,
+ "nextlayerid":14,
+ "nextobjectid":285,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.12.1",
