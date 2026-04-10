@@ -86,22 +86,24 @@ export default abstract class MappedAdventureScene extends Scene {
 
     public override updateScene(_deltaT: number): void {
         const ai = this.player.ai as PlayerAI;
-        if (ai.moving || !this.isInteractPressed()) {
-            return;
-        }
+        const controller = ai.controller;
 
-        const currentHit = this.findInteractableAtTile(ai.currentTile);
-        // Checks current Tile first
-        if (currentHit) {
-            this.handleInteraction(currentHit);
-            return;
-        }
+        if (!ai.moving && controller.interacting) {
+            const currentHit = this.findInteractableAtTile(ai.currentTile);
+            // Checks current tile first
+            if (currentHit) {
+                console.log("[Interacted with:", currentHit.name, "]");
+                this.handleInteraction(currentHit);
+                return;
+            }
 
-        const nextTile = ai.currentTile.clone().add(ai.facing);
-        const nextHit = this.findInteractableAtTile(nextTile);
-        // Checks destination Tile next
-        if (nextHit) {
-            this.handleInteraction(nextHit);
+            const nextTile = ai.currentTile.clone().add(ai.facing);
+            const nextHit = this.findInteractableAtTile(nextTile);
+            // Checks destination tile next
+            if (nextHit) {
+                console.log("[Interacted with:", nextHit.name, "]");
+                this.handleInteraction(nextHit);
+            }
         }
     }
     
@@ -112,17 +114,6 @@ export default abstract class MappedAdventureScene extends Scene {
     protected spawnMapObjects(_tilemapData: TiledTilemapData): void {}
 
     protected handleInteraction(_obj: TiledObject): void {}
-
-    /**
-     * Returns true if the player pressed any interact key this frame.
-     * Current interact keys are J, E, and Z.
-     * @returns True if an interact key was just pressed, false otherwise.
-     */
-    protected isInteractPressed(): boolean {
-        return Input.isKeyJustPressed("j")
-            || Input.isKeyJustPressed("e")
-            || Input.isKeyJustPressed("z");
-    }
 
     /**
      * Retrieves a tile layer by name and throws an error if it is missing.

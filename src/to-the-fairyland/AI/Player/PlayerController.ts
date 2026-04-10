@@ -11,8 +11,7 @@ export enum PlayerInput {
     MOVE_LEFT = "MOVE_LEFT",
     MOVE_RIGHT = "MOVE_RIGHT",
     ATTACKING = "ATTACKING",
-    PICKUP_ITEM = "PICKUP_ITEM",
-    DROP_ITEM = "DROP_ITEM"
+    INTERACT = "INTERACT"
 }
 
 type VerticalDirection = "up" | "down";
@@ -117,17 +116,12 @@ export default class PlayerController {
      */
     public get useItem(): boolean { return Input.isMouseJustPressed(); }
 
-    /** 
-     * Checks if the player is attempting to pick up an item or not.
-     * @return true if the player is attempting to pick up an item; false otherwise.
+     /** 
+     * Checks if the player is attempting to interact.
+     * @return true if the player is attempting to interact; false otherwise.
      */
-    public get pickingUp(): boolean { return Input.isJustPressed(PlayerInput.PICKUP_ITEM); }
+    public get interacting(): boolean { return Input.isJustPressed(PlayerInput.INTERACT); }
 
-    /** 
-     * Checks if the player is attempting to drop their held item or not.
-     * @return true if the player is attempting to drop their held item; false otherwise.
-     */
-    public get dropping(): boolean { return Input.isJustPressed(PlayerInput.DROP_ITEM); }
 
     public get tileInput(): Vec2 {
         const vertical = this.heldVertical[this.heldVertical.length - 1];

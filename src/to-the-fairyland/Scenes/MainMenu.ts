@@ -8,6 +8,7 @@ import Scene from "../../Wolfie2D/Scene/Scene";
 import Color from "../../Wolfie2D/Utils/Color";
 import GameEvent from "../../Wolfie2D/Events/GameEvent";
 import ForestScene  from "./Chapter1/ForestScene";
+import ShelterScene from "./Chapter1/ShelterScene";
 
 export default class MainMenu extends Scene {
     private mainMenu!: Layer;
@@ -68,7 +69,7 @@ export default class MainMenu extends Scene {
                 break;
             }
             case "level1": {
-                this.sceneManager.changeToScene(ForestScene );
+                this.sceneManager.changeToScene(ShelterScene );
                 break;
             }
             

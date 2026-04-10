@@ -1,5 +1,5 @@
 {
-    "activeFile": "Chapter1/Shelter.json",
+    "activeFile": "Chapter1/Chapter1.json",
     "expandedProjectPaths": [
         "parsedObjects",
         ".",
@@ -20,29 +20,29 @@
         },
         "Chapter1/Chapter1.json": {
             "expandedObjectLayers": [
-                13,
-                7
+                7,
+                13
             ],
-            "scale": 1,
+            "scale": 1.5,
             "selectedLayer": 5,
             "viewCenter": {
-                "x": 1825,
-                "y": 1824
+                "x": 1972.9999999999998,
+                "y": 1893
             }
         },
         "Chapter1/Chapter1.json#Chapter1_Tilemap1": {
-            "scaleInDock": 1
+            "scaleInDock": 0.33
         },
         "Chapter1/Shelter.json": {
             "expandedObjectLayers": [
-                3,
-                5
+                5,
+                3
             ],
             "scale": 1.5,
-            "selectedLayer": 4,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 1510.6666666666665,
-                "y": 1703
+                "x": 1581.6666666666665,
+                "y": 1641.6666666666665
             }
         },
         "Chapter1/Shelter.json#Shelter": {
@@ -102,8 +102,8 @@
     ],
     "project": "ToTheFairyland.tiled-project",
     "recentFiles": [
-        "Chapter1/Chapter1.json",
         "Chapter1/Shelter.json",
+        "Chapter1/Chapter1.json",
         "SPY_Tilemap1.json",
         "SPY_Tilemap2.json",
         "Chapter2.json",

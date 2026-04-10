@@ -12,14 +12,11 @@ import { PlayerInput } from "./to-the-fairyland/AI/Player/PlayerController";
         canvasSize: {x: 1280, y: 900},          // The size of the game
         clearColor: {r: 0.1, g: 0.1, b: 0.1},   // The color the game clears to
         inputs: [
-            {name: PlayerInput.MOVE_UP, keys: ["w"]},
-            {name: PlayerInput.MOVE_DOWN, keys: ["s"]},
-            {name: PlayerInput.MOVE_LEFT, keys: ["a"]},
-            {name: PlayerInput.MOVE_RIGHT, keys: ["d"]},
-            {name: PlayerInput.PICKUP_ITEM, keys: ["e"]},
-            {name: PlayerInput.DROP_ITEM, keys: ["q"]},
-            {name: "slot1", keys: ["1"]},
-            {name: "slot2", keys: ["2"]},
+            {name: PlayerInput.MOVE_UP, keys: ["w", "arrowup"]},
+            {name: PlayerInput.MOVE_DOWN, keys: ["s", "arrowdown"]},
+            {name: PlayerInput.MOVE_LEFT, keys: ["a", "arrowleft"]},
+            {name: PlayerInput.MOVE_RIGHT, keys: ["d", "arrowright"]},
+            {name: PlayerInput.INTERACT, keys: ["j", "e", "z"]},
         ],
         useWebGL: false,                        // Tell the game we want to use webgl
         showDebug: false                      // Whether to show debug messages. You can change this to true if you want

@@ -49,9 +49,6 @@ export default class ForestScene  extends MappedAdventureScene {
         if (obj.name === "BushBerries") {
             const bushTile = this.getObjectTile(obj);
 
-            console.log("Interacted with bush berries",
-                bushTile.x,
-                bushTile.y);
         }
     }
 }
