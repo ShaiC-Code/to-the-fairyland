@@ -8,14 +8,10 @@ import SMItem from "../GameSystems/ItemSystem/Item";
 import BasicTargetable from "../GameSystems/Targeting/BasicTargetable";
 import { TargetableEntity } from "../GameSystems/Targeting/TargetableEntity";
 import { TargetingEntity } from "../GameSystems/Targeting/TargetingEntity";
-import SMScene from "../Scenes/SMScene";
 import Vec2 from "../../Wolfie2D/DataTypes/Vec2";
 
 
 export default class PlayerActor extends AnimatedSprite implements Battler {
-
-    /** Override the type of the scene to be the Spy Master scene */
-    protected scene: SMScene
 
     /** Give the player a battler compoonent */
     protected battler: Battler;
@@ -50,9 +46,6 @@ export default class PlayerActor extends AnimatedSprite implements Battler {
     public getTargeting(): TargetingEntity[] { return this.targetable.getTargeting(); }
     public addTargeting(targeting: TargetingEntity): void { this.targetable.addTargeting(targeting); }
     public removeTargeting(targeting: TargetingEntity): void { this.targetable.removeTargeting(targeting); }
-
-    public override setScene(scene: SMScene): void { this.scene = scene; }
-    public override getScene(): SMScene { return this.scene; }
 
     get battleGroup(): number {
         return this.battler.battleGroup;

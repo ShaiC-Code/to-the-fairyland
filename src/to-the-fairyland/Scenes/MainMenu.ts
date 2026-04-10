@@ -7,11 +7,6 @@ import Layer from "../../Wolfie2D/Scene/Layer";
 import Scene from "../../Wolfie2D/Scene/Scene";
 import Color from "../../Wolfie2D/Utils/Color";
 import GameEvent from "../../Wolfie2D/Events/GameEvent";
-import AstarDemoScene from "./AstarDemoScene";
-import GuardDemoScene from "./GuardDemoScene";
-import SMSceneMapMain from "./SMSceneMapMain";
-import SMSceneMap1 from "./SMSceneMap1";
-import SMSceneMap2 from "./SMSceneMap2";
 import Chapter1Scene from "./Chapter1/Chapter1Scene";
 
 export default class MainMenu extends Scene {
