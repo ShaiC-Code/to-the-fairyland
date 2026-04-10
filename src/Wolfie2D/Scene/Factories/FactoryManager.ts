@@ -39,6 +39,15 @@ export default class FactoryManager {
     }
 
     /**
+	 * Registers a custom UIElement builder for use with uiElement().
+	 * @param type The custom type key
+	 * @param builder A builder function that returns a UIElement
+	 */
+    registerCustomUIElement(type: string, builder: (options?: Record<string, any>) => UIElement): void {
+        this.canvasNodeFactory.registerCustomUIElement(type, builder);
+    }
+
+    /**
 	 * Adds a sprite to the current scene
 	 * @param key The key of the image the sprite will represent
 	 * @param layerName The layer on which to add the sprite
