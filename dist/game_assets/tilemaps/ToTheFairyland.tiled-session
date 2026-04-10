@@ -20,14 +20,14 @@
         },
         "Chapter1/Chapter1.json": {
             "expandedObjectLayers": [
-                7,
-                13
+                13,
+                7
             ],
             "scale": 1,
             "selectedLayer": 5,
             "viewCenter": {
-                "x": 2076,
-                "y": 1807.5
+                "x": 1825,
+                "y": 1824
             }
         },
         "Chapter1/Chapter1.json#Chapter1_Tilemap1": {
@@ -41,8 +41,8 @@
             "scale": 1.5,
             "selectedLayer": 4,
             "viewCenter": {
-                "x": 1516,
-                "y": 1663
+                "x": 1510.6666666666665,
+                "y": 1703
             }
         },
         "Chapter1/Shelter.json#Shelter": {

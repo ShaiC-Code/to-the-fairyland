@@ -90,10 +90,18 @@ export default abstract class MappedAdventureScene extends Scene {
             return;
         }
 
+        const currentHit = this.findInteractableAtTile(ai.currentTile);
+        // Checks current Tile first
+        if (currentHit) {
+            this.handleInteraction(currentHit);
+            return;
+        }
+
         const nextTile = ai.currentTile.clone().add(ai.facing);
-        const hit = this.findInteractableAtTile(nextTile);
-        if (hit) {
-            this.handleInteraction(hit);
+        const nextHit = this.findInteractableAtTile(nextTile);
+        // Checks destination Tile next
+        if (nextHit) {
+            this.handleInteraction(nextHit);
         }
     }
     
@@ -196,6 +204,8 @@ export default abstract class MappedAdventureScene extends Scene {
         const feetY = tileTopLeft.y + tileSize.y / 2;
 
         this.player.position.copy(this.player.getCenterForFeetPosition(feetX, feetY));
+        this.player.setSortTile(spawnTile);
+        this.player.setSortOrder(0);
         this.player.addAI(PlayerAI, { startTile: spawnTile, tilemap: this.collision });
 
         const ai = this.player.ai as PlayerAI;

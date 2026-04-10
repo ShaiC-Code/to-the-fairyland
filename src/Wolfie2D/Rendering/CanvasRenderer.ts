@@ -73,13 +73,40 @@ export default class CanvasRenderer extends RenderingManager {
     // @override
     render(visibleSet: CanvasNode[], tilemaps: Tilemap[], uiLayers: Map<UILayer>): void {
         // Sort by depth, then by visible set by y-value
+
+        //========================== Engine Changes =============================
         visibleSet.sort((a, b) => {
-            if(a.getLayer().getDepth() === b.getLayer().getDepth()){
-                return (a.boundary.bottom) - (b.boundary.bottom);
-            } else {
-                return a.getLayer().getDepth() - b.getLayer().getDepth();
+            const depthDiff = a.getLayer().getDepth() - b.getLayer().getDepth();
+
+            if (depthDiff !== 0) {
+                return depthDiff;
             }
+
+            const aTile = a.getSortTile();
+            const bTile = b.getSortTile();
+
+            if (aTile && bTile) {
+                const rowDiff = aTile.y - bTile.y;
+                if (rowDiff !== 0) {
+                    return rowDiff;
+                }
+        
+                const colDiff = aTile.x - bTile.x;
+                if (colDiff !== 0) {
+                    return colDiff;
+                }
+        
+                const sortOrderDiff = a.getSortOrder() - b.getSortOrder();
+                if (sortOrderDiff !== 0) {
+                    return sortOrderDiff;
+                }
+        
+                return a.id - b.id;
+            }
+
+            return a.boundary.bottom - b.boundary.bottom;
         });
+        //=======================================================================
 
         let tilemapIndex = 0;
         let tilemapLength = tilemaps.length;

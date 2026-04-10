@@ -70,6 +70,7 @@ export default class PlayerAI extends StateMachineAI implements AI {
     public update(deltaT: number): void {
         this.controller.update();
         super.update(deltaT);
+        this.owner.setSortTile(this.targetTile ?? this.currentTile);
     }
 
     public destroy(): void {}

@@ -77,6 +77,28 @@ export default abstract class CanvasNode extends GameNode implements Region {
 		return this._customShaderKey;
 	}
 
+	//========================== Engine Changes =============================
+	protected sortTile: Vec2 | null = null;
+	protected sortOrder: number = 0;
+
+	/** The grid position of this object. */
+	public setSortTile(tile: Vec2 | null): void {
+		this.sortTile = tile ? tile.clone() : null;
+	}
+
+	public getSortTile(): Vec2 | null {
+		return this.sortTile;
+	}
+
+	public setSortOrder(sortOrder: number): void {
+		this.sortOrder = sortOrder;
+	}
+
+	public getSortOrder(): number {
+		return this.sortOrder;
+	}
+	//=======================================================================
+
 	// @override
 	protected positionChanged(): void {
 		super.positionChanged();

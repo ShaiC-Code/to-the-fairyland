@@ -1,6 +1,6 @@
 import MappedAdventureScene from "../MappedAdventureScene";
 import { TiledObject } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData";
-import Chapter1Scene from "./Chapter1Scene";
+import ForestScene  from "./ForestScene";
 import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 
 
@@ -15,7 +15,7 @@ export default class ShelterScene extends MappedAdventureScene {
 
     protected override handleInteraction(obj: TiledObject): void {
         if (obj.name === "DoorToOutside") {
-            this.sceneManager.changeToScene(Chapter1Scene, {spawnName: "Shelter", facing: Vec2.DOWN});
+            this.sceneManager.changeToScene(ForestScene , {spawnName: "Shelter", facing: Vec2.DOWN});
         }
     }
 }
