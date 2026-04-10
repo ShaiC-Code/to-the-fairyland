@@ -39,14 +39,14 @@
                 3
             ],
             "scale": 1.5,
-            "selectedLayer": 3,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 1581.6666666666665,
-                "y": 1641.6666666666665
+                "x": 1489.6666666666665,
+                "y": 1623.6666666666665
             }
         },
         "Chapter1/Shelter.json#Shelter": {
-            "scaleInDock": 0.25
+            "scaleInDock": 0.33
         },
         "Chapter2.json": {
             "scale": 0.34635416666666663,
@@ -101,6 +101,7 @@
         "Chapter1/Shelter.json"
     ],
     "project": "ToTheFairyland.tiled-project",
+    "property.type": "string",
     "recentFiles": [
         "Chapter1/Shelter.json",
         "Chapter1/Chapter1.json",

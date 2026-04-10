@@ -69,8 +69,10 @@ export default class MainMenu extends Scene {
                 break;
             }
             case "level1": {
-                this.sceneManager.changeToScene(ShelterScene );
-                break;
+                this.sceneManager.changeToScene(ShelterScene, {
+                    spawnName: "SideOfBed",
+                    facing: Vec2.DOWN
+                });
             }
             
         }

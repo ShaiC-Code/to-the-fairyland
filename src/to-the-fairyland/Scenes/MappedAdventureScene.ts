@@ -13,7 +13,6 @@ type AssetRef = Readonly<{
 
 type SceneEntranceData = {
     spawnName?: string;
-    facing?: Vec2;
 };
 
 export default abstract class MappedAdventureScene extends Scene {
@@ -40,12 +39,10 @@ export default abstract class MappedAdventureScene extends Scene {
     protected collision!: OrthogonalTilemap;
     protected interactables: TiledObject[] = [];
     protected spawnName?: string;
-    protected startFacing?: Vec2;
 
     // lets the scene receive data, ex: {spawnName: "Door1"}
     public override initScene(init: SceneEntranceData = {}): void {
         this.spawnName = init?.spawnName;
-        this.startFacing = init.facing?.clone();
     }
 
     public override loadScene(): void {
@@ -200,8 +197,16 @@ export default abstract class MappedAdventureScene extends Scene {
         this.player.addAI(PlayerAI, { startTile: spawnTile, tilemap: this.collision });
 
         const ai = this.player.ai as PlayerAI;
-        if (this.startFacing) {
-            ai.facing = this.startFacing.clone();
+        const facingProp = spawn.properties?.find(prop => prop.name === "facing")?.value;
+
+        if (facingProp === "up") {
+            ai.facing = Vec2.UP;
+        } else if (facingProp === "down") {
+            ai.facing = Vec2.DOWN;
+        } else if (facingProp === "left") {
+            ai.facing = Vec2.LEFT;
+        } else if (facingProp === "right") {
+            ai.facing = Vec2.RIGHT;
         }
     }
 
