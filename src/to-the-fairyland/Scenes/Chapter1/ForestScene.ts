@@ -42,13 +42,16 @@ export default class ForestScene  extends MappedAdventureScene {
     }
 
     protected override handleInteraction(obj: TiledObject): void {
-        if (obj.name === "DoorToShelter") {
-            this.sceneManager.changeToScene(ShelterScene, {spawnName: "Shelter", facing: Vec2.UP});
-        }
 
         if (obj.name === "BushBerries") {
             const bushTile = this.getObjectTile(obj);
 
+        }
+    }
+
+    protected override handleAutoTransition(obj: TiledObject): void {
+        if (obj.name === "DoorToShelter") {
+            this.sceneManager.changeToScene(ShelterScene, {spawnName: "Shelter", facing: Vec2.UP});
         }
     }
 }
