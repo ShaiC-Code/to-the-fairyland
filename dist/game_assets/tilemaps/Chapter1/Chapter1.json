@@ -409,6 +409,19 @@
                  "width":0,
                  "x":1184,
                  "y":1760
+                }, 
+                {
+                 "height":0,
+                 "id":323,
+                 "name":"MapItem",
+                 "opacity":1,
+                 "point":true,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":1952,
+                 "y":864
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -1917,7 +1930,7 @@
          "y":0
         }],
  "nextlayerid":16,
- "nextobjectid":322,
+ "nextobjectid":324,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.12.1",

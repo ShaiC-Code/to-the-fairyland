@@ -4,6 +4,9 @@ import OrthogonalTilemap from "../../Wolfie2D/Nodes/Tilemaps/OrthogonalTilemap";
 import Scene from "../../Wolfie2D/Scene/Scene";
 import PlayerActor from "../Actors/PlayerActor";
 import PlayerAI from "../AI/Player/PlayerAI";
+import { GraphicType } from "../../Wolfie2D/Nodes/Graphics/GraphicTypes";
+import Color from "../../Wolfie2D/Utils/Color";
+import Graphic from "../../Wolfie2D/Nodes/Graphic";
 
 type AssetRef = Readonly<{
     key: string;
@@ -13,6 +16,13 @@ type AssetRef = Readonly<{
 type SceneEntranceData = {
     spawnName?: string;
 };
+
+export enum TimeOfDay {
+    DAY,
+    NOON,
+    DUSK,
+    NIGHT
+}
 
 export default abstract class MappedAdventureScene extends Scene {
     // The tilemap to load for the scene, pass from sub scenes
@@ -40,6 +50,8 @@ export default abstract class MappedAdventureScene extends Scene {
     protected interactables: TiledObject[] = [];
     protected spawnName?: string;
     protected entrances: TiledObject[] = [];
+
+    private timeOverlay: Graphic | null = null;
 
     // lets the scene receive data, ex: {spawnName: "Door1"}
     public override initScene(init: SceneEntranceData = {}): void {
@@ -203,6 +215,38 @@ export default abstract class MappedAdventureScene extends Scene {
             obj.x + obj.width / 2,
             obj.y + obj.height / 2
         );
+    }
+
+    // Returns the time-of-day overlay color for this scene.
+    // Return null for no overlay (default).
+    protected setTimeOfDay(time: TimeOfDay): void {
+        const color = this.getColorForTime(time);
+        if (!color) {
+            if (this.timeOverlay) {
+                this.timeOverlay.visible = false;
+            }
+            return;
+        }
+        if (!this.timeOverlay) {
+            this.addUILayer("timeOverlay");
+            const half = this.viewport.getHalfSize();
+            this.timeOverlay = this.add.graphic(GraphicType.RECT, "timeOverlay", {
+                position: half.clone(),
+                size: half.scaled(2)
+            });
+        }
+        this.timeOverlay.color = color;
+        this.timeOverlay.visible = true;
+    }
+
+    private getColorForTime(time: TimeOfDay): Color | null {
+        switch (time) {
+            case TimeOfDay.DAY:  return null;
+            case TimeOfDay.NOON:  return new Color(200, 140, 60, 0.30);
+            case TimeOfDay.DUSK:  return new Color(30, 20, 60, 0.45);
+            case TimeOfDay.NIGHT: return new Color(10, 10, 60, 0.75);
+            default:              return null;
+        }
     }
 
     /**
