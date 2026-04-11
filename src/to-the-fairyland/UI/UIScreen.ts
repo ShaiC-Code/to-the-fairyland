@@ -1,11 +1,13 @@
 import Scene from "../../Wolfie2D/Scene/Scene";
 import Vec2 from "../../Wolfie2D/DataTypes/Vec2";
 import Layer from "../../Wolfie2D/Scene/Layer";
-import UIElement from "../../Wolfie2D/Nodes/UIElement";
 import { UIElementType } from "../../Wolfie2D/Nodes/UIElements/UIElementTypes";
 import { CustomUIElementType } from "./CustomUIElements/CustomUIElementTypes";
 import Color from "../../Wolfie2D/Utils/Color";
 import Label, { VAlign, HAlign} from "../../Wolfie2D/Nodes/UIElements/Label";
+import { GraphicType } from "../../Wolfie2D/Nodes/Graphics/GraphicTypes";
+import Line from "../../Wolfie2D/Nodes/Graphics/Line";
+import CanvasNode from "../../Wolfie2D/Nodes/CanvasNode";
 
 export default class UIScreen {
     protected scene: Scene;
@@ -14,7 +16,7 @@ export default class UIScreen {
 
     protected layerName: string;
     protected layer: Layer;
-    protected elements: Map<string, UIElement | undefined>;
+    protected elements: Map<string, CanvasNode | undefined>;
     protected isOpen: boolean = false;
 
     constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2) {
@@ -28,9 +30,7 @@ export default class UIScreen {
 
     protected initializeUI(): void {}
 
-    protected updateLayout(): void {}
-
-    protected updateUIElement(element: UIElement | undefined, position: Vec2 | null, size: Vec2 | null): void {
+    protected updateUIElement(element: CanvasNode | undefined, position: Vec2 | null, size: Vec2 | null): void {
       if (element) {
         if (position) {
           element.position.copy(position);
@@ -41,15 +41,13 @@ export default class UIScreen {
       }
     }
 
-    private addUIElement(key: string, element: UIElement): void {
+    private addUIElement(key: string, element: CanvasNode): void {
         this.elements.set(key, element);
     }
     
     public show(): void {
         if (this.isOpen) return;
         this.isOpen = true;
-
-        this.updateLayout();
 
         this.layer.setHidden(false);
     }
@@ -71,8 +69,27 @@ export default class UIScreen {
         }
         this.isOpen = false;
     }
+
+    protected addRect(key: string, position: Vec2, size: Vec2, color: Color): void {
+        const rect = this.scene.add.graphic(GraphicType.RECT, this.layerName, {
+            position: position,
+            size: size
+        });
+        rect.color = color;
+        this.addUIElement(key, rect);
+    }
+
+    protected addLine(key: string, start: Vec2, end: Vec2, thickness: number): void {
+        const divider = <Line>this.scene.add.graphic(GraphicType.LINE, this.layerName, {
+            start: start,
+            end: end
+        });
+        divider.color = Color.WHITE;
+        divider.thickness = thickness;
+        this.addUIElement(key, divider);
+    }
     
-    protected addLabel(key: string, position: Vec2, size: Vec2, text: string, fontSize: number, valign: string, halign: string): void {
+    protected addLabel(key: string, position: Vec2, size: Vec2, text: string, fontSize: number, halign: string, valign: string): void {
         const label = <Label>this.scene.add.uiElement(UIElementType.LABEL, this.layerName, {
             position: position,
             text: text
@@ -82,11 +99,11 @@ export default class UIScreen {
         label.textColor = Color.WHITE;
         label.backgroundColor = Color.TRANSPARENT;
         label.borderColor = Color.TRANSPARENT;
-        if (valign && Object.keys(VAlign).some(key => VAlign[key as keyof typeof VAlign] === valign)) {
-            label.setVAlign(valign);
-        }
         if (halign && Object.keys(HAlign).some(key => HAlign[key as keyof typeof HAlign] === halign)) {
             label.setHAlign(halign);
+        }
+        if (valign && Object.keys(VAlign).some(key => VAlign[key as keyof typeof VAlign] === valign)) {
+            label.setVAlign(valign);
         }
         this.addUIElement(key, label);
     }

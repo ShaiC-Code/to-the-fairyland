@@ -15,8 +15,8 @@ export default class HoverButton extends Button {
         super(position, text);
         
         // Define hover and normal states
-        this.normalBackgroundColor = Color.BLACK;
-        this.normalBorderColor = Color.BLACK;
+        this.normalBackgroundColor = Color.TRANSPARENT;
+        this.normalBorderColor = Color.TRANSPARENT;
         this.normalTextColor = Color.WHITE;
         
         this.hoverBackgroundColor = Color.WHITE;

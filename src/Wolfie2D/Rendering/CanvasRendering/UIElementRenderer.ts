@@ -45,19 +45,21 @@ export default class UIElementRenderer {
 		let offset = label.calculateTextOffset(this.ctx);
 
 		// Stroke and fill a rounded rect and give it text
-		this.ctx.globalAlpha = label.backgroundColor.a;
-		this.ctx.fillStyle = label.calculateBackgroundColor().toStringRGBA();
+        const backgroundColor = label.calculateBackgroundColor();
+        this.ctx.globalAlpha = previousAlpha * backgroundColor.a;
+        this.ctx.fillStyle = backgroundColor.toStringRGBA();
 		this.ctx.fillRoundedRect(-label.size.x/2, -label.size.y/2,
 			label.size.x, label.size.y, label.borderRadius);
 		
-		this.ctx.strokeStyle = label.calculateBorderColor().toStringRGBA();
-		this.ctx.globalAlpha = label.borderColor.a;
+        const borderColor = label.calculateBorderColor();
+        this.ctx.strokeStyle = borderColor.toStringRGBA();
+        this.ctx.globalAlpha = previousAlpha * borderColor.a;
 		this.ctx.lineWidth = label.borderWidth;
 		this.ctx.strokeRoundedRect(-label.size.x/2, -label.size.y/2,
 			label.size.x, label.size.y, label.borderRadius);
 
 		this.ctx.fillStyle = label.calculateTextColor();
-		this.ctx.globalAlpha = label.textColor.a;
+        this.ctx.globalAlpha = previousAlpha * label.textColor.a;
 		this.ctx.fillText(label.text, offset.x - label.size.x/2, offset.y - label.size.y/2);
 	
 		this.ctx.globalAlpha = previousAlpha;
@@ -141,20 +143,22 @@ export default class UIElementRenderer {
         let contentHeight = (textBox as any).wrappedLines.length * lineHeight;
 
         // Stroke and fill background
-        this.ctx.globalAlpha = textBox.backgroundColor.a;
-        this.ctx.fillStyle = textBox.calculateBackgroundColor().toStringRGBA();
+        const backgroundColor = textBox.calculateBackgroundColor();
+        this.ctx.globalAlpha = previousAlpha * backgroundColor.a;
+        this.ctx.fillStyle = backgroundColor.toStringRGBA();
         this.ctx.fillRoundedRect(-textBox.size.x/2, -textBox.size.y/2,
             textBox.size.x, textBox.size.y, textBox.borderRadius);
         
-        this.ctx.strokeStyle = textBox.calculateBorderColor().toStringRGBA();
-        this.ctx.globalAlpha = textBox.borderColor.a;
+        const borderColor = textBox.calculateBorderColor();
+        this.ctx.strokeStyle = borderColor.toStringRGBA();
+        this.ctx.globalAlpha = previousAlpha * borderColor.a;
         this.ctx.lineWidth = textBox.borderWidth;
         this.ctx.strokeRoundedRect(-textBox.size.x/2, -textBox.size.y/2,
             textBox.size.x, textBox.size.y, textBox.borderRadius);
 
         // Set text color
         this.ctx.fillStyle = textBox.calculateTextColor();
-        this.ctx.globalAlpha = textBox.textColor.a;
+        this.ctx.globalAlpha = previousAlpha * textBox.textColor.a;
         this.ctx.textBaseline = "top";
 
         // Calculate starting y position based on vertical alignment

@@ -19,15 +19,15 @@ export default class MainMenu extends Scene {
     private controlsMenu!: Layer;
     private helpMenu!: Layer;
 
-    public loadScene(){}
+    public loadScene(){
+        this.add.registerCustomUIElement(CustomUIElementType.HOVER_BUTTON, (options?: Record<string, any>) => {
+            return new HoverButton(options!.position, options!.text);
+        });
+    }
 
     public startScene(){
         const center = this.viewport.getCenter();
         const halfSize = this.viewport.getHalfSize();
-
-        this.add.registerCustomUIElement(CustomUIElementType.HOVER_BUTTON, (options?: Record<string, any>) => {
-            return new HoverButton(options!.position, options!.text);
-        });
 
         this.mainMenu = this.addUILayer("mainMenu");
         this.levelMenu = this.addUILayer("levelMenu");

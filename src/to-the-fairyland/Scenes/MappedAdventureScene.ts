@@ -8,6 +8,8 @@ import PlayerAI from "../AI/Player/PlayerAI";
 import PauseScreen from "../UI/PauseScreen";
 import InventoryScreen from "../UI/InventoryScreen";
 import MainMenu from "./MainMenu";
+import { CustomUIElementType } from "../UI/CustomUIElements/CustomUIElementTypes";
+import HoverButton from "../UI/CustomUIElements/HoverButton";
 
 type AssetRef = Readonly<{
     key: string;
@@ -55,6 +57,10 @@ export default abstract class MappedAdventureScene extends Scene {
         this.load.tilemap(this.tilemap.key, this.tilemap.path);
         this.load.spritesheet(this.playerSheet.key, this.playerSheet.path);
         this.loadExtraAssets();
+        
+        this.add.registerCustomUIElement(CustomUIElementType.HOVER_BUTTON, (options?: Record<string, any>) => {
+            return new HoverButton(options!.position, options!.text);
+        });
     }
 
     public override startScene(): void {

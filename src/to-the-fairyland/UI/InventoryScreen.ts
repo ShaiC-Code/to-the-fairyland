@@ -1,8 +1,6 @@
 import Scene from "../../Wolfie2D/Scene/Scene";
 import Vec2 from "../../Wolfie2D/DataTypes/Vec2";
 import Color from "../../Wolfie2D/Utils/Color";
-import { UIElementType } from "../../Wolfie2D/Nodes/UIElements/UIElementTypes";
-import Label from "../../Wolfie2D/Nodes/UIElements/Label";
 import UIScreen from "./UIScreen";
 
 export default class InventoryScreen extends UIScreen {
@@ -11,72 +9,84 @@ export default class InventoryScreen extends UIScreen {
 
         this.initializeUI();
     }
-
+    
     protected initializeUI(): void {
-      // Add semi-transparent background
-        const bg = <Label>this.scene.add.uiElement(UIElementType.LABEL, "inventoryOverlay", {
-            position: Vec2.ZERO,
-            text: ""
-        });
-        bg.backgroundColor = new Color(0, 0, 0, 0.7);
-        bg.borderColor = Color.TRANSPARENT;
-        bg.borderRadius = 0;
+        const viewportHalfSize = this.getViewportHalfSize();
+        const viewportSize = viewportHalfSize.clone().scale(2);
+        const screenCenter = viewportHalfSize.clone();
 
-        // Add "INVENTORY" title
-        const titleLabel = <Label>this.scene.add.uiElement(UIElementType.LABEL, "inventoryOverlay", {
-            position: Vec2.ZERO,
-            text: "INVENTORY"
-        });
-        titleLabel.fontSize = 52;
-        titleLabel.textColor = Color.WHITE;
-        titleLabel.backgroundColor = Color.TRANSPARENT;
-        titleLabel.borderColor = Color.TRANSPARENT;
+        const screenTop = screenCenter.y - viewportHalfSize.y + 100;
+        const screenLeft = screenCenter.x - viewportHalfSize.x + 100;
+        const screenRight = screenCenter.x + viewportHalfSize.x - 100;
 
-        // Add inventory content area
-        const contentLabel = <Label>this.scene.add.uiElement(UIElementType.LABEL, "inventoryOverlay", {
-            position: Vec2.ZERO,
-            text: "No items yet"
-        });
-        contentLabel.fontSize = 24;
-        contentLabel.textColor = Color.WHITE;
-        contentLabel.backgroundColor = new Color(40, 40, 40, 0.8);
-        contentLabel.borderColor = Color.WHITE;
-        contentLabel.borderWidth = 2;
-        contentLabel.borderRadius = 0;
-        contentLabel.size.set(300, 150);
+        const listTop = screenTop + 325;
+        const verticalOffset = 50;
 
-        // Add Close button
-        const closeBtn = <Label>this.scene.add.uiElement(UIElementType.BUTTON, "inventoryOverlay", {
-            position: Vec2.ZERO,
-            text: "Close (C)"
-        });
-        closeBtn.size.set(200, 50);
-        closeBtn.fontSize = 24;
-        closeBtn.textColor = Color.WHITE;
-        closeBtn.borderColor = Color.WHITE;
-        closeBtn.borderWidth = 2;
-        closeBtn.backgroundColor = Color.TRANSPARENT;
-        closeBtn.borderRadius = 0;
-        closeBtn.onClick = () => this.hide();
+        const menuButtonSize = new Vec2(viewportSize.x, 50);
 
-        this.elements.set("bg", bg);
-        this.elements.set("titleLabel", titleLabel);
-        this.elements.set("contentLabel", contentLabel);
-        this.elements.set("closeBtn", closeBtn);
+        const menuButtonPos = {
+            item1: new Vec2(screenCenter.x, listTop),
+            item2: new Vec2(screenCenter.x, listTop + verticalOffset),
+            item3: new Vec2(screenCenter.x, listTop + verticalOffset * 2),
+            item4: new Vec2(screenCenter.x, listTop + verticalOffset * 3),
+            item5: new Vec2(screenCenter.x, listTop + verticalOffset * 4),
+            item6: new Vec2(screenCenter.x, listTop + verticalOffset * 5)
+        };
 
-        this.updateLayout();
+
+        // Add semi-transparent background
+        this.addRect("bg", screenCenter.clone(), viewportHalfSize.clone().scale(2), new Color(0, 0, 0, 0.7));
+
+        // Add info panel
+        this.initializePlayerInfoComponent()
+
+        // Add Inventory label
+        this.addLabel("inventoryLabel", new Vec2(screenCenter.x, screenTop + 225), new Vec2(viewportSize.x - 200, 50), "INVENTORY", 48, "left", "center");
+
+        // Add divider line
+        this.addLine("divider", new Vec2(screenLeft, screenTop + 275), new Vec2(screenRight, screenTop + 275), 2);
+
+        // Add Item buttons
+        this.addHoverButton("item1Btn", menuButtonPos.item1, menuButtonSize, "ITEM 1", () => {});
+        this.addHoverButton("item2Btn", menuButtonPos.item2, menuButtonSize, "ITEM 2", () => {});
+        this.addHoverButton("item3Btn", menuButtonPos.item3, menuButtonSize, "ITEM 3", () => {});
+        this.addHoverButton("item4Btn", menuButtonPos.item4, menuButtonSize, "ITEM 4", () => {});
+        this.addHoverButton("item5Btn", menuButtonPos.item5, menuButtonSize, "ITEM 5", () => {});
+        this.addHoverButton("item6Btn", menuButtonPos.item6, menuButtonSize, "ITEM 6", () => {});
 
         // Hide by default
         this.layer.setHidden(true);
     }
 
-    protected updateLayout(): void {
+    private initializePlayerInfoComponent(): void {
         const viewportHalfSize = this.getViewportHalfSize();
+        const viewportSize = viewportHalfSize.clone().scale(2);
         const screenCenter = viewportHalfSize.clone();
 
-        this.updateUIElement(this.elements.get("bg"), screenCenter.clone(), viewportHalfSize.clone().scale(2));
-        this.updateUIElement(this.elements.get("titleLabel"), new Vec2(screenCenter.x, screenCenter.y - 150), null);
-        this.updateUIElement(this.elements.get("contentLabel"), new Vec2(screenCenter.x, screenCenter.y - 20), null);
-        this.updateUIElement(this.elements.get("closeBtn"), new Vec2(screenCenter.x, screenCenter.y + 150), null);
+        const screenTop = screenCenter.y - viewportHalfSize.y + 100;
+        const screenLeft = screenCenter.x - viewportHalfSize.x + 100;
+        const screenRight = screenCenter.x + viewportHalfSize.x - 100;
+
+        const playerInfoSize = {
+            icon: new Vec2(150, 150),
+            name: new Vec2(200, 50),
+            health: new Vec2(300, 10),
+            healthValue: new Vec2(100, 10)
+        };
+
+        const playerInfoPos = {
+            icon: new Vec2(screenLeft + 75, screenTop + 75),
+            name: new Vec2(screenLeft + 300, screenTop + 50),
+            health: new Vec2(screenLeft + 350, screenTop + 115),
+            healthValue: new Vec2(screenLeft + 575, screenTop + 115)
+        };
+
+        // Add player icon
+        this.addRect("playerIcon", playerInfoPos.icon, playerInfoSize.icon, new Color(0, 0, 150, 1));
+
+        // Add player info labels
+        this.addLabel("playerName", playerInfoPos.name, playerInfoSize.name, "FATE", 48, "left", "center");
+        this.addRect("playerHealth", playerInfoPos.health, playerInfoSize.health, new Color(150, 0, 0, 1));
+        this.addLabel("playerHealthValue", playerInfoPos.healthValue, playerInfoSize.healthValue, "100/100", 24, "left", "center");
     }
 }
