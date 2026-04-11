@@ -149,33 +149,45 @@ export default class Scene implements Updateable {
     /** A lifecycle method that gets called on scene destruction. Specify which files you no longer need for garbage collection. */
     unloadScene(): void {}
 
+    /**
+     * Override in subclasses to pause simulation systems (timers, physics, AI, tweens, particles, tilemaps).
+     * Scene graph updates still run so UI can remain interactive.
+     */
+    protected isSimulationPaused(): boolean {
+        return false;
+    }
+
     update(deltaT: number): void {
         this.updateScene(deltaT);
 
-        // Do time updates
-        TimerManager.getInstance().update(deltaT);
+        if(!this.isSimulationPaused()){
+            // Do time updates
+            TimerManager.getInstance().update(deltaT);
 
-        // Do all AI updates
-        this.aiManager.update(deltaT);
+            // Do all AI updates
+            this.aiManager.update(deltaT);
 
-        // Update all physics objects
-        this.physicsManager.update(deltaT);
+            // Update all physics objects
+            this.physicsManager.update(deltaT);
+        }
 
         // Update all canvas objects
         this.sceneGraph.update(deltaT);
 
-        // Update all tilemaps
-        this.tilemaps.forEach(tilemap => {
-            if(!tilemap.getLayer().isPaused()){
-                tilemap.update(deltaT);
-            } 
-        });
-        
-        // Update all tweens
-        TweenManager.getInstance().update(deltaT);
+        if(!this.isSimulationPaused()){
+            // Update all tilemaps
+            this.tilemaps.forEach(tilemap => {
+                if(!tilemap.getLayer().isPaused()){
+                    tilemap.update(deltaT);
+                }
+            });
 
-        // Update all particle systems
-        ParticleSystemManager.getInstance().update(deltaT);
+            // Update all tweens
+            TweenManager.getInstance().update(deltaT);
+
+            // Update all particle systems
+            ParticleSystemManager.getInstance().update(deltaT);
+        }
 
         // Update viewport
         this.viewport.update(deltaT);

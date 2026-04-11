@@ -132,6 +132,11 @@ export default class BasicPhysicsManager extends PhysicsManager {
 	// @override
 	update(deltaT: number): void {
 		for(let node of this.dynamicNodes){
+			const layer = (node as any).getLayer?.();
+			if(layer && layer.isPaused()){
+				continue;
+			}
+
 			/*---------- INITIALIZATION PHASE ----------*/
 			// Clear frame dependent boolean values for each node
 			node.onGround = false;
