@@ -1,5 +1,6 @@
 import Vec2 from "../../Wolfie2D/DataTypes/Vec2";
 import { TiledObject, TiledTilemapData, TiledLayerData} from "../../Wolfie2D/DataTypes/Tilesets/TiledData";
+import Input from "../../Wolfie2D/Input/Input";
 import OrthogonalTilemap from "../../Wolfie2D/Nodes/Tilemaps/OrthogonalTilemap";
 import Scene from "../../Wolfie2D/Scene/Scene";
 import PlayerActor from "../Actors/PlayerActor";
@@ -158,6 +159,17 @@ export default abstract class MappedAdventureScene extends Scene {
         if(!this.worldPaused) {
             const ai = this.player.ai as PlayerAI;
             const controller = ai.controller;
+
+            if (ai.targetTile) {
+                const entrance = this.entrances.find(obj => {
+                    const tile = this.getObjectTile(obj);
+                    return tile.x === ai.targetTile!.x && tile.y === ai.targetTile!.y;
+                });
+                if (entrance) {
+                    this.handleAutoTransition(entrance);
+                }
+            }
+            
 
             if (!ai.moving && controller.interacting) {
                 const currentHit = this.findInteractableAtTile(ai.currentTile);
