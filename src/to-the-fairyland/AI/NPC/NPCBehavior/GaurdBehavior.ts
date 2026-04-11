@@ -63,11 +63,11 @@ export default class GuardBehavior extends NPCBehavior {
 
         // A status checking if there are any enemies at target the guard is guarding
         let enemyBattlerFinder = new BasicFinder<Battler>(null, BattlerActiveFilter(), EnemyFilter(this.owner), RangeFilter(this.target, 0, this.range*this.range))
-        let enemyAtGuardPosition = new TargetExists(scene.getBattlers(), enemyBattlerFinder)
-        this.addStatus(GuardStatuses.ENEMY_IN_GUARD_POSITION, enemyAtGuardPosition);
+        // let enemyAtGuardPosition = new TargetExists(scene.getBattlers(), enemyBattlerFinder)
+        // this.addStatus(GuardStatuses.ENEMY_IN_GUARD_POSITION, enemyAtGuardPosition);
 
         // Add a status to check if a lasergun exists in the scene and it's visible
-        this.addStatus(GuardStatuses.LASERGUN_EXISTS, new TargetExists(scene.getLaserGuns(), new BasicFinder<Item>(null, ItemFilter(LaserGun), VisibleItemFilter())));
+        // this.addStatus(GuardStatuses.LASERGUN_EXISTS, new TargetExists(scene.getLaserGuns(), new BasicFinder<Item>(null, ItemFilter(LaserGun), VisibleItemFilter())));
         // Add a status to check if the guard has a lasergun
         this.addStatus(GuardStatuses.HAS_WEAPON, new HasItem(this.owner, new BasicFinder(null, ItemFilter(LaserGun))));
 
@@ -81,7 +81,7 @@ export default class GuardBehavior extends NPCBehavior {
 
         // An action for shooting an enemy in the guards guard area
         let shootEnemy = new ShootLaserGun(this, this.owner);
-        shootEnemy.targets = scene.getBattlers();
+        // shootEnemy.targets = scene.getBattlers();
         shootEnemy.targetFinder = new BasicFinder<Battler>(ClosestPositioned(this.owner), BattlerActiveFilter(), EnemyFilter(this.owner), RangeFilter(this.target, 0, this.range*this.range));
         shootEnemy.addPrecondition(GuardStatuses.HAS_WEAPON);
         shootEnemy.addPrecondition(GuardStatuses.ENEMY_IN_GUARD_POSITION);
@@ -91,7 +91,7 @@ export default class GuardBehavior extends NPCBehavior {
 
         // An action for picking up a lasergun
         let pickupLaserGun = new PickupItem(this, this.owner);
-        pickupLaserGun.targets = scene.getLaserGuns();
+        // pickupLaserGun.targets = scene.getLaserGuns();
         pickupLaserGun.targetFinder = new BasicFinder<Item>(ClosestPositioned(this.owner), VisibleItemFilter(), ItemFilter(LaserGun));
         pickupLaserGun.addPrecondition(GuardStatuses.LASERGUN_EXISTS);
         pickupLaserGun.addEffect(GuardStatuses.HAS_WEAPON);

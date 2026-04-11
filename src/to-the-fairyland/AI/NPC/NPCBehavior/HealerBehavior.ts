@@ -37,20 +37,20 @@ export default class HealerBehavior extends NPCBehavior  {
         this.addStatus(HealerStatuses.GOAL, new FalseStatus());
 
         // Check if a healthpack exists in the scene and it's visible
-        this.addStatus(HealerStatuses.HPACK_EXISTS, new TargetExists(scene.getHealthpacks(), new BasicFinder<Item>(null, ItemFilter(Healthpack), VisibleItemFilter())));
+        // this.addStatus(HealerStatuses.HPACK_EXISTS, new TargetExists(scene.getHealthpacks(), new BasicFinder<Item>(null, ItemFilter(Healthpack), VisibleItemFilter())));
 
         // Check if a healthpack exists in the actors inventory
         this.addStatus(HealerStatuses.HAS_HPACK, new HasItem(owner, new BasicFinder<Item>(null, ItemFilter(Healthpack))));
 
         // Check if a lowhealth ally exists in the scene
         let lowhealthAlly = new BasicFinder<Battler>(null, BattlerActiveFilter(), BattlerGroupFilter([owner.battleGroup]), lowHealthTeammateFilter);
-        this.addStatus(HealerStatuses.ALLY_EXISTS, new TargetExists(scene.getBattlers(), lowhealthAlly));
+        // this.addStatus(HealerStatuses.ALLY_EXISTS, new TargetExists(scene.getBattlers(), lowhealthAlly));
         
         /* ######### Add all healer actions ######## */
 
         // An action for healing an ally with a healthpack
         let useHPack = new UseHealthpack(this, this.owner);
-        useHPack.targets = scene.getBattlers();
+        // useHPack.targets = scene.getBattlers();
         useHPack.targetFinder = new BasicFinder<Battler>(ClosestPositioned(this.owner), BattlerActiveFilter(), BattlerGroupFilter([owner.battleGroup]), lowHealthTeammateFilter);
         useHPack.addPrecondition(HealerStatuses.HAS_HPACK);
         useHPack.addPrecondition(HealerStatuses.ALLY_EXISTS);
@@ -60,7 +60,7 @@ export default class HealerBehavior extends NPCBehavior  {
 
         // An action for picking up a healthpack
         let pickupHPack = new PickupItem(this, this.owner);
-        pickupHPack.targets = scene.getHealthpacks();
+        // pickupHPack.targets = scene.getHealthpacks();
         pickupHPack.targetFinder = new BasicFinder<Item>(ClosestPositioned(this.owner), VisibleItemFilter(), ItemFilter(Healthpack));
         pickupHPack.addPrecondition(HealerStatuses.HPACK_EXISTS);
         pickupHPack.addEffect(HealerStatuses.HAS_HPACK);

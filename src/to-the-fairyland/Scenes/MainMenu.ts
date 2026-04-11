@@ -255,7 +255,7 @@ export default class MainMenu extends Scene {
             position: new Vec2(x, y),
             text: text
         });
-        button.size.set(800, 50);
+        button.size.set(1200, 50);
         button.borderWidth = 0;
         button.borderRadius = 0;
         button.onClickEventId = eventId;
