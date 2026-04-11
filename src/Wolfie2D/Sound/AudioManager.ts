@@ -17,7 +17,7 @@ export default class AudioManager {
     /** A Map of the names of currently playing (or paused) sounds to their AudioBuffers */
     private currentSounds: Map<AudioBufferSourceNode>;
 
-    private audioCtx: AudioContext;
+    private audioCtx!: AudioContext;
 
     private gainNodes: Array<GainNode>;
 
@@ -104,8 +104,18 @@ export default class AudioManager {
         // Add any additional nodes
         const nodes: Array<AudioNode> = [source];
 
-        // Do any additional nodes here?
-        // Of course, there aren't any supported yet...
+        const fadeInSeconds = options?.has("fadeInSeconds")
+            ? Math.max(0, Number(options.get("fadeInSeconds")))
+            : 0;
+
+        // Add a per-source gain node for optional fade-in without affecting the whole channel.
+        if(fadeInSeconds > 0){
+            const fadeInGain = this.audioCtx.createGain();
+            const now = this.audioCtx.currentTime;
+            fadeInGain.gain.setValueAtTime(0, now);
+            fadeInGain.gain.linearRampToValueAtTime(1, now + fadeInSeconds);
+            nodes.push(fadeInGain);
+        }
 
         // Add the gain node for this channel
         nodes.push(this.gainNodes[channel]);
@@ -153,12 +163,29 @@ export default class AudioManager {
         }
     }
 
-    protected muteChannel(channel: AudioChannelType){
-        this.gainNodes[channel].gain.setValueAtTime(0, this.audioCtx.currentTime);
+    protected rampChannelTo(channel: AudioChannelType, targetVolume: number, fadeSeconds: number = 0): void {
+        const gainParam = this.gainNodes[channel].gain;
+        const now = this.audioCtx.currentTime;
+        const clampedVolume = Math.max(0, targetVolume);
+        const clampedFade = Math.max(0, fadeSeconds);
+
+        gainParam.cancelScheduledValues(now);
+
+        if(clampedFade === 0){
+            gainParam.setValueAtTime(clampedVolume, now);
+            return;
+        }
+
+        gainParam.setValueAtTime(gainParam.value, now);
+        gainParam.linearRampToValueAtTime(clampedVolume, now + clampedFade);
     }
 
-    protected unmuteChannel(channel: AudioChannelType){
-        this.gainNodes[channel].gain.setValueAtTime(1, this.audioCtx.currentTime);
+    protected muteChannel(channel: AudioChannelType, fadeSeconds: number = 0): void {
+        this.rampChannelTo(channel, 0, fadeSeconds);
+    }
+
+    protected unmuteChannel(channel: AudioChannelType, fadeSeconds: number = 0): void {
+        this.rampChannelTo(channel, 1, fadeSeconds);
     }
 
     /**
@@ -201,10 +228,10 @@ export default class AudioManager {
 
                 if(event.type === GameEventType.PLAY_MUSIC){
                     channel = AudioChannelType.MUSIC;
-                } else if(GameEventType.PLAY_SFX){
-                    channel = AudioChannelType.SFX;
                 } else if(event.data.has("channel")){
                     channel = event.data.get("channel");
+                } else if(event.type === GameEventType.PLAY_SFX){
+                    channel = AudioChannelType.SFX;
                 }
 
                 this.playSound(soundKey, loop, holdReference, channel, event.data);
@@ -216,11 +243,13 @@ export default class AudioManager {
             }
 
             if(event.type === GameEventType.MUTE_CHANNEL){
-                this.muteChannel(event.data.get("channel"));
+                const fadeSeconds = event.data.has("fadeSeconds") ? Number(event.data.get("fadeSeconds")) : 0;
+                this.muteChannel(event.data.get("channel"), fadeSeconds);
             }
 
             if(event.type === GameEventType.UNMUTE_CHANNEL){
-                this.unmuteChannel(event.data.get("channel"));
+                const fadeSeconds = event.data.has("fadeSeconds") ? Number(event.data.get("fadeSeconds")) : 0;
+                this.unmuteChannel(event.data.get("channel"), fadeSeconds);
             }
         }
     }

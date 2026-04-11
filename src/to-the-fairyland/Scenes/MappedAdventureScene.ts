@@ -20,6 +20,7 @@ import DialogueScreen from "../UI/DialogueScreen";
 import { DialogueInteraction, getInteractionData } from "../GameSystems/InteractionSystem/InteractionDatabase";
 import { PlayerControlMode, PlayerInput } from "../AI/Player/PlayerController";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
+import { AudioChannelType } from "../../Wolfie2D/Sound/AudioManager";
 
 
 type AssetRef = Readonly<{
@@ -54,6 +55,8 @@ type SnowPreset = Readonly<{
 
 
 export default abstract class MappedAdventureScene extends Scene {
+    private static weatherAmbienceLoopsStarted = false;
+
     // The tilemap to load for the scene, pass from sub scenes
     protected abstract readonly tilemap: AssetRef;
 
@@ -77,6 +80,16 @@ export default abstract class MappedAdventureScene extends Scene {
     protected readonly walkingSnowSFX: AssetRef = {
         key: "walking-snow",
         path: "game_assets/sounds/walking-snow.wav"
+    };
+
+    protected readonly weatherSnowInsideSFX: AssetRef = {
+        key: "weather-snow-inside",
+        path: "game_assets/sounds/weather-snow-inside.wav"
+    };
+
+    protected readonly weatherSnowOutsideSFX: AssetRef = {
+        key: "weather-snow-outside",
+        path: "game_assets/sounds/weather-snow-outside.wav"
     };
 
     protected readonly groundLayerName = "Ground";
@@ -110,6 +123,9 @@ export default abstract class MappedAdventureScene extends Scene {
     private weatherFadeInSpeed = 0.5;
     private weatherLayerCreated = false;
     private weatherLayerDepth = 50;
+    private weatherAmbienceMode: "inside" | "outside" | null = null;
+    private readonly weatherAmbienceFadeSeconds = 0.35;
+    private readonly weatherAmbienceInitialFadeSeconds = 0.75;
     
     private readonly weatherLayerName = "weather";
     private readonly snowflakeKeys = ["snowflake1", "snowflake2", "snowflake3"];
@@ -138,6 +154,14 @@ export default abstract class MappedAdventureScene extends Scene {
             this.load.audio(this.walkingSnowSFX.key, this.walkingSnowSFX.path);
         }
 
+        if (!this.resourceManager.getAudio(this.weatherSnowInsideSFX.key)) {
+            this.load.audio(this.weatherSnowInsideSFX.key, this.weatherSnowInsideSFX.path);
+        }
+
+        if (!this.resourceManager.getAudio(this.weatherSnowOutsideSFX.key)) {
+            this.load.audio(this.weatherSnowOutsideSFX.key, this.weatherSnowOutsideSFX.path);
+        }
+
         this.loadExtraAssets();
         
         this.add.registerCustomUIElement(CustomUIElementType.HOVER_BUTTON, (options?: Record<string, any>) => {
@@ -157,10 +181,13 @@ export default abstract class MappedAdventureScene extends Scene {
         this.load.keepAudio(this.woodenDoorSFX.key);
         this.load.keepAudio(this.walkingWoodSFX.key);
         this.load.keepAudio(this.walkingSnowSFX.key);
-        
-        // Stop walking sfx when changing scenes
+        this.load.keepAudio(this.weatherSnowInsideSFX.key);
+        this.load.keepAudio(this.weatherSnowOutsideSFX.key);
+
+        // Stop sfx when changing scenes
         this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: this.walkingWoodSFX.key});
         this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: this.walkingSnowSFX.key});
+        this.muteWeatherAmbience();
     }
 
 
@@ -224,6 +251,8 @@ export default abstract class MappedAdventureScene extends Scene {
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize()
         );
+
+        this.startWeatherAmbienceLoops();
     }
 
     public override updateScene(_deltaT: number): void {
@@ -294,6 +323,8 @@ export default abstract class MappedAdventureScene extends Scene {
                 flake.alpha = this.weatherAlpha;
             }
         }
+
+        this.syncWeatherAmbience();
     }
 
     protected setWorldPaused(paused: boolean): void {
@@ -325,6 +356,97 @@ export default abstract class MappedAdventureScene extends Scene {
     protected handleInteraction(_obj: TiledObject): void {}
 
     protected handleAutoTransition(_obj: TiledObject): void {}
+
+    /**
+     * Override in child scenes if weather ambience should default indoors.
+     * This can later be made dynamic (e.g. based on player tile inside a room volume).
+     */
+    protected isWeatherAmbienceIndoors(): boolean {
+        return false;
+    }
+
+    protected syncWeatherAmbience(): void {
+        if (!this.weatherActive) {
+            this.muteWeatherAmbience(this.weatherAmbienceFadeSeconds);
+            return;
+        }
+
+        const fadeSeconds = this.weatherAmbienceMode === null
+            ? this.weatherAmbienceInitialFadeSeconds
+            : this.weatherAmbienceFadeSeconds;
+
+        this.setWeatherAmbience(this.isWeatherAmbienceIndoors(), fadeSeconds);
+    }
+
+    protected startWeatherAmbienceLoops(): void {
+        if (MappedAdventureScene.weatherAmbienceLoopsStarted) {
+            return;
+        }
+
+        MappedAdventureScene.weatherAmbienceLoopsStarted = true;
+
+        // Start weather ambience stems once and keep them running across mapped scenes.
+        this.emitter.fireEvent(GameEventType.PLAY_SFX, {
+            key: this.weatherSnowInsideSFX.key,
+            loop: true,
+            holdReference: true,
+            channel: AudioChannelType.CUSTOM_1,
+            fadeInSeconds: this.weatherAmbienceInitialFadeSeconds
+        });
+
+        this.emitter.fireEvent(GameEventType.PLAY_SFX, {
+            key: this.weatherSnowOutsideSFX.key,
+            loop: true,
+            holdReference: true,
+            channel: AudioChannelType.CUSTOM_2,
+            fadeInSeconds: this.weatherAmbienceInitialFadeSeconds
+        });
+    }
+
+    /**
+     * Crossfades between indoor and outdoor weather ambience channels.
+     * Uses channel-level fades so both weather stems stay phase-synced.
+     */
+    protected setWeatherAmbience(indoor: boolean, fadeSeconds: number = 0.35): void {
+        const nextMode: "inside" | "outside" = indoor ? "inside" : "outside";
+        if (this.weatherAmbienceMode === nextMode) {
+            return;
+        }
+
+        this.weatherAmbienceMode = nextMode;
+
+        const indoorEvent = {
+            channel: AudioChannelType.CUSTOM_1,
+            fadeSeconds
+        };
+        const outdoorEvent = {
+            channel: AudioChannelType.CUSTOM_2,
+            fadeSeconds
+        };
+
+        if (indoor) {
+            this.emitter.fireEvent(GameEventType.UNMUTE_CHANNEL, indoorEvent);
+            this.emitter.fireEvent(GameEventType.MUTE_CHANNEL, outdoorEvent);
+        } else {
+            this.emitter.fireEvent(GameEventType.MUTE_CHANNEL, indoorEvent);
+            this.emitter.fireEvent(GameEventType.UNMUTE_CHANNEL, outdoorEvent);
+        }
+    }
+
+    /**
+     * Mutes both weather ambience channels and clears the current ambience state.
+     */
+    protected muteWeatherAmbience(fadeSeconds: number = 0): void {
+        this.weatherAmbienceMode = null;
+        this.emitter.fireEvent(GameEventType.MUTE_CHANNEL, {
+            channel: AudioChannelType.CUSTOM_1,
+            fadeSeconds
+        });
+        this.emitter.fireEvent(GameEventType.MUTE_CHANNEL, {
+            channel: AudioChannelType.CUSTOM_2,
+            fadeSeconds
+        });
+    }
 
     /**
      * Retrieves a tile layer by name and throws an error if it is missing.
@@ -462,6 +584,7 @@ export default abstract class MappedAdventureScene extends Scene {
                 flake.visible = false;
             }
             this.weatherActive = false;
+            this.muteWeatherAmbience(this.weatherAmbienceFadeSeconds);
             return;
         }
     
@@ -493,6 +616,7 @@ export default abstract class MappedAdventureScene extends Scene {
         }
     
         this.weatherActive = true;
+        this.syncWeatherAmbience();
     }
     
     private ensureWeatherLayer(): void {
