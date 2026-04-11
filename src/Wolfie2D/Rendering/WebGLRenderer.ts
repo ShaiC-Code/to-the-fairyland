@@ -12,6 +12,7 @@ import Sprite from "../Nodes/Sprites/Sprite";
 import Tilemap from "../Nodes/Tilemap";
 import UIElement from "../Nodes/UIElement";
 import Label from "../Nodes/UIElements/Label";
+import TextBox from "../Nodes/UIElements/TextBox";
 import ShaderRegistry from "../Registry/Registries/ShaderRegistry";
 import RegistryManager from "../Registry/RegistryManager";
 import ResourceManager from "../ResourceManager/ResourceManager";
@@ -135,7 +136,35 @@ export default class WebGLRenderer extends RenderingManager {
 	}
 
 	protected renderUIElement(uiElement: UIElement): void {
-		if(uiElement instanceof Label){
+		if(uiElement instanceof TextBox){
+			let shader = RegistryManager.shaders.get(ShaderRegistry.LABEL_SHADER);
+			let options = this.addOptions(shader.getOptions(uiElement), uiElement);
+			shader.render(this.gl, options);
+
+			this.textCtx.setTransform(1, 0, 0, 1, (uiElement.position.x - this.origin.x)*this.zoom, (uiElement.position.y - this.origin.y)*this.zoom);
+			this.textCtx.rotate(-uiElement.rotation);
+			let globalAlpha = this.textCtx.globalAlpha;
+			this.textCtx.globalAlpha = uiElement.alpha;
+
+			// Render multiline text
+			this.textCtx.font = uiElement.getFontString();
+			let lineHeight = uiElement.fontSize * 1.2;
+			let lines = (uiElement as any).wrappedLines;
+			let startY = -uiElement.size.y/2 + (uiElement as any).padding.y;
+			
+			this.textCtx.fillStyle = uiElement.calculateTextColor();
+			this.textCtx.globalAlpha = uiElement.textColor.a;
+			this.textCtx.textBaseline = "top";
+			
+			for(let i = 0; i < lines.length; i++){
+				let y = startY + i * lineHeight;
+				let x = -uiElement.size.x/2 + (uiElement as any).padding.x;
+				this.textCtx.fillText(lines[i], x, y);
+			}
+
+			this.textCtx.globalAlpha = globalAlpha;
+        	this.textCtx.setTransform(1, 0, 0, 1, 0, 0);
+		} else if(uiElement instanceof Label){
 			let shader = RegistryManager.shaders.get(ShaderRegistry.LABEL_SHADER);
 			let options = this.addOptions(shader.getOptions(uiElement), uiElement);
 			shader.render(this.gl, options);

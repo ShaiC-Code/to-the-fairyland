@@ -11,6 +11,7 @@ import Button from "../../Nodes/UIElements/Button";
 import Label from "../../Nodes/UIElements/Label";
 import Slider from "../../Nodes/UIElements/Slider";
 import TextInput from "../../Nodes/UIElements/TextInput";
+import TextBox from "../../Nodes/UIElements/TextBox";
 import Rect from "../../Nodes/Graphics/Rect";
 import ResourceManager from "../../ResourceManager/ResourceManager";
 import Line from "../../Nodes/Graphics/Line";
@@ -24,12 +25,22 @@ import Spritesheet from "../../DataTypes/Spritesheet";
  * Access methods in this factory through Scene.add.[methodName]().
  */
 export default class CanvasNodeFactory {
-	protected scene: Scene;
-	protected resourceManager: ResourceManager;
+	protected scene!: Scene;
+	protected resourceManager!: ResourceManager;
+	protected customUIElementBuilders: Map<string, (options?: Record<string, any>) => UIElement> = new Map();
 
 	init(scene: Scene): void {
 		this.scene = scene;
 		this.resourceManager = ResourceManager.getInstance();
+	}
+
+	/**
+	 * Registers a custom UIElement builder that can be instantiated through add.uiElement().
+	 * @param type The custom type key
+	 * @param builder A builder function that returns a UIElement instance
+	 */
+	registerCustomUIElement(type: string, builder: (options?: Record<string, any>) => UIElement): void {
+		this.customUIElementBuilders.set(type, builder);
 	}
 
 	/**
@@ -58,8 +69,16 @@ export default class CanvasNodeFactory {
 			case UIElementType.TEXT_INPUT:
 				instance = this.buildTextInput(options);
 			break;
+			case UIElementType.TEXT_BOX:
+				instance = this.buildTextBox(options);
+			break;
 			default:
-				throw `UIElementType '${type}' does not exist, or is registered incorrectly.`
+				if(typeof type === "string" && this.customUIElementBuilders.has(type)){
+					const builder = this.customUIElementBuilders.get(type);
+					instance = builder!(options);
+				} else {
+					throw `UIElementType '${type}' does not exist, or is registered incorrectly.`;
+				}
 		}
 
 		instance.setScene(this.scene);
@@ -172,37 +191,43 @@ export default class CanvasNodeFactory {
 		this.checkIfPropExists("Button", options, "position", Vec2, "Vec2");
 		this.checkIfPropExists("Button", options, "text", "string");
 
-		return new Button(options.position, options.text);
+		return new Button(options!.position, options!.text);
 	}
 
 	buildLabel(options?: Record<string, any>): Label {
 		this.checkIfPropExists("Label", options, "position", Vec2, "Vec2");
 		this.checkIfPropExists("Label", options, "text", "string");
 
-		return new Label(options.position, options.text)
+		return new Label(options!.position, options!.text)
 	}
 
-	buildSlider(options: Record<string, any>): Slider {
+	buildSlider(options?: Record<string, any>): Slider {
 		this.checkIfPropExists("Slider", options, "position", Vec2, "Vec2");
 
 		let initValue = 0;
-		if(options.value !== undefined){
-			initValue = options.value;
+		if(options!.value !== undefined){
+			initValue = options!.value;
 		}
 
-		return new Slider(options.position, initValue);
+		return new Slider(options!.position, initValue);
 	}
 
-	buildTextInput(options: Record<string, any>): TextInput {
+	buildTextInput(options?: Record<string, any>): TextInput {
 		this.checkIfPropExists("TextInput", options, "position", Vec2, "Vec2");
 
-		return new TextInput(options.position);
+		return new TextInput(options!.position);
+	}
+
+	buildTextBox(options?: Record<string, any>): TextBox {
+		this.checkIfPropExists("TextBox", options, "position", Vec2, "Vec2");
+
+		return new TextBox(options!.position);
 	}
 
 	buildPoint(options?: Record<string, any>): Point {
 		this.checkIfPropExists("Point", options, "position", Vec2, "Vec2");
 
-		return new Point(options.position);
+		return new Point(options!.position);
 	}
 
 	buildParticle(options?: Record<string, any>): Point {
@@ -211,26 +236,26 @@ export default class CanvasNodeFactory {
 		this.checkIfPropExists("Particle", options, "mass", "number", "number");
 
 		//Changed for testing
-		return new Particle(options.position, options.size, options.mass);
+		return new Particle(options!.position, options!.size, options!.mass);
 	}
 
 	buildLine(options?: Record<string, any>): Point {
 		this.checkIfPropExists("Line", options, "start", Vec2, "Vec2");
 		this.checkIfPropExists("Line", options, "end", Vec2, "Vec2");
 
-		return new Line(options.start, options.end);
+		return new Line(options!.start, options!.end);
 	}
 
 	buildRect(options?: Record<string, any>): Rect {
 		this.checkIfPropExists("Rect", options, "position", Vec2, "Vec2");
 		this.checkIfPropExists("Rect", options, "size", Vec2, "Vec2");
 
-		return new Rect(options.position, options.size);
+		return new Rect(options!.position, options!.size);
 	}
 
 	/* ---------- ERROR HANDLING ---------- */
 
-	checkIfPropExists<T>(objectName: string, options: Record<string, any>, prop: string, type: (new (...args: any) => T) | string, typeName?: string){
+	checkIfPropExists<T>(objectName: string, options: Record<string, any> | undefined, prop: string, type: (new (...args: any) => T) | string, typeName?: string){
 		if(!options || options[prop] === undefined){
 			// Check that the options object has the property
 			throw `${objectName} object requires argument ${prop} of type ${typeName}, but none was provided.`;

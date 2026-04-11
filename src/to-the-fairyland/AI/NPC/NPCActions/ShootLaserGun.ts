@@ -30,7 +30,7 @@ export default class ShootLaserGun extends NPCAction {
             // Set the start, direction, and end position to shoot the laser gun
             this.lasergun.laserStart.copy(this.actor.position);
             this.lasergun.direction.copy(this.actor.position.dirTo(target.position));
-            this.lasergun.laserEnd.copy(this.getLaserEnd(this.actor.getScene().getWalls(), this.lasergun.laserStart, this.lasergun.direction));
+            // this.lasergun.laserEnd.copy(this.getLaserEnd(this.actor.getScene().getWalls(), this.lasergun.laserStart, this.lasergun.direction));
 
             // Play the shooting animation for the laser gun
             this.lasergun.playShootAnimation();
