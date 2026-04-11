@@ -134,6 +134,17 @@ export default abstract class Tilemap extends CanvasNode {
     public getScaledTileSize(): Vec2 {
         return this.getTileSize().scaled(this.scale.x, this.scale.y);
     }
+
+    /**
+     * Returns the world-space center of the specified tile.
+     * @param col The tile column.
+     * @param row The tile row.
+     * @returns The center point of the tile in world coordinates.
+     */
+    public getTileCenter(col: number, row: number): Vec2 {
+        return this.getTileCollider(col, row).getBoundingRect().center.clone();
+    }
+
    
 
     /**

@@ -1,4 +1,5 @@
 import Vec2 from "../../Wolfie2D/DataTypes/Vec2";
+import AABB from "../../Wolfie2D/DataTypes/Shapes/AABB";
 import { TiledObject, TiledTilemapData, TiledLayerData} from "../../Wolfie2D/DataTypes/Tilesets/TiledData";
 import Input from "../../Wolfie2D/Input/Input";
 import OrthogonalTilemap from "../../Wolfie2D/Nodes/Tilemaps/OrthogonalTilemap";
@@ -15,6 +16,9 @@ import Color from "../../Wolfie2D/Utils/Color";
 import Graphic from "../../Wolfie2D/Nodes/Graphic";
 import Sprite from "../../Wolfie2D/Nodes/Sprites/Sprite";
 import SnowflakeBehavior, { SnowflakeSettings } from "../AI/SnowflakeBehavior";
+import DialogueScreen from "../UI/DialogueScreen";
+import { DialogueInteraction, getInteractionData } from "../GameSystems/InteractionSystem/InteractionDatabase";
+import { PlayerControlMode, PlayerInput } from "../AI/Player/PlayerController";
 
 
 type AssetRef = Readonly<{
@@ -77,6 +81,10 @@ export default abstract class MappedAdventureScene extends Scene {
     protected inventoryScreen!: InventoryScreen;
     protected worldPaused: boolean = false;
     protected entrances: TiledObject[] = [];
+
+    protected dialogueScreen!: DialogueScreen;
+    protected activeDialogue: DialogueInteraction | null = null;
+    protected currentDialogueLine = 0;
 
     private timeOverlay: Graphic | null = null;
     private snowflakes: Sprite[] = [];
@@ -164,11 +172,17 @@ export default abstract class MappedAdventureScene extends Scene {
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize()
         );
+        this.dialogueScreen = new DialogueScreen(
+            "dialogueOverlay",
+            this,
+            () => this.viewport.getCenter(),
+            () => this.viewport.getHalfSize()
+        );
     }
 
     public override updateScene(_deltaT: number): void {
         // Handle pause/resume
-        if(Input.isKeyJustPressed("escape")) {
+        if(!this.dialogueScreen.getIsOpen() && Input.isKeyJustPressed("escape")) {
             if(this.pauseScreen.getIsOpen()) {
                 this.pauseScreen.hide();
             } else if(!this.inventoryScreen.getIsOpen()) {
@@ -177,7 +191,7 @@ export default abstract class MappedAdventureScene extends Scene {
         }
 
         // Handle inventory
-        if(Input.isKeyJustPressed("c")) {
+        if (!this.dialogueScreen.getIsOpen() && Input.isKeyJustPressed("c")) {
             if(this.inventoryScreen.getIsOpen()) {
                 this.inventoryScreen.hide();
             } else if(!this.pauseScreen.getIsOpen()) {
@@ -185,19 +199,24 @@ export default abstract class MappedAdventureScene extends Scene {
             }
         }
 
+        const pauseOpen = this.pauseScreen.getIsOpen();
+        const inventoryOpen = this.inventoryScreen.getIsOpen();
+        const dialogueOpen = this.dialogueScreen.getIsOpen();
+
         const shouldPauseWorld = this.pauseScreen.getIsOpen() || this.inventoryScreen.getIsOpen();
         this.setWorldPaused(shouldPauseWorld);
 
+        if (!pauseOpen && !inventoryOpen && dialogueOpen) {
+            this.updateDialogue();
+        }
+
         // Run gameplay interactions only while the world is not simulation-paused.
-        if(!this.worldPaused) {
+        if(!pauseOpen && !inventoryOpen && !dialogueOpen) {
             const ai = this.player.ai as PlayerAI;
             const controller = ai.controller;
 
             if (ai.targetTile) {
-                const entrance = this.entrances.find(obj => {
-                    const tile = this.getObjectTile(obj);
-                    return tile.x === ai.targetTile!.x && tile.y === ai.targetTile!.y;
-                });
+                const entrance = this.findObjectAtTile(this.entrances, ai.targetTile);
                 if (entrance) {
                     this.handleAutoTransition(entrance);
                 }
@@ -316,16 +335,57 @@ export default abstract class MappedAdventureScene extends Scene {
 
 
     /**
-     * Returns the tile (col, row) occupied by the given Tiled object.
-     * The object's center point is used so rectangle objects map cleanly to a single tile.
-     * @param obj The Tiled object to convert into tile coordinates.
-     * @returns The tile (col, row) containing the object's center.
+     * Returns the tile containing the center of the given Tiled object.
+     * Mainly used for point objects such as spawns and markers.
      */
     protected getObjectTile(obj: TiledObject): Vec2 {
         return this.ground.getTilemapPosition(
             obj.x + obj.width / 2,
             obj.y + obj.height / 2
         );
+    }
+
+
+    /**
+     * Returns the rectangle covered by a Tiled object in world coordinates.
+     * @param obj The Tiled object to convert.
+     * @returns An AABB matching the object's rectangular bounds.
+     */
+    protected getObjectBounds(obj: TiledObject): AABB {
+        return new AABB(
+            new Vec2(obj.x + obj.width / 2, obj.y + obj.height / 2),
+            new Vec2(obj.width / 2, obj.height / 2)
+        );
+    }
+
+    /**
+     * Checks whether a Tiled object occupies the queried tile.
+     * Rectangle objects are matched against the tile center point; point objects
+     * fall back to their tile coordinate so spawn markers and similar objects keep
+     * working as expected.
+     * @param obj The Tiled object to test.
+     * @param tile The tile to query.
+     * @returns True if the object should be considered present on that tile.
+     */
+    protected objectOccupiesTile(obj: TiledObject, tile: Vec2): boolean {
+        if (obj.width === 0 && obj.height === 0) {
+            const objTile = this.getObjectTile(obj);
+            return objTile.x === tile.x && objTile.y === tile.y;
+        }
+
+        return this.getObjectBounds(obj).containsPointSoft(
+            this.ground.getTileCenter(tile.x, tile.y)
+        );
+    }
+
+    /**
+     * Finds the first object in the provided collection that occupies the given tile.
+     * @param objects The objects to search.
+     * @param tile The tile coordinate to query.
+     * @returns The first matching object, or undefined if none occupy that tile.
+     */
+    protected findObjectAtTile(objects: TiledObject[], tile: Vec2): TiledObject | undefined {
+        return objects.find(obj => this.objectOccupiesTile(obj, tile));
     }
 
     // Returns the time-of-day overlay color for this scene.
@@ -480,13 +540,11 @@ export default abstract class MappedAdventureScene extends Scene {
      */
     protected spawnPlayerAt(spawn: TiledObject): void {
         const spawnTile = this.getObjectTile(spawn);
-        const tileTopLeft = this.ground.getWorldPosition(spawnTile.x, spawnTile.y);
-        const tileSize = this.ground.getScaledTileSize();
+        const tileCenter = this.ground.getTileCenter(spawnTile.x, spawnTile.y);
 
-        const feetX = tileTopLeft.x + tileSize.x / 2;
-        const feetY = tileTopLeft.y + tileSize.y / 2;
-
-        this.player.position.copy(this.player.getCenterForFeetPosition(feetX, feetY));
+        this.player.position.copy(
+            this.player.getCenterForFeetPosition(tileCenter.x, tileCenter.y)
+        );
         this.player.setSortTile(spawnTile);
         this.player.setSortOrder(0);
         this.player.addAI(PlayerAI, { startTile: spawnTile, tilemap: this.collision });
@@ -554,14 +612,82 @@ export default abstract class MappedAdventureScene extends Scene {
     }
 
     /**
-     * Finds the first interactable object whose tile position matches the given tile.
+     * Finds the first interactable object whose bounds contain the given tile center.
      * @param tile The tile coordinate to check for an interactable object.
      * @returns The matching interactable object, or undefined if no interactable is on that tile.
      */
     protected findInteractableAtTile(tile: Vec2): TiledObject | undefined {
-        return this.interactables.find(obj => {
-            const objTile = this.getObjectTile(obj);
-            return objTile.x === tile.x && objTile.y === tile.y;
-        });
+        return this.findObjectAtTile(this.interactables, tile);
     }
+
+    protected getInteractionId(obj: TiledObject): string {
+        const customId = obj.properties?.find(prop => prop.name === "interactionId")?.value;
+    
+        if (typeof customId === "string" && customId.length > 0) {
+            return customId;
+        }
+    
+        if (obj.type && obj.type.length > 0) {
+            return obj.type;
+        }
+    
+        return obj.name;
+    }
+    
+    protected tryStartInteractionDialogue(obj: TiledObject): boolean {
+        const interactionId = this.getInteractionId(obj);
+        const interaction = getInteractionData(interactionId);
+    
+        if (!interaction || interaction.type !== "dialogue") {
+            return false;
+        }
+    
+        this.startDialogue(interaction);
+        return true;
+    }
+
+    protected startDialogue(dialogue: DialogueInteraction): void {
+        const ai = this.player.ai as PlayerAI;
+        ai.controller.setControlMode(PlayerControlMode.DIALOGUE);
+
+        this.activeDialogue = dialogue;
+        this.currentDialogueLine = 0;
+
+        this.dialogueScreen.showLine(dialogue.lines[this.currentDialogueLine]);
+    }
+    
+    protected updateDialogue(): void {
+        if (!this.activeDialogue) {
+            return;
+        }
+    
+        if (!Input.isJustPressed(PlayerInput.INTERACT)) {
+            return;
+        }
+    
+        if (this.dialogueScreen.isTyping()) {
+            this.dialogueScreen.revealCurrentLine();
+            return;
+        }
+    
+        this.currentDialogueLine += 1;
+    
+        if (this.currentDialogueLine >= this.activeDialogue.lines.length) {
+            this.endDialogue();
+            return;
+        }
+    
+        this.dialogueScreen.showLine(
+            this.activeDialogue.lines[this.currentDialogueLine]);
+    }
+    
+    protected endDialogue(): void {
+        const ai = this.player.ai as PlayerAI;
+        ai.controller.setControlMode(PlayerControlMode.GAMEPLAY);
+
+        this.activeDialogue = null;
+        this.currentDialogueLine = 0;
+        this.dialogueScreen.hide();
+    }
+    
 }

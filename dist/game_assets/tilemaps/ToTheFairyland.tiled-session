@@ -25,11 +25,11 @@
                 13,
                 6
             ],
-            "scale": 0.5,
+            "scale": 1,
             "selectedLayer": 4,
             "viewCenter": {
-                "x": 1756,
-                "y": 1448
+                "x": 1572.5,
+                "y": 1839
             }
         },
         "Chapter1/Chapter1.json#Chapter1_Tilemap1": {
@@ -42,14 +42,14 @@
                 6
             ],
             "scale": 1.5,
-            "selectedLayer": 0,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 1464.6666666666665,
-                "y": 1679.3333333333333
+                "x": 1463.6666666666665,
+                "y": 1633.9999999999998
             }
         },
         "Chapter1/Shelter.json#Shelter": {
-            "scaleInDock": 0.33
+            "scaleInDock": 1
         },
         "Chapter2.json": {
             "scale": 0.34635416666666663,

@@ -14,6 +14,11 @@ export enum PlayerInput {
     INTERACT = "INTERACT"
 }
 
+export enum PlayerControlMode {
+    GAMEPLAY,
+    DIALOGUE
+}
+
 type VerticalDirection = "up" | "down";
 type HorizontalDirection = "left" | "right";
 type HeldDirection = VerticalDirection | HorizontalDirection;
@@ -43,6 +48,17 @@ export default class PlayerController {
         left: false,
         right: false
     };
+
+    public controlMode: PlayerControlMode = PlayerControlMode.GAMEPLAY;
+
+    public setControlMode(mode: PlayerControlMode): void {
+        this.controlMode = mode;
+
+        if (mode !== PlayerControlMode.GAMEPLAY) {
+            this.heldVertical = [];
+            this.heldHorizontal = [];
+        }
+    }
 
     public update(): void {
         this.syncDirection("up", Input.isPressed(PlayerInput.MOVE_UP));
@@ -114,16 +130,26 @@ export default class PlayerController {
      * Checks if the player is attempting to use a held item or not.
      * @return true if the player is attempting to use a held item; false otherwise
      */
-    public get useItem(): boolean { return Input.isMouseJustPressed(); }
+    public get useItem(): boolean {
+        return this.controlMode === PlayerControlMode.GAMEPLAY
+            && (Input.isMouseJustPressed() || Input.isJustPressed(PlayerInput.INTERACT));
+    }
+    
 
      /** 
      * Checks if the player is attempting to interact.
      * @return true if the player is attempting to interact; false otherwise.
      */
-    public get interacting(): boolean { return Input.isJustPressed(PlayerInput.INTERACT); }
+     public get interacting(): boolean {
+        return this.controlMode === PlayerControlMode.GAMEPLAY && Input.isJustPressed(PlayerInput.INTERACT);
+    }
 
 
     public get tileInput(): Vec2 {
+        if (this.controlMode !== PlayerControlMode.GAMEPLAY) {
+            return Vec2.ZERO;
+        }
+        
         const vertical = this.heldVertical[this.heldVertical.length - 1];
         const horizontal = this.heldHorizontal[this.heldHorizontal.length - 1];
 

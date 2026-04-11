@@ -41,6 +41,11 @@ export default class ShelterScene extends MappedAdventureScene {
 
     }
 
+    protected override handleInteraction(obj: TiledObject): void {
+        this.tryStartInteractionDialogue(obj);
+    }
+    
+
     protected override handleAutoTransition(obj: TiledObject): void {
         if (obj.name === "DoorToOutside") {
             this.sceneManager.changeToScene(ForestScene, {spawnName: "Outside", facing: Vec2.DOWN});
