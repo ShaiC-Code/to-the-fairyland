@@ -1,4 +1,5 @@
 import Vec2 from "../../Wolfie2D/DataTypes/Vec2";
+import AABB from "../../Wolfie2D/DataTypes/Shapes/AABB";
 import { TiledObject, TiledTilemapData, TiledLayerData} from "../../Wolfie2D/DataTypes/Tilesets/TiledData";
 import Input from "../../Wolfie2D/Input/Input";
 import OrthogonalTilemap from "../../Wolfie2D/Nodes/Tilemaps/OrthogonalTilemap";
@@ -13,7 +14,13 @@ import HoverButton from "../UI/CustomUIElements/HoverButton";
 import { GraphicType } from "../../Wolfie2D/Nodes/Graphics/GraphicTypes";
 import Color from "../../Wolfie2D/Utils/Color";
 import Graphic from "../../Wolfie2D/Nodes/Graphic";
+import Sprite from "../../Wolfie2D/Nodes/Sprites/Sprite";
+import SnowflakeBehavior, { SnowflakeSettings } from "../AI/SnowflakeBehavior";
+import DialogueScreen from "../UI/DialogueScreen";
+import { DialogueInteraction, getInteractionData } from "../GameSystems/InteractionSystem/InteractionDatabase";
+import { PlayerControlMode, PlayerInput } from "../AI/Player/PlayerController";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
+
 
 type AssetRef = Readonly<{
     key: string;
@@ -30,6 +37,21 @@ export enum TimeOfDay {
     DUSK,
     NIGHT
 }
+
+export enum WeatherType {
+    NONE,
+    SNOW,
+    SNOWSTORM
+}
+
+type SnowPreset = Readonly<{
+    poolSize: number;
+    fadeInSpeed: number;
+    scaleMin: number;
+    scaleMax: number;
+    settings: SnowflakeSettings;
+}>;
+
 
 export default abstract class MappedAdventureScene extends Scene {
     // The tilemap to load for the scene, pass from sub scenes
@@ -77,7 +99,21 @@ export default abstract class MappedAdventureScene extends Scene {
     protected worldPaused: boolean = false;
     protected entrances: TiledObject[] = [];
 
+    protected dialogueScreen!: DialogueScreen;
+    protected activeDialogue: DialogueInteraction | null = null;
+    protected currentDialogueLine = 0;
+
     private timeOverlay: Graphic | null = null;
+    private snowflakes: Sprite[] = [];
+    private weatherActive = false;
+    private weatherAlpha = 0;
+    private weatherFadeInSpeed = 0.5;
+    private weatherLayerCreated = false;
+    private weatherLayerDepth = 50;
+    
+    private readonly weatherLayerName = "weather";
+    private readonly snowflakeKeys = ["snowflake1", "snowflake2", "snowflake3"];
+    
 
     // lets the scene receive data, ex: {spawnName: "Door1"}
     public override initScene(init: SceneEntranceData = {}): void {
@@ -107,6 +143,10 @@ export default abstract class MappedAdventureScene extends Scene {
         this.add.registerCustomUIElement(CustomUIElementType.HOVER_BUTTON, (options?: Record<string, any>) => {
             return new HoverButton(options!.position, options!.text);
         });
+
+        this.load.image("snowflake1", "game_assets/sprites/particles/Snowflake1.png");
+        this.load.image("snowflake2", "game_assets/sprites/particles/Snowflake2.png");
+        this.load.image("snowflake3", "game_assets/sprites/particles/Snowflake3.png");
     }
 
     public unloadScene(): void {
@@ -162,6 +202,7 @@ export default abstract class MappedAdventureScene extends Scene {
         this.applyCameraBounds();
         this.viewport.follow(this.player);
         this.viewport.setZoomLevel(this.zoomLevel);
+        this.viewport.snapToTarget();
 
         // Initialize pause and inventory screens with viewport data
         this.pauseScreen = new PauseScreen(
@@ -177,11 +218,17 @@ export default abstract class MappedAdventureScene extends Scene {
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize()
         );
+        this.dialogueScreen = new DialogueScreen(
+            "dialogueOverlay",
+            this,
+            () => this.viewport.getCenter(),
+            () => this.viewport.getHalfSize()
+        );
     }
 
     public override updateScene(_deltaT: number): void {
         // Handle pause/resume
-        if(Input.isKeyJustPressed("escape")) {
+        if(!this.dialogueScreen.getIsOpen() && Input.isKeyJustPressed("escape")) {
             if(this.pauseScreen.getIsOpen()) {
                 this.pauseScreen.hide();
             } else if(!this.inventoryScreen.getIsOpen()) {
@@ -190,7 +237,7 @@ export default abstract class MappedAdventureScene extends Scene {
         }
 
         // Handle inventory
-        if(Input.isKeyJustPressed("c")) {
+        if (!this.dialogueScreen.getIsOpen() && Input.isKeyJustPressed("c")) {
             if(this.inventoryScreen.getIsOpen()) {
                 this.inventoryScreen.hide();
             } else if(!this.pauseScreen.getIsOpen()) {
@@ -198,19 +245,24 @@ export default abstract class MappedAdventureScene extends Scene {
             }
         }
 
+        const pauseOpen = this.pauseScreen.getIsOpen();
+        const inventoryOpen = this.inventoryScreen.getIsOpen();
+        const dialogueOpen = this.dialogueScreen.getIsOpen();
+
         const shouldPauseWorld = this.pauseScreen.getIsOpen() || this.inventoryScreen.getIsOpen();
         this.setWorldPaused(shouldPauseWorld);
 
+        if (!pauseOpen && !inventoryOpen && dialogueOpen) {
+            this.updateDialogue();
+        }
+
         // Run gameplay interactions only while the world is not simulation-paused.
-        if(!this.worldPaused) {
+        if(!pauseOpen && !inventoryOpen && !dialogueOpen) {
             const ai = this.player.ai as PlayerAI;
             const controller = ai.controller;
 
             if (ai.targetTile) {
-                const entrance = this.entrances.find(obj => {
-                    const tile = this.getObjectTile(obj);
-                    return tile.x === ai.targetTile!.x && tile.y === ai.targetTile!.y;
-                });
+                const entrance = this.findObjectAtTile(this.entrances, ai.targetTile);
                 if (entrance) {
                     this.handleAutoTransition(entrance);
                 }
@@ -233,6 +285,13 @@ export default abstract class MappedAdventureScene extends Scene {
                     console.log("[Interacted with:", nextHit.name, "]");
                     this.handleInteraction(nextHit);
                 }
+            }
+        }
+
+        if (this.weatherActive && this.weatherAlpha < 1) {
+            this.weatherAlpha = Math.min(this.weatherAlpha + _deltaT * this.weatherFadeInSpeed, 1);
+            for (const flake of this.snowflakes) {
+                flake.alpha = this.weatherAlpha;
             }
         }
     }
@@ -322,16 +381,57 @@ export default abstract class MappedAdventureScene extends Scene {
 
 
     /**
-     * Returns the tile (col, row) occupied by the given Tiled object.
-     * The object's center point is used so rectangle objects map cleanly to a single tile.
-     * @param obj The Tiled object to convert into tile coordinates.
-     * @returns The tile (col, row) containing the object's center.
+     * Returns the tile containing the center of the given Tiled object.
+     * Mainly used for point objects such as spawns and markers.
      */
     protected getObjectTile(obj: TiledObject): Vec2 {
         return this.ground.getTilemapPosition(
             obj.x + obj.width / 2,
             obj.y + obj.height / 2
         );
+    }
+
+
+    /**
+     * Returns the rectangle covered by a Tiled object in world coordinates.
+     * @param obj The Tiled object to convert.
+     * @returns An AABB matching the object's rectangular bounds.
+     */
+    protected getObjectBounds(obj: TiledObject): AABB {
+        return new AABB(
+            new Vec2(obj.x + obj.width / 2, obj.y + obj.height / 2),
+            new Vec2(obj.width / 2, obj.height / 2)
+        );
+    }
+
+    /**
+     * Checks whether a Tiled object occupies the queried tile.
+     * Rectangle objects are matched against the tile center point; point objects
+     * fall back to their tile coordinate so spawn markers and similar objects keep
+     * working as expected.
+     * @param obj The Tiled object to test.
+     * @param tile The tile to query.
+     * @returns True if the object should be considered present on that tile.
+     */
+    protected objectOccupiesTile(obj: TiledObject, tile: Vec2): boolean {
+        if (obj.width === 0 && obj.height === 0) {
+            const objTile = this.getObjectTile(obj);
+            return objTile.x === tile.x && objTile.y === tile.y;
+        }
+
+        return this.getObjectBounds(obj).containsPointSoft(
+            this.ground.getTileCenter(tile.x, tile.y)
+        );
+    }
+
+    /**
+     * Finds the first object in the provided collection that occupies the given tile.
+     * @param objects The objects to search.
+     * @param tile The tile coordinate to query.
+     * @returns The first matching object, or undefined if none occupy that tile.
+     */
+    protected findObjectAtTile(objects: TiledObject[], tile: Vec2): TiledObject | undefined {
+        return objects.find(obj => this.objectOccupiesTile(obj, tile));
     }
 
     // Returns the time-of-day overlay color for this scene.
@@ -345,7 +445,7 @@ export default abstract class MappedAdventureScene extends Scene {
             return;
         }
         if (!this.timeOverlay) {
-            this.addUILayer("timeOverlay");
+            this.addParallaxLayer("timeOverlay", Vec2.ZERO, 9999);
             const half = this.viewport.getHalfSize();
             this.timeOverlay = this.add.graphic(GraphicType.RECT, "timeOverlay", {
                 position: half.clone(),
@@ -355,6 +455,119 @@ export default abstract class MappedAdventureScene extends Scene {
         this.timeOverlay.color = color;
         this.timeOverlay.visible = true;
     }
+
+    protected setWeather(weather: WeatherType, layerDepth: number = this.weatherLayerDepth): void {
+        if (weather === WeatherType.NONE) {
+            for (const flake of this.snowflakes) {
+                flake.visible = false;
+            }
+            this.weatherActive = false;
+            return;
+        }
+    
+        const preset = this.getSnowPreset(weather);
+        this.weatherLayerDepth = layerDepth;
+        this.weatherFadeInSpeed = preset.fadeInSpeed;
+    
+        this.ensureWeatherLayer();
+        this.getLayer(this.weatherLayerName).setDepth(this.weatherLayerDepth);
+        this.ensureSnowPool(preset);
+    
+        this.weatherAlpha = 0;
+    
+        for (let i = 0; i < this.snowflakes.length; i++) {
+            const flake = this.snowflakes[i];
+    
+            if (i < preset.poolSize) {
+                const scale = preset.scaleMin + Math.random() * (preset.scaleMax - preset.scaleMin);
+    
+                flake.visible = true;
+                flake.alpha = 0;
+                flake.scale.set(scale, scale);
+    
+                (flake.ai as SnowflakeBehavior).activate({ settings: preset.settings });
+                (flake.ai as SnowflakeBehavior).scatterOnScreen();
+            } else {
+                flake.visible = false;
+            }
+        }
+    
+        this.weatherActive = true;
+    }
+    
+    private ensureWeatherLayer(): void {
+        if (!this.weatherLayerCreated) {
+            this.addLayer(this.weatherLayerName, this.weatherLayerDepth);
+            this.weatherLayerCreated = true;
+        }
+    }
+    
+    private ensureSnowPool(preset: SnowPreset): void {
+        this.ensureWeatherLayer();
+    
+        while (this.snowflakes.length < preset.poolSize) {
+            const key = this.snowflakeKeys[this.snowflakes.length % this.snowflakeKeys.length];
+            const flake = this.add.sprite(key, this.weatherLayerName);
+    
+            flake.visible = false;
+            flake.addAI(SnowflakeBehavior, {
+                viewport: this.viewport,
+                settings: preset.settings
+            });
+    
+            this.snowflakes.push(flake);
+        }
+    }
+    
+    private getSnowPreset(weather: WeatherType): SnowPreset {
+        switch (weather) {
+            case WeatherType.SNOW:
+                return {
+                    poolSize: 80,
+                    fadeInSpeed: 0.35,
+                    scaleMin: 0.28,
+                    scaleMax: 0.5,
+                    settings: {
+                        spawnPadding: 96,
+                        recyclePadding: 128,
+                        inflowEpsilon: 5,
+                        baseSpeedMin: 25,
+                        baseSpeedMax: 55,
+                        angleMinDegrees: 5,
+                        angleMaxDegrees: 12,
+                        wobbleAmplitudeMin: 3,
+                        wobbleAmplitudeMax: 10,
+                        wobbleFrequencyMin: 0.4,
+                        wobbleFrequencyMax: 1.1
+                    }
+                };
+    
+            case WeatherType.SNOWSTORM:
+                return {
+                    poolSize: 340,
+                    fadeInSpeed: 0.75,
+                    scaleMin: 0.48,
+                    scaleMax: 1.00,
+                    settings: {
+                        spawnPadding: 128,
+                        recyclePadding: 160,
+                        inflowEpsilon: 5,
+                        baseSpeedMin: 130,
+                        baseSpeedMax: 400,
+                        angleMinDegrees: 28,
+                        angleMaxDegrees: 62,
+                        wobbleAmplitudeMin: 14,
+                        wobbleAmplitudeMax: 56,
+                        wobbleFrequencyMin: 0.9,
+                        wobbleFrequencyMax: 2.1
+                    }
+                };
+    
+            default:
+                throw new Error(`Weather preset not defined for weather type "${weather}"`);
+        }
+    }
+    
 
     private getColorForTime(time: TimeOfDay): Color | null {
         switch (time) {
@@ -373,13 +586,11 @@ export default abstract class MappedAdventureScene extends Scene {
      */
     protected spawnPlayerAt(spawn: TiledObject): void {
         const spawnTile = this.getObjectTile(spawn);
-        const tileTopLeft = this.ground.getWorldPosition(spawnTile.x, spawnTile.y);
-        const tileSize = this.ground.getScaledTileSize();
+        const tileCenter = this.ground.getTileCenter(spawnTile.x, spawnTile.y);
 
-        const feetX = tileTopLeft.x + tileSize.x / 2;
-        const feetY = tileTopLeft.y + tileSize.y / 2;
-
-        this.player.position.copy(this.player.getCenterForFeetPosition(feetX, feetY));
+        this.player.position.copy(
+            this.player.getCenterForFeetPosition(tileCenter.x, tileCenter.y)
+        );
         this.player.setSortTile(spawnTile);
         this.player.setSortOrder(0);
         this.player.addAI(PlayerAI, { startTile: spawnTile, tilemap: this.collision });
@@ -447,15 +658,82 @@ export default abstract class MappedAdventureScene extends Scene {
     }
 
     /**
-     * Finds the first interactable object whose tile position matches the given tile.
+     * Finds the first interactable object whose bounds contain the given tile center.
      * @param tile The tile coordinate to check for an interactable object.
      * @returns The matching interactable object, or undefined if no interactable is on that tile.
      */
     protected findInteractableAtTile(tile: Vec2): TiledObject | undefined {
-        return this.interactables.find(obj => {
-            const objTile = this.getObjectTile(obj);
-            return objTile.x === tile.x && objTile.y === tile.y;
-        });
+        return this.findObjectAtTile(this.interactables, tile);
+    }
+
+    protected getInteractionId(obj: TiledObject): string {
+        const customId = obj.properties?.find(prop => prop.name === "interactionId")?.value;
+    
+        if (typeof customId === "string" && customId.length > 0) {
+            return customId;
+        }
+    
+        if (obj.type && obj.type.length > 0) {
+            return obj.type;
+        }
+    
+        return obj.name;
+    }
+    
+    protected tryStartInteractionDialogue(obj: TiledObject): boolean {
+        const interactionId = this.getInteractionId(obj);
+        const interaction = getInteractionData(interactionId);
+    
+        if (!interaction || interaction.type !== "dialogue") {
+            return false;
+        }
+    
+        this.startDialogue(interaction);
+        return true;
+    }
+
+    protected startDialogue(dialogue: DialogueInteraction): void {
+        const ai = this.player.ai as PlayerAI;
+        ai.controller.setControlMode(PlayerControlMode.DIALOGUE);
+
+        this.activeDialogue = dialogue;
+        this.currentDialogueLine = 0;
+
+        this.dialogueScreen.showLine(dialogue.lines[this.currentDialogueLine]);
+    }
+    
+    protected updateDialogue(): void {
+        if (!this.activeDialogue) {
+            return;
+        }
+    
+        if (!Input.isJustPressed(PlayerInput.INTERACT)) {
+            return;
+        }
+    
+        if (this.dialogueScreen.isTyping()) {
+            this.dialogueScreen.revealCurrentLine();
+            return;
+        }
+    
+        this.currentDialogueLine += 1;
+    
+        if (this.currentDialogueLine >= this.activeDialogue.lines.length) {
+            this.endDialogue();
+            return;
+        }
+    
+        this.dialogueScreen.showLine(
+            this.activeDialogue.lines[this.currentDialogueLine]);
+    }
+    
+    protected endDialogue(): void {
+        const ai = this.player.ai as PlayerAI;
+        ai.controller.setControlMode(PlayerControlMode.GAMEPLAY);
+
+        this.activeDialogue = null;
+        this.currentDialogueLine = 0;
+        this.dialogueScreen.hide();
     }
     
     // TEMPORARY function to determine ground type for sfx purposes, ideally this would be determined by properties on the tilemap

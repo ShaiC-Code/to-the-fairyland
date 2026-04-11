@@ -1,8 +1,7 @@
 import { TiledObject, TiledTilemapData } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData";
-import MappedAdventureScene from "../MappedAdventureScene";
 import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 import ShelterScene from "./ShelterScene";
-import { TimeOfDay } from "../MappedAdventureScene";
+import MappedAdventureScene, { TimeOfDay, WeatherType } from "../MappedAdventureScene";
 import { GameEventType } from "../../../Wolfie2D/Events/GameEventType";
 
 
@@ -21,11 +20,13 @@ export default class ForestScene extends MappedAdventureScene {
     public override startScene(): void {
         super.startScene();
         this.setTimeOfDay(TimeOfDay.DUSK);
+        this.setWeather(WeatherType.SNOWSTORM, 50);
     }
 
     protected override configureLayers(): void {
         this.getLayer("Interactables").setDepth(this.actorLayerDepth);
         this.getLayer("Trees").setDepth(20);
+        this.getLayer("Ground").setDepth(2);
     }
 
     protected override spawnMapObjects(tilemapData: TiledTilemapData): void {
@@ -61,12 +62,9 @@ export default class ForestScene extends MappedAdventureScene {
     }
 
     protected override handleInteraction(obj: TiledObject): void {
-
-        if (obj.name === "BushBerries") {
-            const bushTile = this.getObjectTile(obj);
-
-        }
+        this.tryStartInteractionDialogue(obj);
     }
+    
 
     protected override handleAutoTransition(obj: TiledObject): void {
         if (obj.name === "DoorToShelter") {
@@ -74,5 +72,6 @@ export default class ForestScene extends MappedAdventureScene {
             this.emitter.fireEvent(GameEventType.PLAY_SOUND, {key: this.woodenDoorSFX.key, loop: false, holdReference: false});
         }
     }
+
 
 }

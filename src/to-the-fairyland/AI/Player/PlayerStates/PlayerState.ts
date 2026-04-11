@@ -50,20 +50,15 @@ export default abstract class PlayerState extends State {
         }
     }
 
-    protected getFeetPositionForTile(tile: Vec2): Vec2 {
-        const tileTopLeft = this.parent.tilemap.getWorldPosition(tile.x, tile.y);
-        const tileSize = this.parent.tilemap.getScaledTileSize();
-    
-        return new Vec2(
-            tileTopLeft.x + tileSize.x / 2,
-            tileTopLeft.y + tileSize.y / 2
-        );
+    protected getTileCenterForTile(tile: Vec2): Vec2 {
+        return this.parent.tilemap.getTileCenter(tile.x, tile.y);
     }
     
     protected getSpriteCenterForTile(tile: Vec2): Vec2 {
-        const feet = this.getFeetPositionForTile(tile);
-        return this.owner.getCenterForFeetPosition(feet.x, feet.y);
+        const tileCenter = this.getTileCenterForTile(tile);
+        return this.owner.getCenterForFeetPosition(tileCenter.x, tileCenter.y);
     }
+
     
     // Simple cardinal movement
     protected canEnterTile(tile: Vec2): boolean {
