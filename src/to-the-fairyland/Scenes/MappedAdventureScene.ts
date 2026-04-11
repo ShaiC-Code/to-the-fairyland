@@ -299,7 +299,7 @@ export default abstract class MappedAdventureScene extends Scene {
             return;
         }
         if (!this.timeOverlay) {
-            this.addUILayer("timeOverlay");
+            this.addParallaxLayer("timeOverlay", Vec2.ZERO, 9999);
             const half = this.viewport.getHalfSize();
             this.timeOverlay = this.add.graphic(GraphicType.RECT, "timeOverlay", {
                 position: half.clone(),

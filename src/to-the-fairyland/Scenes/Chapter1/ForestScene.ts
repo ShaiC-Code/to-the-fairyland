@@ -19,7 +19,7 @@ export default class ForestScene  extends MappedAdventureScene {
 
     public override startScene(): void {
         super.startScene();
-        this.setTimeOfDay(TimeOfDay.DUSK);
+        this.setTimeOfDay(TimeOfDay.DAY);
     }
 
     protected override configureLayers(): void {
