@@ -8,6 +8,7 @@ import Label, { VAlign, HAlign} from "../../Wolfie2D/Nodes/UIElements/Label";
 import { GraphicType } from "../../Wolfie2D/Nodes/Graphics/GraphicTypes";
 import Line from "../../Wolfie2D/Nodes/Graphics/Line";
 import CanvasNode from "../../Wolfie2D/Nodes/CanvasNode";
+import TextBox from "../../Wolfie2D/Nodes/UIElements/TextBox";
 
 export default class UIScreen {
     protected scene: Scene;
@@ -43,6 +44,10 @@ export default class UIScreen {
 
     private addUIElement(key: string, element: CanvasNode): void {
         this.elements.set(key, element);
+    }
+
+    public getUIElement(key: string): CanvasNode | undefined {
+        return this.elements.get(key);
     }
     
     public show(): void {
@@ -89,7 +94,9 @@ export default class UIScreen {
         this.addUIElement(key, divider);
     }
     
-    protected addLabel(key: string, position: Vec2, size: Vec2, text: string, fontSize: number, halign: string, valign: string): void {
+    protected addLabel(key: string, position: Vec2, size: Vec2, text: string, fontSize: number, options?: {halign?: string, valign?: string}): void {
+        const { halign, valign } = options ?? {};
+
         const label = <Label>this.scene.add.uiElement(UIElementType.LABEL, this.layerName, {
             position: position,
             text: text
@@ -108,7 +115,38 @@ export default class UIScreen {
         this.addUIElement(key, label);
     }
     
-    protected addButton(key: string, position: Vec2, size: Vec2, text: string, onClick: () => void): void {
+    protected addTextBox(key: string, position: Vec2, size: Vec2, text: string, fontSize: number, options?: {halign?: string, valign?: string, maxLines?: number}): void {
+        const { halign, valign, maxLines } = options ?? {};
+
+        const textBox = <TextBox>this.scene.add.uiElement(UIElementType.TEXT_BOX, this.layerName, {
+            position: position
+        });
+
+        textBox.size.set(size.x, size.y);
+        textBox.fontSize = fontSize;
+        textBox.textColor = Color.WHITE;
+        textBox.backgroundColor = Color.BLACK;
+        textBox.padding.set(20, 20);
+        textBox.borderColor = Color.WHITE;
+        textBox.borderWidth = 8;
+        textBox.borderRadius = 0;
+        if (maxLines !== undefined) {
+            textBox.maxLines = maxLines;
+        }
+        if (halign && Object.keys(HAlign).some(key => HAlign[key as keyof typeof HAlign] === halign)) {
+            textBox.setHAlign(halign);
+        }
+        if (valign && Object.keys(VAlign).some(key => VAlign[key as keyof typeof VAlign] === valign)) {
+            textBox.setVAlign(valign);
+        }
+        textBox.setText(text);
+
+        this.addUIElement(key, textBox);
+    }
+    
+    protected addButton(key: string, position: Vec2, size: Vec2, text: string, options?: { onClick?: () => void; onClickEventId?: string }): void {
+        const { onClick, onClickEventId } = options ?? {};
+
         const button = this.scene.add.uiElement(UIElementType.BUTTON, this.layerName, {
             position: position,
             text: text
@@ -117,11 +155,18 @@ export default class UIScreen {
         button.borderWidth = 2;
         button.borderColor = Color.WHITE;
         button.backgroundColor = Color.TRANSPARENT;
-        button.onClick = onClick;
+        if (onClick !== undefined) {
+            button.onClick = onClick;
+        }
+        if (onClickEventId !== undefined) {
+            button.onClickEventId = onClickEventId;
+        }
         this.addUIElement(key, button);
     }
     
-    protected addHoverButton(key: string, position: Vec2, size: Vec2, text: string, onClick: () => void): void {
+    protected addHoverButton(key: string, position: Vec2, size: Vec2, text: string, options?: { onClick?: () => void; onClickEventId?: string }): void {
+        const { onClick, onClickEventId } = options ?? {};
+
         const button = this.scene.add.uiElement(CustomUIElementType.HOVER_BUTTON, this.layerName, {
             position: position,
             text: text
@@ -129,7 +174,12 @@ export default class UIScreen {
         button.size.set(size.x, size.y);
         button.borderWidth = 0;
         button.borderRadius = 0;
-        button.onClick = onClick;
+        if (onClick !== undefined) {
+            button.onClick = onClick;
+        }
+        if (onClickEventId !== undefined) {
+            button.onClickEventId = onClickEventId;
+        }
         this.addUIElement(key, button);
     }
 }

@@ -2,6 +2,7 @@ import Scene from "../../Wolfie2D/Scene/Scene";
 import Vec2 from "../../Wolfie2D/DataTypes/Vec2";
 import Color from "../../Wolfie2D/Utils/Color";
 import UIScreen from "./UIScreen";
+import NullFunc from "../../Wolfie2D/DataTypes/Functions/NullFunc";
 
 export default class InventoryScreen extends UIScreen {
     constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2) {
@@ -41,18 +42,18 @@ export default class InventoryScreen extends UIScreen {
         this.initializePlayerInfoComponent()
 
         // Add Inventory label
-        this.addLabel("inventoryLabel", new Vec2(screenCenter.x, screenTop + 225), new Vec2(viewportSize.x - 200, 50), "INVENTORY", 48, "left", "center");
+        this.addLabel("inventoryLabel", new Vec2(screenCenter.x, screenTop + 225), new Vec2(viewportSize.x - 200, 50), "INVENTORY", 48, {"halign": "left", "valign": "center"});
 
         // Add divider line
         this.addLine("divider", new Vec2(screenLeft, screenTop + 275), new Vec2(screenRight, screenTop + 275), 2);
 
         // Add Item buttons
-        this.addHoverButton("item1Btn", menuButtonPos.item1, menuButtonSize, "ITEM 1", () => {});
-        this.addHoverButton("item2Btn", menuButtonPos.item2, menuButtonSize, "ITEM 2", () => {});
-        this.addHoverButton("item3Btn", menuButtonPos.item3, menuButtonSize, "ITEM 3", () => {});
-        this.addHoverButton("item4Btn", menuButtonPos.item4, menuButtonSize, "ITEM 4", () => {});
-        this.addHoverButton("item5Btn", menuButtonPos.item5, menuButtonSize, "ITEM 5", () => {});
-        this.addHoverButton("item6Btn", menuButtonPos.item6, menuButtonSize, "ITEM 6", () => {});
+        this.addHoverButton("item1Btn", menuButtonPos.item1, menuButtonSize, "ITEM 1", {onClick: NullFunc});
+        this.addHoverButton("item2Btn", menuButtonPos.item2, menuButtonSize, "ITEM 2", {onClick: NullFunc});
+        this.addHoverButton("item3Btn", menuButtonPos.item3, menuButtonSize, "ITEM 3", {onClick: NullFunc});
+        this.addHoverButton("item4Btn", menuButtonPos.item4, menuButtonSize, "ITEM 4", {onClick: NullFunc});
+        this.addHoverButton("item5Btn", menuButtonPos.item5, menuButtonSize, "ITEM 5", {onClick: NullFunc});
+        this.addHoverButton("item6Btn", menuButtonPos.item6, menuButtonSize, "ITEM 6", {onClick: NullFunc});
 
         // Hide by default
         this.layer.setHidden(true);
@@ -85,8 +86,8 @@ export default class InventoryScreen extends UIScreen {
         this.addRect("playerIcon", playerInfoPos.icon, playerInfoSize.icon, new Color(0, 0, 150, 1));
 
         // Add player info labels
-        this.addLabel("playerName", playerInfoPos.name, playerInfoSize.name, "FATE", 48, "left", "center");
+        this.addLabel("playerName", playerInfoPos.name, playerInfoSize.name, "FATE", 48, {"halign": "left", "valign": "center"});
         this.addRect("playerHealth", playerInfoPos.health, playerInfoSize.health, new Color(150, 0, 0, 1));
-        this.addLabel("playerHealthValue", playerInfoPos.healthValue, playerInfoSize.healthValue, "100/100", 24, "left", "center");
+        this.addLabel("playerHealthValue", playerInfoPos.healthValue, playerInfoSize.healthValue, "100/100", 24, {"halign": "left", "valign": "center"});
     }
 }
