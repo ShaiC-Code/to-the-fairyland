@@ -1,6 +1,5 @@
 import Vec2 from "../../../../Wolfie2D/DataTypes/Vec2";
 import Sprite from "../../../../Wolfie2D/Nodes/Sprites/Sprite";
-import SMScene from "../../../Scenes/SMScene";
 import Item from "../Item";
 
 export default class Healthpack extends Item {

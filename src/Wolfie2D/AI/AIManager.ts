@@ -58,8 +58,19 @@ export default class AIManager implements Updateable {
 	}
 
 	update(deltaT: number): void {
-		// Run the ai for every active actor
-		this.actors.forEach(actor => { if(actor.aiActive) actor.ai.update(deltaT) });
+		// Run AI for active actors unless their layer is paused.
+		this.actors.forEach(actor => {
+			if(!actor.aiActive){
+				return;
+			}
+
+			const layer = (actor as any).getLayer?.();
+			if(layer && layer.isPaused()){
+				return;
+			}
+
+			actor.ai.update(deltaT);
+		});
 	}
 }
 

@@ -75,7 +75,11 @@ export default class SceneGraphQuadTree extends SceneGraph {
         Stats.log("sgfill", (t1-t0));
 
         t0 = performance.now();
-        this.nodes.forEach((node: CanvasNode) => node.update(deltaT));
+        this.nodes.forEach((node: CanvasNode) => {
+            if(!node.getLayer().isPaused()){
+                node.update(deltaT);
+            }
+        });
         t1 = performance.now();
 
         Stats.log("sgupdate", (t1-t0));

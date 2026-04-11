@@ -4,6 +4,11 @@ import OrthogonalTilemap from "../../Wolfie2D/Nodes/Tilemaps/OrthogonalTilemap";
 import Scene from "../../Wolfie2D/Scene/Scene";
 import PlayerActor from "../Actors/PlayerActor";
 import PlayerAI from "../AI/Player/PlayerAI";
+import PauseScreen from "../UI/PauseScreen";
+import InventoryScreen from "../UI/InventoryScreen";
+import MainMenu from "./MainMenu";
+import { CustomUIElementType } from "../UI/CustomUIElements/CustomUIElementTypes";
+import HoverButton from "../UI/CustomUIElements/HoverButton";
 import { GraphicType } from "../../Wolfie2D/Nodes/Graphics/GraphicTypes";
 import Color from "../../Wolfie2D/Utils/Color";
 import Graphic from "../../Wolfie2D/Nodes/Graphic";
@@ -39,7 +44,7 @@ export default abstract class MappedAdventureScene extends Scene {
     protected readonly mapBoundsLayerName = "MapBoundLayer";
     protected readonly spawnLayerName = "SpawnPoint";
     protected readonly interactablesLayerName = "Interactables";
-    protected readonly actorLayerName = "actors";
+    protected readonly actorLayerName = "Actors";
     protected readonly actorLayerDepth = 10;
     protected readonly zoomLevel = 1;
     protected readonly entranceLayerName = "Entrances";
@@ -49,6 +54,9 @@ export default abstract class MappedAdventureScene extends Scene {
     protected collision!: OrthogonalTilemap;
     protected interactables: TiledObject[] = [];
     protected spawnName?: string;
+    protected pauseScreen!: PauseScreen;
+    protected inventoryScreen!: InventoryScreen;
+    protected worldPaused: boolean = false;
     protected entrances: TiledObject[] = [];
 
     private timeOverlay: Graphic | null = null;
@@ -62,6 +70,10 @@ export default abstract class MappedAdventureScene extends Scene {
         this.load.tilemap(this.tilemap.key, this.tilemap.path);
         this.load.spritesheet(this.playerSheet.key, this.playerSheet.path);
         this.loadExtraAssets();
+        
+        this.add.registerCustomUIElement(CustomUIElementType.HOVER_BUTTON, (options?: Record<string, any>) => {
+            return new HoverButton(options!.position, options!.text);
+        });
     }
 
 
@@ -102,42 +114,89 @@ export default abstract class MappedAdventureScene extends Scene {
 
         this.applyCameraBounds();
         this.viewport.follow(this.player);
-        this.viewport.setZoomLevel(this.zoomLevel); 
-        
+        this.viewport.setZoomLevel(this.zoomLevel);
+
+        // Initialize pause and inventory screens with viewport data
+        this.pauseScreen = new PauseScreen(
+            "pauseOverlay",
+            this,
+            () => this.viewport.getCenter(),
+            () => this.viewport.getHalfSize(),
+            () => this.sceneManager.changeToScene(MainMenu)
+        );
+        this.inventoryScreen = new InventoryScreen(
+            "inventoryOverlay",
+            this,
+            () => this.viewport.getCenter(),
+            () => this.viewport.getHalfSize()
+        );
     }
 
     public override updateScene(_deltaT: number): void {
-        const ai = this.player.ai as PlayerAI;
-        const controller = ai.controller;
-
-        if (ai.targetTile) {
-            const entrance = this.entrances.find(obj => {
-                const tile = this.getObjectTile(obj);
-                return tile.x === ai.targetTile!.x && tile.y === ai.targetTile!.y;
-            });
-            if (entrance) {
-                this.handleAutoTransition(entrance);
+        // Handle pause/resume
+        if(Input.isKeyJustPressed("escape")) {
+            if(this.pauseScreen.getIsOpen()) {
+                this.pauseScreen.hide();
+            } else if(!this.inventoryScreen.getIsOpen()) {
+                this.pauseScreen.show();
             }
         }
-        
 
-        if (!ai.moving && controller.interacting) {
-            const currentHit = this.findInteractableAtTile(ai.currentTile);
-            // Checks current tile first
-            if (currentHit) {
-                console.log("[Interacted with:", currentHit.name, "]");
-                this.handleInteraction(currentHit);
-                return;
-            }
-
-            const nextTile = ai.currentTile.clone().add(ai.facing);
-            const nextHit = this.findInteractableAtTile(nextTile);
-            // Checks destination tile next
-            if (nextHit) {
-                console.log("[Interacted with:", nextHit.name, "]");
-                this.handleInteraction(nextHit);
+        // Handle inventory
+        if(Input.isKeyJustPressed("c")) {
+            if(this.inventoryScreen.getIsOpen()) {
+                this.inventoryScreen.hide();
+            } else if(!this.pauseScreen.getIsOpen()) {
+                this.inventoryScreen.show();
             }
         }
+
+        const shouldPauseWorld = this.pauseScreen.getIsOpen() || this.inventoryScreen.getIsOpen();
+        this.setWorldPaused(shouldPauseWorld);
+
+        // Run gameplay interactions only while the world is not simulation-paused.
+        if(!this.worldPaused) {
+            const ai = this.player.ai as PlayerAI;
+            const controller = ai.controller;
+
+            if (!ai.moving && controller.interacting) {
+                const currentHit = this.findInteractableAtTile(ai.currentTile);
+                // Checks current tile first
+                if (currentHit) {
+                    console.log("[Interacted with:", currentHit.name, "]");
+                    this.handleInteraction(currentHit);
+                    return;
+                }
+
+                const nextTile = ai.currentTile.clone().add(ai.facing);
+                const nextHit = this.findInteractableAtTile(nextTile);
+                // Checks destination tile next
+                if (nextHit) {
+                    console.log("[Interacted with:", nextHit.name, "]");
+                    this.handleInteraction(nextHit);
+                }
+            }
+        }
+    }
+
+    protected setWorldPaused(paused: boolean): void {
+        if (this.worldPaused === paused) {
+            return;
+        }
+
+        this.worldPaused = paused;
+
+        this.layers.forEach((name: string) => {
+            this.layers.get(name).setPaused(paused);
+        });
+
+        this.parallaxLayers.forEach((name: string) => {
+            this.parallaxLayers.get(name).setPaused(paused);
+        });
+    }
+
+    protected override isSimulationPaused(): boolean {
+        return this.worldPaused;
     }
     
     protected loadExtraAssets(): void {}

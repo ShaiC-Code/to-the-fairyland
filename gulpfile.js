@@ -52,6 +52,10 @@ gulp.task('copy-html', function (done) {
             path.join(__dirname, 'src', benchmark, 'index.html'),
             path.join(destDir, 'index.html')
         );
+        fs.copyFileSync(
+            path.join(__dirname, 'src', benchmark, 'benchmark.js'),
+            path.join(destDir, 'benchmark.js')
+        );
     });
 
     done();

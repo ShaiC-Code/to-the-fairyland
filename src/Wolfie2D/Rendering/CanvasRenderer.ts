@@ -17,6 +17,7 @@ import Label from "../Nodes/UIElements/Label";
 import Button from "../Nodes/UIElements/Button";
 import Slider from "../Nodes/UIElements/Slider";
 import TextInput from "../Nodes/UIElements/TextInput";
+import TextBox from "../Nodes/UIElements/TextBox";
 import AnimatedSprite from "../Nodes/Sprites/AnimatedSprite";
 import Vec2 from "../DataTypes/Vec2";
 import Color from "../Utils/Color";
@@ -264,7 +265,9 @@ export default class CanvasRenderer extends RenderingManager {
 
     // @override
     protected renderUIElement(uiElement: UIElement): void {
-        if(uiElement instanceof Label){
+        if(uiElement instanceof TextBox){
+            this.uiElementRenderer.renderTextBox(uiElement);
+        } else if(uiElement instanceof Label){
             this.uiElementRenderer.renderLabel(uiElement);
         } else if(uiElement instanceof Button){
             this.uiElementRenderer.renderButton(uiElement);

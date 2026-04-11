@@ -3,6 +3,7 @@ import Button from "../../Nodes/UIElements/Button";
 import Label from "../../Nodes/UIElements/Label";
 import Slider from "../../Nodes/UIElements/Slider";
 import TextInput from "../../Nodes/UIElements/TextInput";
+import TextBox from "../../Nodes/UIElements/TextBox";
 import ResourceManager from "../../ResourceManager/ResourceManager";
 import Scene from "../../Scene/Scene";
 import MathUtils from "../../Utils/MathUtils";
@@ -12,7 +13,7 @@ import MathUtils from "../../Utils/MathUtils";
  */
 export default class UIElementRenderer {
     protected resourceManager: ResourceManager;
-    protected scene: Scene;
+    protected scene: Scene | null = null;
     protected ctx: CanvasRenderingContext2D;
 
     constructor(ctx: CanvasRenderingContext2D){
@@ -44,19 +45,21 @@ export default class UIElementRenderer {
 		let offset = label.calculateTextOffset(this.ctx);
 
 		// Stroke and fill a rounded rect and give it text
-		this.ctx.globalAlpha = label.backgroundColor.a;
-		this.ctx.fillStyle = label.calculateBackgroundColor().toStringRGBA();
+        const backgroundColor = label.calculateBackgroundColor();
+        this.ctx.globalAlpha = previousAlpha * backgroundColor.a;
+        this.ctx.fillStyle = backgroundColor.toStringRGBA();
 		this.ctx.fillRoundedRect(-label.size.x/2, -label.size.y/2,
 			label.size.x, label.size.y, label.borderRadius);
 		
-		this.ctx.strokeStyle = label.calculateBorderColor().toStringRGBA();
-		this.ctx.globalAlpha = label.borderColor.a;
+        const borderColor = label.calculateBorderColor();
+        this.ctx.strokeStyle = borderColor.toStringRGBA();
+        this.ctx.globalAlpha = previousAlpha * borderColor.a;
 		this.ctx.lineWidth = label.borderWidth;
 		this.ctx.strokeRoundedRect(-label.size.x/2, -label.size.y/2,
 			label.size.x, label.size.y, label.borderRadius);
 
 		this.ctx.fillStyle = label.calculateTextColor();
-		this.ctx.globalAlpha = label.textColor.a;
+        this.ctx.globalAlpha = previousAlpha * label.textColor.a;
 		this.ctx.fillText(label.text, offset.x - label.size.x/2, offset.y - label.size.y/2);
 	
 		this.ctx.globalAlpha = previousAlpha;
@@ -121,6 +124,55 @@ export default class UIElementRenderer {
                 textInput.cursorCounter = 0;
             }
         }
+    }
+
+    /**
+     * Renders a textbox with word wrapping support
+     * @param textBox The textbox to render
+     */
+    renderTextBox(textBox: TextBox): void {
+        // If the size is unassigned assign it
+        textBox.handleInitialSizing(this.ctx);
+        
+        // Grab the global alpha so we can adjust it for this render
+        let previousAlpha = this.ctx.globalAlpha;
+
+        // Get the font
+        this.ctx.font = textBox.getFontString();
+        let lineHeight = textBox.fontSize * 1.2;
+        let contentHeight = (textBox as any).wrappedLines.length * lineHeight;
+
+        // Stroke and fill background
+        const backgroundColor = textBox.calculateBackgroundColor();
+        this.ctx.globalAlpha = previousAlpha * backgroundColor.a;
+        this.ctx.fillStyle = backgroundColor.toStringRGBA();
+        this.ctx.fillRoundedRect(-textBox.size.x/2, -textBox.size.y/2,
+            textBox.size.x, textBox.size.y, textBox.borderRadius);
+        
+        const borderColor = textBox.calculateBorderColor();
+        this.ctx.strokeStyle = borderColor.toStringRGBA();
+        this.ctx.globalAlpha = previousAlpha * borderColor.a;
+        this.ctx.lineWidth = textBox.borderWidth;
+        this.ctx.strokeRoundedRect(-textBox.size.x/2, -textBox.size.y/2,
+            textBox.size.x, textBox.size.y, textBox.borderRadius);
+
+        // Set text color
+        this.ctx.fillStyle = textBox.calculateTextColor();
+        this.ctx.globalAlpha = previousAlpha * textBox.textColor.a;
+        this.ctx.textBaseline = "top";
+
+        // Calculate starting y position based on vertical alignment
+        let startY = -textBox.size.y/2 + textBox.padding.y;
+        let lines = (textBox as any).wrappedLines;
+
+        // Render each line
+        for(let i = 0; i < lines.length; i++){
+            let y = startY + i * lineHeight;
+            let x = -textBox.size.x/2 + textBox.padding.x;
+            this.ctx.fillText(lines[i], x, y);
+        }
+
+        this.ctx.globalAlpha = previousAlpha;
     }
 
 }

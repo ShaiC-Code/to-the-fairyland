@@ -4,7 +4,6 @@ import AnimatedSprite from "../../Wolfie2D/Nodes/Sprites/AnimatedSprite"
 import NavigationPath from "../../Wolfie2D/Pathfinding/NavigationPath";
 import { BattlerEvent, HudEvent } from "../Events";
 import Inventory from "../GameSystems/ItemSystem/Inventory";
-import SMScene from "../Scenes/SMScene";
 import BasicTargetable from "../GameSystems/Targeting/BasicTargetable";
 import BasicTargeting from "../GameSystems/Targeting/BasicTargeting";
 
@@ -13,12 +12,13 @@ import { TargetableEntity } from "../GameSystems/Targeting/TargetableEntity";
 import { TargetingEntity } from "../GameSystems/Targeting/TargetingEntity";
 import BasicBattler from "../GameSystems/BattleSystem/BasicBattler";
 import Timer from "../../Wolfie2D/Timing/Timer";
+import Scene from "../../Wolfie2D/Scene/Scene";
 
 
 export default class NPCActor extends AnimatedSprite implements Battler, TargetingEntity {
 
     /** Override the type of the scene to be the Spy Master scene */
-    protected scene: SMScene
+    protected scene: Scene
 
     // An invincible timer for our NPCs
     protected invincibleTimer: Timer;
@@ -85,8 +85,8 @@ export default class NPCActor extends AnimatedSprite implements Battler, Targeti
     public get speed(): number { return this.battler.speed; }
     public set speed(speed: number) { this.battler.speed = speed; }
 
-    public override setScene(scene: SMScene): void { this.scene = scene; }
-    public override getScene(): SMScene { return this.scene; }
+    public override setScene(scene: Scene): void { this.scene = scene; }
+    public override getScene(): Scene { return this.scene; }
 
     public get navkey(): string { return this._navkey; }
     public set navkey(navkey: string) { this._navkey = navkey; }
