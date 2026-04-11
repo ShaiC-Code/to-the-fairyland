@@ -3,6 +3,7 @@ import { TiledObject, TiledTilemapData } from "../../../Wolfie2D/DataTypes/Tiles
 import ForestScene  from "./ForestScene";
 import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 import { TimeOfDay } from "../MappedAdventureScene";
+import { GameEventType } from "../../../Wolfie2D/Events/GameEventType";
 
 
 export default class ShelterScene extends MappedAdventureScene {
@@ -41,6 +42,7 @@ export default class ShelterScene extends MappedAdventureScene {
     protected override handleAutoTransition(obj: TiledObject): void {
         if (obj.name === "DoorToOutside") {
             this.sceneManager.changeToScene(ForestScene, {spawnName: "Outside", facing: Vec2.DOWN});
+            this.emitter.fireEvent(GameEventType.PLAY_SOUND, {key: this.woodenDoorSFX.key, loop: false, holdReference: false});
         }
     }
     

@@ -1,5 +1,7 @@
 import Vec2 from "../../../../Wolfie2D/DataTypes/Vec2";
 import GameEvent from "../../../../Wolfie2D/Events/GameEvent";
+import { GameEventType } from "../../../../Wolfie2D/Events/GameEventType";
+import MappedAdventureScene from "../../../Scenes/MappedAdventureScene";
 import { PlayerStateType } from "./PlayerState";
 import PlayerState from "./PlayerState";
 
@@ -7,6 +9,13 @@ export default class Moving extends PlayerState {
     
     public override onEnter(options: Record<string, any>): void {
         this.playFacingAnimation();
+        const currentScene = this.owner.getScene() as MappedAdventureScene;
+        const groundType = currentScene.groundTypeAtTile(this.parent.currentTile);
+        if (groundType === "wood") {
+            this.emitter.fireEvent(GameEventType.PLAY_SOUND, {key: currentScene.getAssetKey("walkingWoodSFX"), loop: true, holdReference: true});
+        } else if (groundType === "snow") {
+            this.emitter.fireEvent(GameEventType.PLAY_SOUND, {key: currentScene.getAssetKey("walkingSnowSFX"), loop: true, holdReference: true});
+        }
     }
 
     public override handleInput(event: GameEvent): void { 
@@ -66,5 +75,14 @@ export default class Moving extends PlayerState {
         );
     }
 
-    public override onExit(): Record<string, any> { return {}; }
+    public override onExit(): Record<string, any> {
+        const currentScene = this.owner.getScene() as MappedAdventureScene;
+        const groundType = currentScene.groundTypeAtTile(this.parent.currentTile);
+        if (groundType === "wood") {
+            this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: currentScene.getAssetKey("walkingWoodSFX")});
+        } else if (groundType === "snow") {
+            this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: currentScene.getAssetKey("walkingSnowSFX")});
+        }
+        return {};
+    }
 }

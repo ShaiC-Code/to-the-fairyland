@@ -72,7 +72,7 @@ export enum GameEventType {
  	/**
 	 * Play Sound event. Has data: {key: string, loop: boolean, holdReference: boolean }
 	 */
-  	PLAY_MUSIC = "play_music",
+  PLAY_MUSIC = "play_music",
 
 	/**
 	 * Mute audio channel event. Has data: {channel: AudioChannelType}
