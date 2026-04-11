@@ -2,9 +2,10 @@ import { TiledObject, TiledTilemapData } from "../../../Wolfie2D/DataTypes/Tiles
 import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 import ShelterScene from "./ShelterScene";
 import MappedAdventureScene, { TimeOfDay, WeatherType } from "../MappedAdventureScene";
+import { GameEventType } from "../../../Wolfie2D/Events/GameEventType";
 
 
-export default class ForestScene  extends MappedAdventureScene {
+export default class ForestScene extends MappedAdventureScene {
     protected readonly tilemap = {
         key: "chapter1",
         path: "game_assets/tilemaps/Chapter1/Chapter1.json"
@@ -68,6 +69,7 @@ export default class ForestScene  extends MappedAdventureScene {
     protected override handleAutoTransition(obj: TiledObject): void {
         if (obj.name === "DoorToShelter") {
             this.sceneManager.changeToScene(ShelterScene, {spawnName: "Shelter", facing: Vec2.UP});
+            this.emitter.fireEvent(GameEventType.PLAY_SOUND, {key: this.woodenDoorSFX.key, loop: false, holdReference: false});
         }
     }
 

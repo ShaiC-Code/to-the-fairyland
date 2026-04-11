@@ -19,6 +19,7 @@ import SnowflakeBehavior, { SnowflakeSettings } from "../AI/SnowflakeBehavior";
 import DialogueScreen from "../UI/DialogueScreen";
 import { DialogueInteraction, getInteractionData } from "../GameSystems/InteractionSystem/InteractionDatabase";
 import { PlayerControlMode, PlayerInput } from "../AI/Player/PlayerController";
+import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 
 
 type AssetRef = Readonly<{
@@ -60,6 +61,22 @@ export default abstract class MappedAdventureScene extends Scene {
     protected readonly playerSheet: AssetRef = {
         key: "fate",
         path: "game_assets/spritesheets/Fate.json"
+    };
+
+    // Sound effects
+    protected readonly woodenDoorSFX: AssetRef = {
+        key: "door-wooden",
+        path: "game_assets/sounds/door-wooden.wav"
+    };
+
+    protected readonly walkingWoodSFX: AssetRef = {
+        key: "walking-wood",
+        path: "game_assets/sounds/walking-wood.wav"
+    };
+
+    protected readonly walkingSnowSFX: AssetRef = {
+        key: "walking-snow",
+        path: "game_assets/sounds/walking-snow.wav"
     };
 
     protected readonly groundLayerName = "Ground";
@@ -105,7 +122,22 @@ export default abstract class MappedAdventureScene extends Scene {
 
     public override loadScene(): void {
         this.load.tilemap(this.tilemap.key, this.tilemap.path);
-        this.load.spritesheet(this.playerSheet.key, this.playerSheet.path);
+        if (!this.resourceManager.getSpritesheet(this.playerSheet.key)) {
+            this.load.spritesheet(this.playerSheet.key, this.playerSheet.path);
+        }
+
+        if (!this.resourceManager.getAudio(this.woodenDoorSFX.key)) {
+            this.load.audio(this.woodenDoorSFX.key, this.woodenDoorSFX.path);
+        }
+
+        if (!this.resourceManager.getAudio(this.walkingWoodSFX.key)) {
+            this.load.audio(this.walkingWoodSFX.key, this.walkingWoodSFX.path);
+        }
+
+        if (!this.resourceManager.getAudio(this.walkingSnowSFX.key)) {
+            this.load.audio(this.walkingSnowSFX.key, this.walkingSnowSFX.path);
+        }
+
         this.loadExtraAssets();
         
         this.add.registerCustomUIElement(CustomUIElementType.HOVER_BUTTON, (options?: Record<string, any>) => {
@@ -115,6 +147,20 @@ export default abstract class MappedAdventureScene extends Scene {
         this.load.image("snowflake1", "game_assets/sprites/particles/Snowflake1.png");
         this.load.image("snowflake2", "game_assets/sprites/particles/Snowflake2.png");
         this.load.image("snowflake3", "game_assets/sprites/particles/Snowflake3.png");
+    }
+
+    public unloadScene(): void {
+        // Keep the player's sprite
+        this.load.keepSpritesheet(this.playerSheet.key);
+
+        // Keep the sfx audio
+        this.load.keepAudio(this.woodenDoorSFX.key);
+        this.load.keepAudio(this.walkingWoodSFX.key);
+        this.load.keepAudio(this.walkingSnowSFX.key);
+        
+        // Stop walking sfx when changing scenes
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: this.walkingWoodSFX.key});
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: this.walkingSnowSFX.key});
     }
 
 
@@ -690,4 +736,38 @@ export default abstract class MappedAdventureScene extends Scene {
         this.dialogueScreen.hide();
     }
     
+    // TEMPORARY function to determine ground type for sfx purposes, ideally this would be determined by properties on the tilemap
+    public groundTypeAtTile(tile: Vec2): "snow" | "wood" | "bush" | null {
+        const tilemapData = this.resourceManager.getTilemap(this.tilemap.key) as TiledTilemapData;
+        if (!tilemapData) {
+            return null;
+        }
+
+        const interactLayer = tilemapData.layers.find(layer => layer.name === "Interactables")
+        const bushPoints = interactLayer?.objects.filter(obj => obj.name === "BushBerries") ?? [];
+        if (bushPoints.some(bush => {
+            const bushTile = this.getObjectTile(bush);
+            return bushTile.x === tile.x && bushTile.y === tile.y;
+        })) {
+            return "bush";
+        }
+
+        return this.tilemap.key === "chapter1" ? "snow" : this.tilemap.key === "shelter" ? "wood" : null;
+    }
+
+    // TEMPORARY function to get asset keys from the scene
+    public getAssetKey(assetName: string): string {
+        switch (assetName) {
+            case "tilemap":
+                return this.tilemap.key;
+            case "woodenDoorSFX":
+                return this.woodenDoorSFX.key;
+            case "walkingWoodSFX":
+                return this.walkingWoodSFX.key;
+            case "walkingSnowSFX":
+                return this.walkingSnowSFX.key;
+            default:
+                return "invalid asset name";
+        }
+    }
 }
