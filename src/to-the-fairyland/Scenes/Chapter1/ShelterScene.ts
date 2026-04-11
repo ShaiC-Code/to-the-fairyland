@@ -2,6 +2,7 @@ import MappedAdventureScene from "../MappedAdventureScene";
 import { TiledObject, TiledTilemapData } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData";
 import ForestScene  from "./ForestScene";
 import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
+import { TimeOfDay } from "../MappedAdventureScene";
 
 
 export default class ShelterScene extends MappedAdventureScene {
@@ -15,6 +16,11 @@ export default class ShelterScene extends MappedAdventureScene {
 
     protected override loadExtraAssets(): void {
         this.load.image("bed", "game_assets/sprites/Bed.png")
+    }
+
+    public override startScene(): void {
+        super.startScene();
+        this.setTimeOfDay(TimeOfDay.DUSK);
     }
 
     protected override configureLayers(): void {
@@ -32,9 +38,10 @@ export default class ShelterScene extends MappedAdventureScene {
 
     }
 
-    protected override handleInteraction(obj: TiledObject): void {
+    protected override handleAutoTransition(obj: TiledObject): void {
         if (obj.name === "DoorToOutside") {
-            this.sceneManager.changeToScene(ForestScene , {spawnName: "Shelter", facing: Vec2.DOWN});
+            this.sceneManager.changeToScene(ForestScene, {spawnName: "Outside", facing: Vec2.DOWN});
         }
     }
+    
 }

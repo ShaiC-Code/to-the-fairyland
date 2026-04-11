@@ -110,7 +110,6 @@ export default abstract class PlayerState extends State {
     protected playFacingAnimation(): void {
         this.owner.animation.playIfNotAlready(this.getFacingAnimation(), true);
     }
-    
 
 }
 

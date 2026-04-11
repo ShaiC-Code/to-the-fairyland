@@ -1,6 +1,5 @@
 import Vec2 from "../../Wolfie2D/DataTypes/Vec2";
-import { TiledObject, TiledTilemapData } from "../../Wolfie2D/DataTypes/Tilesets/TiledData";
-import Input from "../../Wolfie2D/Input/Input";
+import { TiledObject, TiledTilemapData, TiledLayerData} from "../../Wolfie2D/DataTypes/Tilesets/TiledData";
 import OrthogonalTilemap from "../../Wolfie2D/Nodes/Tilemaps/OrthogonalTilemap";
 import Scene from "../../Wolfie2D/Scene/Scene";
 import PlayerActor from "../Actors/PlayerActor";
@@ -10,6 +9,9 @@ import InventoryScreen from "../UI/InventoryScreen";
 import MainMenu from "./MainMenu";
 import { CustomUIElementType } from "../UI/CustomUIElements/CustomUIElementTypes";
 import HoverButton from "../UI/CustomUIElements/HoverButton";
+import { GraphicType } from "../../Wolfie2D/Nodes/Graphics/GraphicTypes";
+import Color from "../../Wolfie2D/Utils/Color";
+import Graphic from "../../Wolfie2D/Nodes/Graphic";
 
 type AssetRef = Readonly<{
     key: string;
@@ -19,6 +21,13 @@ type AssetRef = Readonly<{
 type SceneEntranceData = {
     spawnName?: string;
 };
+
+export enum TimeOfDay {
+    DAY,
+    NOON,
+    DUSK,
+    NIGHT
+}
 
 export default abstract class MappedAdventureScene extends Scene {
     // The tilemap to load for the scene, pass from sub scenes
@@ -38,6 +47,7 @@ export default abstract class MappedAdventureScene extends Scene {
     protected readonly actorLayerName = "Actors";
     protected readonly actorLayerDepth = 10;
     protected readonly zoomLevel = 1;
+    protected readonly entranceLayerName = "Entrances";
 
     protected player!: PlayerActor;
     protected ground!: OrthogonalTilemap;
@@ -47,6 +57,9 @@ export default abstract class MappedAdventureScene extends Scene {
     protected pauseScreen!: PauseScreen;
     protected inventoryScreen!: InventoryScreen;
     protected worldPaused: boolean = false;
+    protected entrances: TiledObject[] = [];
+
+    private timeOverlay: Graphic | null = null;
 
     // lets the scene receive data, ex: {spawnName: "Door1"}
     public override initScene(init: SceneEntranceData = {}): void {
@@ -63,28 +76,39 @@ export default abstract class MappedAdventureScene extends Scene {
         });
     }
 
+
     public override startScene(): void {
         this.add.tilemap(this.tilemap.key);
         this.addLayer(this.actorLayerName, this.actorLayerDepth);
 
         this.configureLayers();
 
+        // =============================== Required Layers ================================
         this.ground = this.getRequiredTilemap(this.groundLayerName);
         this.collision = this.getRequiredTilemap(this.collisionLayerName);
+        // ================================================================================
 
         const tilemapData = this.resourceManager.getTilemap(this.tilemap.key) as TiledTilemapData;
-        const spawn = this.getSpawnObject(tilemapData);
+        this.spawnMapObjects(tilemapData);
+        
+        // =============================== Optional Layers ================================
+        const spawnLayer = tilemapData.layers.find(layer => layer.name === this.spawnLayerName);
+        const entranceLayer = tilemapData.layers.find(layer => layer.name === this.entranceLayerName);
+        const interactLayer = tilemapData.layers.find(layer => layer.name === this.interactablesLayerName);
+        // ================================================================================
+
+        this.entrances = entranceLayer?.objects ?? [];
+        this.interactables = interactLayer?.objects ?? [];
+
+        // Spawn the Player
+        const spawn = this.getSpawnObject(spawnLayer, this.spawnName);
         if (!spawn) {
             throw new Error(`SpawnPoint layer is missing or empty in map "${this.tilemap.key}"`);
         }
 
-        const interactLayer = tilemapData.layers.find(layer => layer.name === this.interactablesLayerName);
-        this.interactables = interactLayer?.objects ?? [];
-
-        this.spawnMapObjects(tilemapData);
-
         this.player = this.add.animatedSprite(PlayerActor, this.playerSheet.key, this.actorLayerName);
         this.spawnPlayerAt(spawn);
+
         const ai = this.player.ai as PlayerAI;
         this.playIdleForFacing(ai.facing);
 
@@ -183,6 +207,8 @@ export default abstract class MappedAdventureScene extends Scene {
 
     protected handleInteraction(_obj: TiledObject): void {}
 
+    protected handleAutoTransition(_obj: TiledObject): void {}
+
     /**
      * Retrieves a tile layer by name and throws an error if it is missing.
      * Use this for map layers that every scene is expected to have.
@@ -198,20 +224,20 @@ export default abstract class MappedAdventureScene extends Scene {
     }
 
     /**
-     * Finds the spawn object to use for this scene.
-     * If a spawn name was provided through init data, it tries to find a matching named spawn first.
-     * Otherwise, it falls back to the first object in the SpawnPoint layer.
-     * @param tilemapData The raw Tiled map data for the current scene.
-     * @returns The selected spawn object, or undefined if the SpawnPoint layer has no objects.
+     * Finds the spawn object to use from the given spawn layer.
+     * If a spawn name is provided, it tries to find a matching named spawn first.
+     * Otherwise, it falls back to the first object in the layer.
+     * @param spawnLayer The already-found SpawnPoint object layer.
+     * @param spawnName The optional spawn object name to search for.
+     * @returns The selected spawn object, or undefined if the layer has no objects.
      */
-    protected getSpawnObject(tilemapData: TiledTilemapData): TiledObject | undefined {
-        const spawnLayer = tilemapData.layers.find(layer => layer.name === this.spawnLayerName);
+    protected getSpawnObject(spawnLayer: TiledLayerData | undefined, spawnName?: string ): TiledObject | undefined {
         if (!spawnLayer?.objects?.length) {
             return undefined;
         }
 
-        if (this.spawnName) {
-            const namedSpawn = spawnLayer.objects.find(obj => obj.name === this.spawnName);
+        if (spawnName) {
+            const namedSpawn = spawnLayer.objects.find(obj => obj.name === spawnName);
             if (namedSpawn) {
                 return namedSpawn;
             }
@@ -219,6 +245,7 @@ export default abstract class MappedAdventureScene extends Scene {
 
         return spawnLayer.objects[0];
     }
+
 
     protected playIdleForFacing(facing: Vec2): void {
         if (facing.y < 0) {
@@ -247,6 +274,38 @@ export default abstract class MappedAdventureScene extends Scene {
             obj.x + obj.width / 2,
             obj.y + obj.height / 2
         );
+    }
+
+    // Returns the time-of-day overlay color for this scene.
+    // Return null for no overlay (default).
+    protected setTimeOfDay(time: TimeOfDay): void {
+        const color = this.getColorForTime(time);
+        if (!color) {
+            if (this.timeOverlay) {
+                this.timeOverlay.visible = false;
+            }
+            return;
+        }
+        if (!this.timeOverlay) {
+            this.addUILayer("timeOverlay");
+            const half = this.viewport.getHalfSize();
+            this.timeOverlay = this.add.graphic(GraphicType.RECT, "timeOverlay", {
+                position: half.clone(),
+                size: half.scaled(2)
+            });
+        }
+        this.timeOverlay.color = color;
+        this.timeOverlay.visible = true;
+    }
+
+    private getColorForTime(time: TimeOfDay): Color | null {
+        switch (time) {
+            case TimeOfDay.DAY:  return null;
+            case TimeOfDay.NOON:  return new Color(200, 140, 60, 0.30);
+            case TimeOfDay.DUSK:  return new Color(30, 20, 60, 0.45);
+            case TimeOfDay.NIGHT: return new Color(10, 10, 60, 0.75);
+            default:              return null;
+        }
     }
 
     /**
