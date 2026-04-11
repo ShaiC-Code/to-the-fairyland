@@ -2,6 +2,7 @@ import Scene from "../../Wolfie2D/Scene/Scene";
 import Vec2 from "../../Wolfie2D/DataTypes/Vec2";
 import UIScreen from "./UIScreen";
 import Color from "../../Wolfie2D/Utils/Color";
+import NullFunc from "../../Wolfie2D/DataTypes/Functions/NullFunc";
 
 export default class PauseScreen extends UIScreen {
     private onQuit: () => void;
@@ -36,19 +37,19 @@ export default class PauseScreen extends UIScreen {
         this.addRect("bg", screenCenter.clone(), viewportHalfSize.clone().scale(2), new Color(0, 0, 0, 0.7));
 
         // Add "PAUSED" text
-        // this.addLabel("pausedLabel", menuButtonPos.pause, new Vec2(viewportSize.x, 100), "PAUSED", 64, "center", "center");
+        // this.addLabel("pausedLabel", menuButtonPos.pause, new Vec2(viewportSize.x, 100), "PAUSED", 64, {"halign": "left", "valign": "center"});
 
         // Add Resume button
-        this.addHoverButton("resumeBtn", menuButtonPos.resume, menuButtonSize, "RESUME", () => this.hide());
+        this.addHoverButton("resumeBtn", menuButtonPos.resume, menuButtonSize, "RESUME", {onClick: () => this.hide()});
 
         // Add Save button
-        this.addHoverButton("saveBtn", menuButtonPos.save, menuButtonSize, "SAVE", () => {});
+        this.addHoverButton("saveBtn", menuButtonPos.save, menuButtonSize, "SAVE", {onClick: NullFunc});
 
         // Add Volume button
-        this.addHoverButton("volumeBtn", menuButtonPos.volume, menuButtonSize, "VOLUME", () => {});
+        this.addHoverButton("volumeBtn", menuButtonPos.volume, menuButtonSize, "VOLUME", {onClick: NullFunc});
 
         // Add Quit button
-        this.addHoverButton("quitBtn", menuButtonPos.quit, menuButtonSize, "BACK TO MENU", () => this.onQuit());
+        this.addHoverButton("quitBtn", menuButtonPos.quit, menuButtonSize, "BACK TO MENU", {onClick: () => this.onQuit()});
 
         // Hide by default
         this.layer.setHidden(true);
