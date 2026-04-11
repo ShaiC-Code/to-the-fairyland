@@ -37,6 +37,8 @@ export default class Viewport {
     /** The size of the canvas */
     private canvasSize: Vec2;
 
+    private velocity: Vec2;
+
     constructor(canvasSize: Vec2, zoomLevel: number){
         this.view = new AABB(Vec2.ZERO, Vec2.ZERO);
         this.boundary = new AABB(Vec2.ZERO, Vec2.ZERO);
@@ -45,6 +47,7 @@ export default class Viewport {
         this.scrollZoomEnabled = false;
         this.canvasSize = Vec2.ZERO;
         this.focus = Vec2.ZERO;
+        this.velocity = Vec2.ZERO;
 
         // Set the size of the canvas
         this.setCanvasSize(canvasSize);
@@ -69,6 +72,10 @@ export default class Viewport {
      */
     getCenter(): Vec2 {
         return this.view.center;
+    }
+
+    getVelocity(): Vec2 {
+        return this.velocity;
     }
 
     /**
@@ -223,6 +230,23 @@ export default class Viewport {
         this.following = node;
     }
 
+    /**
+     * Clears the smoothing history and immediately centers the viewport on its current target.
+     * Useful after scene transitions or teleports where interpolation from stale positions looks wrong.
+     */
+    snapToTarget(target?: Vec2): void {
+        const nextCenter = target
+            ? target.clone()
+            : this.following
+                ? this.following.position.clone()
+                : this.focus.clone();
+
+        this.lastPositions.clear();
+        this.lastPositions.enqueue(nextCenter);
+        this.velocity.zero();
+        this.updateView();
+    }
+
     updateView(): void {
         if(this.lastPositions.getSize() > this.smoothingFactor){
             this.lastPositions.dequeue();
@@ -245,6 +269,7 @@ export default class Viewport {
     }
 
     update(deltaT: number): void {
+        const oldCenter = this.view.center.clone();
         // If zoom is enabled
         if(this.scrollZoomEnabled){
             if(Input.didJustScroll()){
@@ -282,5 +307,11 @@ export default class Viewport {
         }
 
         this.updateView();
+
+        if(deltaT > 0){
+            this.velocity = this.view.center.clone().sub(oldCenter).scale(1 / deltaT);
+        } else {
+            this.velocity.zero();
+        }
     }
 }
