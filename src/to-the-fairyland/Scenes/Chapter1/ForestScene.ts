@@ -1,8 +1,7 @@
 import { TiledObject, TiledTilemapData } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData";
-import MappedAdventureScene from "../MappedAdventureScene";
 import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 import ShelterScene from "./ShelterScene";
-import { TimeOfDay } from "../MappedAdventureScene";
+import MappedAdventureScene, { TimeOfDay, WeatherType } from "../MappedAdventureScene";
 
 
 export default class ForestScene  extends MappedAdventureScene {
@@ -20,11 +19,13 @@ export default class ForestScene  extends MappedAdventureScene {
     public override startScene(): void {
         super.startScene();
         this.setTimeOfDay(TimeOfDay.DUSK);
+        this.setWeather(WeatherType.SNOWSTORM, 50);
     }
 
     protected override configureLayers(): void {
         this.getLayer("Interactables").setDepth(this.actorLayerDepth);
         this.getLayer("Trees").setDepth(20);
+        this.getLayer("Ground").setDepth(2);
     }
 
     protected override spawnMapObjects(tilemapData: TiledTilemapData): void {

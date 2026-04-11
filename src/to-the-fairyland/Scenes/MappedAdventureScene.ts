@@ -13,6 +13,9 @@ import HoverButton from "../UI/CustomUIElements/HoverButton";
 import { GraphicType } from "../../Wolfie2D/Nodes/Graphics/GraphicTypes";
 import Color from "../../Wolfie2D/Utils/Color";
 import Graphic from "../../Wolfie2D/Nodes/Graphic";
+import Sprite from "../../Wolfie2D/Nodes/Sprites/Sprite";
+import SnowflakeBehavior, { SnowflakeSettings } from "../AI/SnowflakeBehavior";
+
 
 type AssetRef = Readonly<{
     key: string;
@@ -29,6 +32,21 @@ export enum TimeOfDay {
     DUSK,
     NIGHT
 }
+
+export enum WeatherType {
+    NONE,
+    SNOW,
+    SNOWSTORM
+}
+
+type SnowPreset = Readonly<{
+    poolSize: number;
+    fadeInSpeed: number;
+    scaleMin: number;
+    scaleMax: number;
+    settings: SnowflakeSettings;
+}>;
+
 
 export default abstract class MappedAdventureScene extends Scene {
     // The tilemap to load for the scene, pass from sub scenes
@@ -61,6 +79,16 @@ export default abstract class MappedAdventureScene extends Scene {
     protected entrances: TiledObject[] = [];
 
     private timeOverlay: Graphic | null = null;
+    private snowflakes: Sprite[] = [];
+    private weatherActive = false;
+    private weatherAlpha = 0;
+    private weatherFadeInSpeed = 0.5;
+    private weatherLayerCreated = false;
+    private weatherLayerDepth = 50;
+    
+    private readonly weatherLayerName = "weather";
+    private readonly snowflakeKeys = ["snowflake1", "snowflake2", "snowflake3"];
+    
 
     // lets the scene receive data, ex: {spawnName: "Door1"}
     public override initScene(init: SceneEntranceData = {}): void {
@@ -75,6 +103,10 @@ export default abstract class MappedAdventureScene extends Scene {
         this.add.registerCustomUIElement(CustomUIElementType.HOVER_BUTTON, (options?: Record<string, any>) => {
             return new HoverButton(options!.position, options!.text);
         });
+
+        this.load.image("snowflake1", "game_assets/sprites/particles/Snowflake1.png");
+        this.load.image("snowflake2", "game_assets/sprites/particles/Snowflake2.png");
+        this.load.image("snowflake3", "game_assets/sprites/particles/Snowflake3.png");
     }
 
 
@@ -116,6 +148,7 @@ export default abstract class MappedAdventureScene extends Scene {
         this.applyCameraBounds();
         this.viewport.follow(this.player);
         this.viewport.setZoomLevel(this.zoomLevel);
+        this.viewport.snapToTarget();
 
         // Initialize pause and inventory screens with viewport data
         this.pauseScreen = new PauseScreen(
@@ -187,6 +220,13 @@ export default abstract class MappedAdventureScene extends Scene {
                     console.log("[Interacted with:", nextHit.name, "]");
                     this.handleInteraction(nextHit);
                 }
+            }
+        }
+
+        if (this.weatherActive && this.weatherAlpha < 1) {
+            this.weatherAlpha = Math.min(this.weatherAlpha + _deltaT * this.weatherFadeInSpeed, 1);
+            for (const flake of this.snowflakes) {
+                flake.alpha = this.weatherAlpha;
             }
         }
     }
@@ -299,7 +339,7 @@ export default abstract class MappedAdventureScene extends Scene {
             return;
         }
         if (!this.timeOverlay) {
-            this.addUILayer("timeOverlay");
+            this.addParallaxLayer("timeOverlay", Vec2.ZERO, 9999);
             const half = this.viewport.getHalfSize();
             this.timeOverlay = this.add.graphic(GraphicType.RECT, "timeOverlay", {
                 position: half.clone(),
@@ -309,6 +349,119 @@ export default abstract class MappedAdventureScene extends Scene {
         this.timeOverlay.color = color;
         this.timeOverlay.visible = true;
     }
+
+    protected setWeather(weather: WeatherType, layerDepth: number = this.weatherLayerDepth): void {
+        if (weather === WeatherType.NONE) {
+            for (const flake of this.snowflakes) {
+                flake.visible = false;
+            }
+            this.weatherActive = false;
+            return;
+        }
+    
+        const preset = this.getSnowPreset(weather);
+        this.weatherLayerDepth = layerDepth;
+        this.weatherFadeInSpeed = preset.fadeInSpeed;
+    
+        this.ensureWeatherLayer();
+        this.getLayer(this.weatherLayerName).setDepth(this.weatherLayerDepth);
+        this.ensureSnowPool(preset);
+    
+        this.weatherAlpha = 0;
+    
+        for (let i = 0; i < this.snowflakes.length; i++) {
+            const flake = this.snowflakes[i];
+    
+            if (i < preset.poolSize) {
+                const scale = preset.scaleMin + Math.random() * (preset.scaleMax - preset.scaleMin);
+    
+                flake.visible = true;
+                flake.alpha = 0;
+                flake.scale.set(scale, scale);
+    
+                (flake.ai as SnowflakeBehavior).activate({ settings: preset.settings });
+                (flake.ai as SnowflakeBehavior).scatterOnScreen();
+            } else {
+                flake.visible = false;
+            }
+        }
+    
+        this.weatherActive = true;
+    }
+    
+    private ensureWeatherLayer(): void {
+        if (!this.weatherLayerCreated) {
+            this.addLayer(this.weatherLayerName, this.weatherLayerDepth);
+            this.weatherLayerCreated = true;
+        }
+    }
+    
+    private ensureSnowPool(preset: SnowPreset): void {
+        this.ensureWeatherLayer();
+    
+        while (this.snowflakes.length < preset.poolSize) {
+            const key = this.snowflakeKeys[this.snowflakes.length % this.snowflakeKeys.length];
+            const flake = this.add.sprite(key, this.weatherLayerName);
+    
+            flake.visible = false;
+            flake.addAI(SnowflakeBehavior, {
+                viewport: this.viewport,
+                settings: preset.settings
+            });
+    
+            this.snowflakes.push(flake);
+        }
+    }
+    
+    private getSnowPreset(weather: WeatherType): SnowPreset {
+        switch (weather) {
+            case WeatherType.SNOW:
+                return {
+                    poolSize: 80,
+                    fadeInSpeed: 0.35,
+                    scaleMin: 0.28,
+                    scaleMax: 0.5,
+                    settings: {
+                        spawnPadding: 96,
+                        recyclePadding: 128,
+                        inflowEpsilon: 5,
+                        baseSpeedMin: 25,
+                        baseSpeedMax: 55,
+                        angleMinDegrees: 5,
+                        angleMaxDegrees: 12,
+                        wobbleAmplitudeMin: 3,
+                        wobbleAmplitudeMax: 10,
+                        wobbleFrequencyMin: 0.4,
+                        wobbleFrequencyMax: 1.1
+                    }
+                };
+    
+            case WeatherType.SNOWSTORM:
+                return {
+                    poolSize: 340,
+                    fadeInSpeed: 0.75,
+                    scaleMin: 0.48,
+                    scaleMax: 1.00,
+                    settings: {
+                        spawnPadding: 128,
+                        recyclePadding: 160,
+                        inflowEpsilon: 5,
+                        baseSpeedMin: 130,
+                        baseSpeedMax: 400,
+                        angleMinDegrees: 28,
+                        angleMaxDegrees: 62,
+                        wobbleAmplitudeMin: 14,
+                        wobbleAmplitudeMax: 56,
+                        wobbleFrequencyMin: 0.9,
+                        wobbleFrequencyMax: 2.1
+                    }
+                };
+    
+            default:
+                throw new Error(`Weather preset not defined for weather type "${weather}"`);
+        }
+    }
+    
 
     private getColorForTime(time: TimeOfDay): Color | null {
         switch (time) {
