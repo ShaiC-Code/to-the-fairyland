@@ -7,14 +7,13 @@ import Layer from "../../Wolfie2D/Scene/Layer";
 import Scene from "../../Wolfie2D/Scene/Scene";
 import Color from "../../Wolfie2D/Utils/Color";
 import GameEvent from "../../Wolfie2D/Events/GameEvent";
-import HoverButton from "../CustomUI/HoverButton";
+import HoverButton from "../UI/CustomUIElements/HoverButton";
 import ForestScene  from "./Chapter1/ForestScene";
 import ShelterScene from "./Chapter1/ShelterScene";
 import TextBox from "../../Wolfie2D/Nodes/UIElements/TextBox";
+import { CustomUIElementType } from "../UI/CustomUIElements/CustomUIElementTypes";
 
 export default class MainMenu extends Scene {
-    private static readonly HOVER_BUTTON_TYPE = "HOVER_BUTTON";
-
     private mainMenu!: Layer;
     private levelMenu!: Layer;
     private controlsMenu!: Layer;
@@ -26,7 +25,7 @@ export default class MainMenu extends Scene {
         const center = this.viewport.getCenter();
         const halfSize = this.viewport.getHalfSize();
 
-        this.add.registerCustomUIElement(MainMenu.HOVER_BUTTON_TYPE, (options?: Record<string, any>) => {
+        this.add.registerCustomUIElement(CustomUIElementType.HOVER_BUTTON, (options?: Record<string, any>) => {
             return new HoverButton(options!.position, options!.text);
         });
 
@@ -252,7 +251,7 @@ export default class MainMenu extends Scene {
     }
 
     private addHoverButton(layerName: string, x: number, y: number, text: string, eventId: string): void {
-        const button = this.add.uiElement(MainMenu.HOVER_BUTTON_TYPE, layerName, {
+        const button = this.add.uiElement(CustomUIElementType.HOVER_BUTTON, layerName, {
             position: new Vec2(x, y),
             text: text
         });

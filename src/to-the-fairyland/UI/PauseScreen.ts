@@ -1,9 +1,7 @@
 import Scene from "../../Wolfie2D/Scene/Scene";
 import Vec2 from "../../Wolfie2D/DataTypes/Vec2";
-import Color from "../../Wolfie2D/Utils/Color";
-import { UIElementType } from "../../Wolfie2D/Nodes/UIElements/UIElementTypes";
-import Label from "../../Wolfie2D/Nodes/UIElements/Label";
 import UIScreen from "./UIScreen";
+import Color from "../../Wolfie2D/Utils/Color";
 
 export default class PauseScreen extends UIScreen {
     private onQuit: () => void;
@@ -16,71 +14,44 @@ export default class PauseScreen extends UIScreen {
     }
 
     protected initializeUI(): void {
-        // Add semi-transparent background
-        const bg = <Label>this.scene.add.uiElement(UIElementType.LABEL, "pauseOverlay", {
-            position: Vec2.ZERO,
-            text: ""
-        });
-        bg.backgroundColor = new Color(0, 0, 0, 0.7);
-        bg.borderColor = Color.TRANSPARENT;
-        bg.borderRadius = 0;
-
-        // Add "PAUSED" text
-        const pausedLabel = <Label>this.scene.add.uiElement(UIElementType.LABEL, "pauseOverlay", {
-            position: Vec2.ZERO,
-            text: "PAUSED"
-        });
-        pausedLabel.fontSize = 64;
-        pausedLabel.textColor = Color.WHITE;
-        pausedLabel.backgroundColor = Color.TRANSPARENT;
-        pausedLabel.borderColor = Color.TRANSPARENT;
-
-        // Add Resume button
-        const resumeBtn = <Label>this.scene.add.uiElement(UIElementType.BUTTON, "pauseOverlay", {
-            position: Vec2.ZERO,
-            text: "Resume"
-        });
-        resumeBtn.size.set(250, 50);
-        resumeBtn.fontSize = 24;
-        resumeBtn.textColor = Color.WHITE;
-        resumeBtn.borderColor = Color.WHITE;
-        resumeBtn.borderWidth = 2;
-        resumeBtn.backgroundColor = Color.TRANSPARENT;
-        resumeBtn.borderRadius = 0;
-        resumeBtn.onClick = () => this.hide();
-
-        // Add Quit to Menu button
-        const quitBtn = <Label>this.scene.add.uiElement(UIElementType.BUTTON, "pauseOverlay", {
-            position: Vec2.ZERO,
-            text: "Quit to Menu"
-        });
-        quitBtn.size.set(250, 50);
-        quitBtn.fontSize = 24;
-        quitBtn.textColor = Color.WHITE;
-        quitBtn.borderColor = Color.WHITE;
-        quitBtn.borderWidth = 2;
-        quitBtn.backgroundColor = Color.TRANSPARENT;
-        quitBtn.borderRadius = 0;
-        quitBtn.onClick = () => this.onQuit();
-
-        this.elements.set("bg", bg);
-        this.elements.set("pausedLabel", pausedLabel);
-        this.elements.set("resumeBtn", resumeBtn);
-        this.elements.set("quitBtn", quitBtn);
-
-        this.updateLayout();
-
-        // Hide by default
-        this.layer.setHidden(true);
-    }
-
-    protected updateLayout(): void {
         const viewportHalfSize = this.getViewportHalfSize();
+        const viewportSize = viewportHalfSize.clone().scale(2);
         const screenCenter = viewportHalfSize.clone();
 
-        this.updateUIElement(this.elements.get("bg"), screenCenter.clone(), viewportHalfSize.clone().scale(2));
-        this.updateUIElement(this.elements.get("pausedLabel"), new Vec2(screenCenter.x, screenCenter.y - 100), null);
-        this.updateUIElement(this.elements.get("resumeBtn"), new Vec2(screenCenter.x, screenCenter.y + 50), null);
-        this.updateUIElement(this.elements.get("quitBtn"), new Vec2(screenCenter.x, screenCenter.y + 120), null);
+        const listTop = screenCenter.y + 50;
+        const verticalOffset = 50;
+
+        const menuButtonSize = new Vec2(viewportSize.x, 50);
+
+        const menuButtonPos = {
+            pause: new Vec2(screenCenter.x, screenCenter.y - 100),
+            resume: new Vec2(screenCenter.x, listTop),
+            save: new Vec2(screenCenter.x, listTop + verticalOffset),
+            volume: new Vec2(screenCenter.x, listTop + verticalOffset * 2),
+            quit: new Vec2(screenCenter.x, listTop + verticalOffset * 3)
+        };
+
+
+        // Add semi-transparent background
+        this.addLabel("bg", screenCenter.clone(), viewportHalfSize.clone().scale(2), "", 0, "center", "center");
+        this.elements.get("bg")!.backgroundColor = new Color(0, 0, 0, 0.7);
+
+        // Add "PAUSED" text
+        // this.addLabel("pausedLabel", menuButtonPos.pause, new Vec2(viewportSize.x, 100), "PAUSED", 64, "center", "center");
+
+        // Add Resume button
+        this.addHoverButton("resumeBtn", menuButtonPos.resume, menuButtonSize, "RESUME", () => this.hide());
+
+        // Add Save button
+        this.addHoverButton("saveBtn", menuButtonPos.save, menuButtonSize, "SAVE", () => {});
+
+        // Add Volume button
+        this.addHoverButton("volumeBtn", menuButtonPos.volume, menuButtonSize, "VOLUME", () => {});
+
+        // Add Quit button
+        this.addHoverButton("quitBtn", menuButtonPos.quit, menuButtonSize, "BACK TO MENU", () => this.onQuit());
+
+        // Hide by default
+        this.layer.setHidden(false);
     }
 }

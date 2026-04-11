@@ -1,6 +1,6 @@
-import Button from "../../Wolfie2D/Nodes/UIElements/Button";
-import Color from "../../Wolfie2D/Utils/Color";
-import Vec2 from "../../Wolfie2D/DataTypes/Vec2";
+import Button from "../../../Wolfie2D/Nodes/UIElements/Button";
+import Color from "../../../Wolfie2D/Utils/Color";
+import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 
 export default class HoverButton extends Button {
     normalBackgroundColor: Color;
