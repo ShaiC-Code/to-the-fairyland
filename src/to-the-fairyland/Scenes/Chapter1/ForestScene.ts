@@ -10,11 +10,26 @@ export default class ForestScene extends MappedAdventureScene {
         key: "chapter1",
         path: "game_assets/tilemaps/Chapter1/Chapter1.json"
     };
+
+    protected readonly snowTreeImage = {
+        key: "snowTree1",
+        path: "game_assets/sprites/SnowTree1.png"
+    };
+
+    protected readonly bushBerriesImage = {
+        key: "bushBerries",
+        path: "game_assets/sprites/BushBerries.png"
+    };
+
+    protected readonly mapItemImage = {
+        key: "mapItem",
+        path: "game_assets/sprites/MapItem.png"
+    };
     
     protected override loadExtraAssets(): void {
-        this.load.image("snowTree1", "game_assets/sprites/SnowTree1.png");
-        this.load.image("bushBerries", "game_assets/sprites/BushBerries.png");
-        this.load.image("mapItem", "game_assets/sprites/MapItem.png");
+        this.load.image(this.snowTreeImage.key, this.snowTreeImage.path);
+        this.load.image(this.bushBerriesImage.key, this.bushBerriesImage.path);
+        this.load.image(this.mapItemImage.key, this.mapItemImage.path);
     }
 
     public override startScene(): void {
@@ -34,7 +49,7 @@ export default class ForestScene extends MappedAdventureScene {
 
         // Display all the trees
         for (const point of treePoints) {
-            const tree = this.add.sprite("snowTree1", "Trees");
+            const tree = this.add.sprite(this.snowTreeImage.key, "Trees");
             tree.position.set(point.x, point.y - tree.size.y / 2);
         }
 
@@ -43,7 +58,7 @@ export default class ForestScene extends MappedAdventureScene {
 
         //Display all the bushes
         for (const point of bushPoints) {
-            const bush = this.add.sprite("bushBerries", "Interactables");
+            const bush = this.add.sprite(this.bushBerriesImage.key, "Interactables");
             bush.position.set(point.x, point.y - bush.size.y / 2 + 20);
 
             bush.setSortTile(this.ground.getTilemapPosition(point.x, point.y));
@@ -53,7 +68,7 @@ export default class ForestScene extends MappedAdventureScene {
         // Display the map item to be picked up
         const mapItemObj = interactLayer?.objects.find(obj => obj.name === "MapItem");
         if (mapItemObj) {
-            const mapItem = this.add.sprite("mapItem", "Interactables");
+            const mapItem = this.add.sprite(this.mapItemImage.key, "Interactables");
             mapItem.position.set(mapItemObj.x, mapItemObj.y);
             mapItem.setSortTile(this.ground.getTilemapPosition(mapItemObj.x, mapItemObj.y));
             mapItem.setSortOrder(1);
