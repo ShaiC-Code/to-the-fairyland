@@ -7,7 +7,7 @@ import { BattlerEvent, ItemEvent } from "../../Events";
 import Inventory from "../../GameSystems/ItemSystem/Inventory";
 import Item from "../../GameSystems/ItemSystem/Item";
 import PlayerController from "./PlayerController";
-import { Idle, Invincible, Moving, Dead, PlayerStateType } from "./PlayerStates/PlayerState";
+import { Idle, Invincible, Moving, Dead, PlayerStateType } from "./PlayerStates/PlayerBehaviorState";
 import OrthogonalTilemap from "../../../Wolfie2D/Nodes/Tilemaps/OrthogonalTilemap";
 
 
