@@ -3,7 +3,7 @@ import { Chapter1MainQuestStep } from "../StorySystem/StoryState";
 export type InteractionType = "dialogue";
 export type InteractionData = DialogueInteraction;
 
-export type DialogueChoiceAction = "collectFrozenBerries";
+export type DialogueChoiceAction = "collectFrozenBerries" | "sleep";
 
 // Different choices and its associated action if any
 export interface DialogueChoiceOption {
@@ -74,6 +74,7 @@ const BED_DIALOGUES: Readonly<Record<Chapter1MainQuestStep, DialogueInteraction>
             options: [
                 {
                     label: "Yes",
+                    action: "sleep",
                     interaction: {
                         type: "dialogue",
                         lines: ["You rest."]

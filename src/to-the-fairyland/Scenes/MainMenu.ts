@@ -12,6 +12,8 @@ import ControlsScreen from "../UI/MainMenuScreens/ControlsScreen";
 import HelpScreen from "../UI/MainMenuScreens/HelpScreen";
 import MainScreen from "../UI/MainMenuScreens/MainScreen";
 import TestScreen from "../UI/MainMenuScreens/TestScreen";
+import GameSessionManager from "../GameSystems/GameSessionSystem/GameSessionManager";
+
 
 type AssetRef = Readonly<{
     key: string;
@@ -19,6 +21,8 @@ type AssetRef = Readonly<{
 }>;
 
 export default class MainMenu extends Scene {
+    private readonly gameSessionManager = GameSessionManager.getInstance();
+
     private mainMenu!: MainScreen;
     private levelMenu!: LevelSelectionScreen;
     private controlsMenu!: ControlsScreen;
@@ -140,6 +144,8 @@ export default class MainMenu extends Scene {
                 break;
             }
             case "level1": {
+                this.gameSessionManager.startNewGame();
+                
                 this.sceneManager.changeToScene(
                     ShelterScene,
                     {

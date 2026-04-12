@@ -24,6 +24,10 @@ import { AudioChannelType } from "../../Wolfie2D/Sound/AudioManager";
 import StoryManager from "../GameSystems/StorySystem/StoryManager";
 import FrozenBerries from "../GameSystems/ItemSystem/Items/FrozenBerries";
 import { DialogueChoiceOption, DialogueInteraction, getInteractionData } from "../GameSystems/InteractionSystem/InteractionDatabase";
+import PlayerStateManager from "../GameSystems/PlayerSystem/PlayerStateManager";
+import GameSessionManager from "../GameSystems/GameSessionSystem/GameSessionManager";
+import { TimeOfDay } from "../GameSystems/WorldSystem/WorldState";
+
 
 
 
@@ -36,13 +40,6 @@ type AssetRef = Readonly<{
 type SceneEntranceData = {
     spawnName?: string;
 };
-
-export enum TimeOfDay {
-    DAY,
-    NOON,
-    DUSK,
-    NIGHT
-}
 
 export enum WeatherType {
     NONE,
@@ -64,6 +61,9 @@ export default abstract class MappedAdventureScene extends Scene {
 
     // The tilemap to load for the scene, pass from sub scenes
     protected abstract readonly tilemap: AssetRef;
+    protected readonly gameSessionManager = GameSessionManager.getInstance();
+    protected readonly playerStateManager = PlayerStateManager.getInstance();
+
 
     // The player to load for the scenes
     protected readonly playerSheet: AssetRef = {
@@ -219,6 +219,8 @@ export default abstract class MappedAdventureScene extends Scene {
 
 
     public override startScene(): void {
+        this.gameSessionManager.requireCurrentSession();
+
         this.add.tilemap(this.tilemap.key);
         this.addLayer(this.actorLayerName, this.actorLayerDepth);
 
@@ -248,6 +250,11 @@ export default abstract class MappedAdventureScene extends Scene {
         }
 
         this.player = this.add.animatedSprite(PlayerActor, this.playerSheet.key, this.actorLayerName);
+
+        const playerState = this.playerStateManager.getPlayerState();
+        this.player.maxHealth = playerState.maxHealth;
+        this.player.health = playerState.health;
+
         this.spawnPlayerAt(spawn);
 
         const ai = this.player.ai as PlayerAI;
@@ -272,7 +279,7 @@ export default abstract class MappedAdventureScene extends Scene {
             this,
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize(),
-            this.player.inventory,
+            playerState.inventory,
             { onEnterSFXKey: this.uiHover.key, onClickSFXKey: this.uiClick.key, onShowSFXKey: this.menuOpen.key, onHideSFXKey: this.menuClose.key }
         );
         
@@ -285,6 +292,8 @@ export default abstract class MappedAdventureScene extends Scene {
             { onEnterSFXKey: this.uiHover.key, onClickSFXKey: this.uiClick.key }
         );
 
+        const worldState = this.gameSessionManager.getWorldState();
+        this.setTimeOfDay(worldState.timeOfDay);
         this.startWeatherAmbienceLoops();
     }
 
@@ -1033,11 +1042,21 @@ export default abstract class MappedAdventureScene extends Scene {
             case "collectFrozenBerries":
                 this.giveFrozenBerries();
                 break;
+
+            case "sleep":
+                this.storyManager.markSlept();
+
+                const worldState = this.gameSessionManager.getWorldState();
+                worldState.timeOfDay = TimeOfDay.DAY;
+                
+                this.setTimeOfDay(worldState.timeOfDay);
+                break;
         }
     }
 
     protected giveFrozenBerries(): void {
-        const alreadyHasBerries = this.player.inventory.find(
+        const alreadyHasBerries = this.playerStateManager.getPlayerState().inventory
+        .find(
             item => item instanceof FrozenBerries
         ) !== null;
     
@@ -1046,7 +1065,7 @@ export default abstract class MappedAdventureScene extends Scene {
         }
     
         const berries = new FrozenBerries(1);
-        const addedItem = this.player.inventory.add(berries);
+        const addedItem = this.playerStateManager.getPlayerState().inventory.add(berries);
     
         if (addedItem !== null) {
             this.storyManager.markFoodConsumed();

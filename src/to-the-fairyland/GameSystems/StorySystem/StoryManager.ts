@@ -1,14 +1,23 @@
-import { Chapter1MainQuestStep, StoryState, createInitialStoryState } from "./StoryState";
+import GameSessionManager from "../GameSessionSystem/GameSessionManager";
+import { Chapter1MainQuestStep, StoryState } from "./StoryState";
 
+/**
+ * Handles story-specific queries and progression rules.
+ * The actual story data now lives inside GameSessionManager's current session.
+ */
 export default class StoryManager {
     private static instance: StoryManager | null = null;
 
-    private state: StoryState;
+    /** Shared owner of the live session data. */
+    private readonly gameSessionManager: GameSessionManager;
 
     private constructor() {
-        this.state = createInitialStoryState();
+        this.gameSessionManager = GameSessionManager.getInstance();
     }
 
+    /**
+     * Returns the shared story manager.
+     */
     public static getInstance(): StoryManager {
         if (!StoryManager.instance) {
             StoryManager.instance = new StoryManager();
@@ -17,31 +26,55 @@ export default class StoryManager {
         return StoryManager.instance;
     }
 
-    public resetForNewGame(): void {
-        this.state = createInitialStoryState();
+    /**
+     * Returns the active story state from the current game session.
+     * Throws if gameplay starts before a session has been created.
+     */
+    private getState(): StoryState {
+        return this.gameSessionManager.getStoryState();
     }
 
+    /**
+     * Read-only view of the story state for UI or scene checks.
+     */
     public getStoryState(): Readonly<StoryState> {
-        return this.state;
+        return this.getState();
     }
 
+    /**
+     * Convenience accessor so scenes do not need to know the exact
+     * nested shape of chapter 1 story data.
+     */
     public getChapter1MainQuestStep(): Chapter1MainQuestStep {
-        return this.state.chapter1.mainQuestStep;
+        return this.getState().chapter1.mainQuestStep;
     }
 
+    /**
+     * Advances the quest once the player has successfully found food.
+     */
     public markFoodConsumed(): void {
-        if (this.state.chapter1.mainQuestStep === Chapter1MainQuestStep.NEED_FOOD) {
-            this.state.chapter1.mainQuestStep = Chapter1MainQuestStep.RETURN_TO_BED;
+        const state = this.getState();
+
+        if (state.chapter1.mainQuestStep === Chapter1MainQuestStep.NEED_FOOD) {
+            state.chapter1.mainQuestStep = Chapter1MainQuestStep.RETURN_TO_BED;
         }
     }
 
+    /**
+     * Returns whether the player is currently allowed to sleep.
+     */
     public canSleep(): boolean {
-        return this.state.chapter1.mainQuestStep === Chapter1MainQuestStep.RETURN_TO_BED;
+        return this.getState().chapter1.mainQuestStep === Chapter1MainQuestStep.RETURN_TO_BED;
     }
 
+    /**
+     * Advances the quest after the player rests in bed.
+     */
     public markSlept(): void {
-        if (this.state.chapter1.mainQuestStep === Chapter1MainQuestStep.RETURN_TO_BED) {
-            this.state.chapter1.mainQuestStep = Chapter1MainQuestStep.SLEPT;
+        const state = this.getState();
+
+        if (state.chapter1.mainQuestStep === Chapter1MainQuestStep.RETURN_TO_BED) {
+            state.chapter1.mainQuestStep = Chapter1MainQuestStep.SLEPT;
         }
     }
 }
