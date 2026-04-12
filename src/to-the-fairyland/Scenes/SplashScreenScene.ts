@@ -12,9 +12,9 @@ type AssetRef = Readonly<{
 
 export default class SplashScreenScene extends Scene {
 
-	  protected readonly splashImage: AssetRef = {
-        key: "splash-screen",
-        path: "game_assets/images/splash-screen.png"
+	  protected readonly splashScreenImage: AssetRef = {
+        key: "splash-screen-image",
+        path: "game_assets/images/splash-screen-image.png"
 	  };
 
 	  protected readonly splashProceed: AssetRef = {
@@ -25,7 +25,7 @@ export default class SplashScreenScene extends Scene {
     protected splashScreen!: SplashScreen;
 
 	  public loadScene(): void {
-        this.load.image(this.splashImage.key, this.splashImage.path);
+        this.load.image(this.splashScreenImage.key, this.splashScreenImage.path);
         this.load.audio(this.splashProceed.key, this.splashProceed.path);
 
         this.add.registerCustomCanvasNode(CustomUIElementType.UI_IMAGE, (options?: Record<string, any>) => {
@@ -43,7 +43,7 @@ export default class SplashScreenScene extends Scene {
             this,
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize(),
-            this.splashImage.key,
+            this.splashScreenImage.key,
             () => this.sceneManager.changeToScene(
                 MainMenu,
                 undefined,
