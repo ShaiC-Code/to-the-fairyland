@@ -24,12 +24,12 @@ export default class MainMenu extends Scene {
 
     protected readonly uiHover: AssetRef = {
         key: "ui-hover",
-        path: "game_assets/sounds/ui-hover.wav"
+        path: "game_assets/sounds/ui-hover.ogg"
     };
 
     protected readonly uiClick: AssetRef = {
         key: "ui-click",
-        path: "game_assets/sounds/ui-click.wav"
+        path: "game_assets/sounds/ui-click.ogg"
     };
 
     public loadScene(){
