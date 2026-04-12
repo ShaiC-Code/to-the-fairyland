@@ -164,7 +164,6 @@ export default class UIScreen {
             textBox.setVAlign(valign);
         }
         textBox.setText(text);
-
         this.addUIElement(key, textBox);
     }
     
@@ -217,17 +216,35 @@ export default class UIScreen {
         this.addUIElement(key, button);
     }
 
-    protected addUIImage(key: string, position: Vec2, imageKey: string, size?: Vec2): void {
+    protected addClickableOverlay(key: string, position: Vec2, size: Vec2, options?: { onClick?: () => void; onClickEventId?: string }): void {
+        const { onClick, onClickEventId } = options ?? {};
+
+        const clickableOverlay = this.scene.add.uiElement(CustomUIElementType.CLICKABLE_OVERLAY, this.layerName, {
+            position: position
+        });
+        clickableOverlay.size.set(size.x, size.y);
+        clickableOverlay.onEnter = () => {this.playSFX(this.onEnterSFXKey);};
+        clickableOverlay.onClick = () => {
+            this.playSFX(this.onClickSFXKey);
+            if (onClick !== undefined) {
+                onClick();
+            }
+        };
+        if (onClickEventId !== undefined) {
+            clickableOverlay.onClickEventId = onClickEventId;
+        }
+        clickableOverlay.onLeave = () => {this.playSFX(this.onExitSFXKey);};
+        this.addUIElement(key, clickableOverlay);
+    }
+
+    protected addUIImage(key: string, position: Vec2, size: Vec2, imageKey: string): void {
         const imageElement = this.scene.add.customCanvasNode(CustomUIElementType.UI_IMAGE, this.layerName, {
             imageKey
         });
-
         imageElement.position.copy(position);
-
-        if (size) {
-            imageElement.size.copy(size);
-        }
-
+        const scaleX = imageElement.size.x !== 0 ? size.x / imageElement.size.x : 1;
+        const scaleY = imageElement.size.y !== 0 ? size.y / imageElement.size.y : 1;
+        imageElement.scale.set(scaleX, scaleY);
         this.addUIElement(key, imageElement);
     }
 

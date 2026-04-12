@@ -29,7 +29,7 @@ export default class DialogueChoiceBoxScreen extends UIScreen {
     private readonly unselectedButtonBackground = Color.TRANSPARENT;
     private readonly unselectedButtonText = Color.WHITE;
 
-    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, options?: { onClickSFXKey?: string, onEnterSFXKey?: string, onExitSFXKey?: string, onShowSFXKey?: string, onHideSFXKey?: string }, initialChoices?: DialogueChoice[]) {
+    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, initialChoices?: DialogueChoice[], options?: { onClickSFXKey?: string, onEnterSFXKey?: string, onExitSFXKey?: string, onShowSFXKey?: string, onHideSFXKey?: string }) {
         super(layerName, scene, getViewportCenter, getViewportHalfSize, options);
 
         this.initializeUI();

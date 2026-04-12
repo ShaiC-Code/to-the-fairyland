@@ -3,10 +3,12 @@ import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 import UIScreen from "../UIScreen";
 
 export default class MainScreen extends UIScreen {
+    private mainMenuImageKey: string;
 
-    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, options?: { onClickSFXKey?: string, onEnterSFXKey?: string, onExitSFXKey?: string, onShowSFXKey?: string, onHideSFXKey?: string }) {
+    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, mainMenuImageKey: string, options?: { onClickSFXKey?: string, onEnterSFXKey?: string, onExitSFXKey?: string, onShowSFXKey?: string, onHideSFXKey?: string }) {
         super(layerName, scene, getViewportCenter, getViewportHalfSize, options);
 
+        this.mainMenuImageKey = mainMenuImageKey;
         this.initializeUI();
     }
 
@@ -31,8 +33,8 @@ export default class MainScreen extends UIScreen {
             { key: "helpMenuBtn", pos: new Vec2(listLeft, listTop + verticalOffset * 4), text: "Help", eventId: "openHelpMenu" }
         ];
         
-        // Add Main Menu (Title) label
-        this.addLabel("mainMenuLabel", new Vec2(listLeft + 100, listTop - 100), new Vec2(420, 64), "To The FairyLand", 64, {"halign": "center", "valign": "center"});
+        // Add Main Menu background image
+        this.addUIImage("mainMenuImage", new Vec2(screenCenter.x, screenCenter.y), new Vec2(viewportSize.x, viewportSize.y), this.mainMenuImageKey);
 
         // Add main menu buttons
         for (const button of mainMenuButtons) {

@@ -1,5 +1,5 @@
 import Game from "./Wolfie2D/Loop/Game";
-import MainMenu from "./to-the-fairyland/Scenes/MainMenu";
+import SplashScreenScene from "./to-the-fairyland/Scenes/SplashScreenScene";
 import { PlayerInput } from "./to-the-fairyland/AI/Player/PlayerController";
 
 // The main function is your entrypoint into Wolfie2D. Specify your first scene and any options here.
@@ -28,7 +28,7 @@ import { PlayerInput } from "./to-the-fairyland/AI/Player/PlayerController";
     const game = new Game(options);
 
     // Start our game
-    game.start(MainMenu, {});
+    game.start(SplashScreenScene, {});
 
 })();
 

@@ -60,8 +60,11 @@ export default class Game {
     private loadingPercent: HTMLDivElement | null;
     private loadingOverlayTimer: number | null;
     private loadingOverlayReady: boolean;
+    private loadingOverlayShownAt: number | null;
     private latestLoadingProgress: number;
     private transitionOverlayFadeTimer: number | null;
+    private transitionOverlayShownAt: number | null;
+    private completeTransitionTimer: number | null;
 
     /**
      * Creates a new Game
@@ -126,8 +129,11 @@ export default class Game {
         this.loadingPercent = document.getElementById("loading-percent") as HTMLDivElement | null;
         this.loadingOverlayTimer = null;
         this.loadingOverlayReady = false;
+        this.loadingOverlayShownAt = null;
         this.latestLoadingProgress = 0;
         this.transitionOverlayFadeTimer = null;
+        this.transitionOverlayShownAt = null;
+        this.completeTransitionTimer = null;
         this.bindLoadingOverlay();
         
     }
@@ -144,19 +150,60 @@ export default class Game {
 
             this.showTransitionOverlay();
 
-            if (!this.loadingOverlayReady) {
-                this.armLoadingOverlayGate();
-            }
+            if (this.resourceManager.loadingOverlayEnabled) {
+                if (!this.loadingOverlayReady) {
+                    this.armLoadingOverlayGate();
+                }
 
-            if (this.loadingOverlayReady) {
-                this.showLoadingOverlay(clamped);
+                if (this.loadingOverlayReady) {
+                    this.showLoadingOverlay(clamped);
+                }
             }
         };
 
         this.resourceManager.onLoadComplete = () => {
             this.resetLoadingOverlayGate();
-            this.hideLoadingOverlay();
-            this.hideTransitionOverlay();
+
+            const now = performance.now();
+            if (this.resourceManager.loadingOverlayEnabled) {
+                this.loadingOverlayReady = true;
+                this.showLoadingOverlay(1);
+            }
+
+            const minVisibleMs = Math.max(0, this.resourceManager.loadingOverlayMinVisibleMs ?? 0);
+            const overlayElapsedMs = this.loadingOverlayShownAt === null ? 0 : now - this.loadingOverlayShownAt;
+            const remainingOverlayMs = this.resourceManager.loadingOverlayEnabled
+                ? Math.max(0, minVisibleMs - overlayElapsedMs)
+                : 0;
+
+            const fadeOutMs = this.resourceManager.transitionFadeEnabled
+                ? Math.max(0, this.resourceManager.transitionFadeOutMs ?? 0)
+                : 0;
+            const fadeElapsedMs = this.transitionOverlayShownAt === null ? 0 : now - this.transitionOverlayShownAt;
+            const remainingFadeOutMs = this.resourceManager.transitionFadeEnabled
+                ? Math.max(0, fadeOutMs - fadeElapsedMs)
+                : 0;
+
+            const waitMs = Math.max(remainingOverlayMs, remainingFadeOutMs);
+
+            if (this.completeTransitionTimer !== null) {
+                window.clearTimeout(this.completeTransitionTimer);
+                this.completeTransitionTimer = null;
+            }
+
+            const complete = () => {
+                this.completeTransitionTimer = null;
+                this.hideLoadingOverlay();
+                this.hideTransitionOverlay();
+            };
+
+            if (waitMs > 0) {
+                this.completeTransitionTimer = window.setTimeout(() => {
+                    complete();
+                }, waitMs);
+            } else {
+                complete();
+            }
         };
     }
 
@@ -173,6 +220,7 @@ export default class Game {
         const fadeOutMs = Math.max(0, this.resourceManager.transitionFadeOutMs ?? 0);
         this.transitionOverlay.hidden = false;
         this.transitionOverlay.style.transition = `opacity ${fadeOutMs}ms linear`;
+        this.transitionOverlayShownAt = performance.now();
         // Force style application before driving the next opacity value.
         this.transitionOverlay.getBoundingClientRect();
         this.transitionOverlay.style.opacity = "1";
@@ -186,6 +234,7 @@ export default class Game {
         if (!this.resourceManager.transitionFadeEnabled) {
             this.transitionOverlay.hidden = true;
             this.transitionOverlay.style.opacity = "0";
+            this.transitionOverlayShownAt = null;
             return;
         }
 
@@ -203,6 +252,7 @@ export default class Game {
             if (this.transitionOverlay) {
                 this.transitionOverlay.hidden = true;
             }
+            this.transitionOverlayShownAt = null;
         }, fadeInMs);
     }
 
@@ -236,8 +286,13 @@ export default class Game {
     }
 
     private showLoadingOverlay(progress: number): void {
+        const wasHidden = this.loadingOverlay?.hidden ?? true;
         if (this.loadingOverlay) {
             this.loadingOverlay.hidden = false;
+        }
+
+        if (wasHidden) {
+            this.loadingOverlayShownAt = performance.now();
         }
 
         const percent = Math.round(progress * 100);
@@ -253,6 +308,7 @@ export default class Game {
         if (this.loadingOverlay) {
             this.loadingOverlay.hidden = true;
         }
+        this.loadingOverlayShownAt = null;
     }
 
     /**
