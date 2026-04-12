@@ -69,52 +69,52 @@ export default abstract class MappedAdventureScene extends Scene {
     // Sound effects
     protected readonly uiHover: AssetRef = {
         key: "ui-hover",
-        path: "game_assets/sounds/ui-hover.wav"
+        path: "game_assets/sounds/ui-hover.ogg"
     };
 
     protected readonly uiClick: AssetRef = {
         key: "ui-click",
-        path: "game_assets/sounds/ui-click.wav"
+        path: "game_assets/sounds/ui-click.ogg"
     };
 
     protected readonly menuOpen: AssetRef = {
         key: "menu-open",
-        path: "game_assets/sounds/menu-open.wav"
+        path: "game_assets/sounds/menu-open.ogg"
     };
 
     protected readonly menuClose: AssetRef = {
         key: "menu-close",
-        path: "game_assets/sounds/menu-close.wav"
+        path: "game_assets/sounds/menu-close.ogg"
     };
 
     protected readonly woodenDoorSFX: AssetRef = {
         key: "door-wooden",
-        path: "game_assets/sounds/door-wooden.wav"
+        path: "game_assets/sounds/door-wooden.ogg"
     };
 
     protected readonly walkingWoodSFX: AssetRef = {
         key: "walking-wood",
-        path: "game_assets/sounds/walking-wood.wav"
+        path: "game_assets/sounds/walking-wood.ogg"
     };
 
     protected readonly walkingSnowSFX: AssetRef = {
         key: "walking-snow",
-        path: "game_assets/sounds/walking-snow.wav"
+        path: "game_assets/sounds/walking-snow.ogg"
     };
 
     protected readonly walkingSnowBushSFX: AssetRef = {
         key: "walking-snow-bush",
-        path: "game_assets/sounds/walking-snow-bush.wav"
+        path: "game_assets/sounds/walking-snow-bush.ogg"
     };
 
     protected readonly weatherSnowInsideSFX: AssetRef = {
         key: "weather-snow-inside",
-        path: "game_assets/sounds/weather-snow-inside.wav"
+        path: "game_assets/sounds/weather-snow-inside.ogg"
     };
 
     protected readonly weatherSnowOutsideSFX: AssetRef = {
         key: "weather-snow-outside",
-        path: "game_assets/sounds/weather-snow-outside.wav"
+        path: "game_assets/sounds/weather-snow-outside.ogg"
     };
 
     protected readonly groundLayerName = "Ground";
