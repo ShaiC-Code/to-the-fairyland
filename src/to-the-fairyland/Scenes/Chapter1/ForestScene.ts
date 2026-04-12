@@ -3,9 +3,11 @@ import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 import ShelterScene from "./ShelterScene";
 import MappedAdventureScene, { WeatherType } from "../MappedAdventureScene";
 import { GameEventType } from "../../../Wolfie2D/Events/GameEventType";
+import { Chapter1MainQuestStep } from "../../GameSystems/StorySystem/StoryState";
 
 
 export default class ForestScene extends MappedAdventureScene {
+
     protected readonly tilemap = {
         key: "chapter1",
         path: "game_assets/tilemaps/Chapter1/Chapter1.json"
@@ -52,7 +54,7 @@ export default class ForestScene extends MappedAdventureScene {
 
         // Display the map item to be picked up
         const mapItemObj = interactLayer?.objects.find(obj => obj.name === "MapItem");
-        if (mapItemObj) {
+        if (this.storyManager.getChapter1MainQuestStep() === Chapter1MainQuestStep.SLEPT && mapItemObj) {
             const mapItem = this.add.sprite("mapItem", "Interactables");
             mapItem.position.set(mapItemObj.x, mapItemObj.y);
             mapItem.setSortTile(this.ground.getTilemapPosition(mapItemObj.x, mapItemObj.y));

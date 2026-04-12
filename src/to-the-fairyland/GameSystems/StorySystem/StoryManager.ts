@@ -77,4 +77,12 @@ export default class StoryManager {
             state.chapter1.mainQuestStep = Chapter1MainQuestStep.SLEPT;
         }
     }
+
+    public markMapPickedUp(): void {
+        const state = this.getState();
+
+        if (state.chapter1.mainQuestStep === Chapter1MainQuestStep.SLEPT) {
+            state.chapter1.mainQuestStep = Chapter1MainQuestStep.MAP_PICKED;
+        }
+    }
 }
