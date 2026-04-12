@@ -1,7 +1,8 @@
 export enum Chapter1MainQuestStep {
     NEED_FOOD = "NEED_FOOD",
     RETURN_TO_BED = "RETURN_TO_BED",
-    SLEPT = "SLEPT"
+    SLEPT = "SLEPT",
+    MAP_PICKED = "MAP_PICKED"
 }
 
 export interface Chapter1StoryState {
