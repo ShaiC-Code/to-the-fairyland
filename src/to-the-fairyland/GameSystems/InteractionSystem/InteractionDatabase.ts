@@ -1,8 +1,15 @@
-export type InteractionType = "dialogue";
+import { Chapter1MainQuestStep } from "../StorySystem/StoryState";
 
+export type InteractionType = "dialogue";
+export type InteractionData = DialogueInteraction;
+
+export type DialogueChoiceAction = "collectFrozenBerries";
+
+// Different choices and its associated action if any
 export interface DialogueChoiceOption {
     label: string;
     interaction: DialogueInteraction;
+    action?: DialogueChoiceAction;
 }
 
 export interface DialogueChoicePrompt {
@@ -13,22 +20,57 @@ export interface DialogueChoicePrompt {
 export interface DialogueInteraction {
     type: "dialogue";
     lines: string[];
-    charsPerSecond?: number;
     choice?: DialogueChoicePrompt;
 }
 
-export type InteractionData = DialogueInteraction;
 
-const INTERACTION_DATABASE: Readonly<Record<string, InteractionData>> = {
-    Bed: {
+const STATIC_INTERACTIONS: Readonly<Record<string, InteractionData>> = {
+    BushBerries: {
         type: "dialogue",
         lines: [
-            "A simple bed stands against the wall.",
-            "It looks warm and surprisingly comfortable.",
-            "Take a rest?"
+            "A bush covered in blue berries pokes through the snow.",
+            "Most of the berries are frozen solid.",
+            "Collect berries?"
         ],
         choice: {
             lineIndex: 2,
+            options: [
+                {
+                    label: "Yes",
+                    action: "collectFrozenBerries",
+                    interaction: {
+                        type: "dialogue",
+                        lines: ["You picked a few frozen berries."]
+                    }
+                },
+                {
+                    label: "No",
+                    interaction: {
+                        type: "dialogue",
+                        lines: ["You left the bush alone."]
+                    }
+                }
+            ]
+        }
+    }
+};
+
+const BED_DIALOGUES: Readonly<Record<Chapter1MainQuestStep, DialogueInteraction>> = {
+    [Chapter1MainQuestStep.NEED_FOOD]: {
+        type: "dialogue",
+        lines: [
+            "This bed looks warm and surprisingly comfortable.",
+            "Hunger is preventing you from sleeping..."
+        ]
+    },
+    [Chapter1MainQuestStep.RETURN_TO_BED]: {
+        type: "dialogue",
+        lines: [
+            "This bed looks warm and surprisingly comfortable.",
+            "Take a rest?"
+        ],
+        choice: {
+            lineIndex: 1,
             options: [
                 {
                     label: "Yes",
@@ -47,20 +89,18 @@ const INTERACTION_DATABASE: Readonly<Record<string, InteractionData>> = {
             ]
         }
     },
-
-    BushBerries: {
+    [Chapter1MainQuestStep.SLEPT]: {
         type: "dialogue",
         lines: [
-            "A bush covered in blue berries pokes through the snow.",
-            "Most of the berries are frozen solid."
+            "You already got some rest."
         ]
     }
 };
 
 export function getInteractionData(interactionId: string): InteractionData | undefined {
-    return INTERACTION_DATABASE[interactionId];
+    return STATIC_INTERACTIONS[interactionId];
 }
 
-export function hasInteractionData(interactionId: string): boolean {
-    return interactionId in INTERACTION_DATABASE;
+export function getBedDialogue(step: Chapter1MainQuestStep): DialogueInteraction {
+    return BED_DIALOGUES[step];
 }

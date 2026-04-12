@@ -41,7 +41,7 @@ export default class DialogueChoiceBoxScreen extends UIScreen {
         const viewportSize = viewportHalfSize.clone().scale(2);
 
         const boxSize = new Vec2(viewportSize.x - 80, 200);
-        const boxPos = new Vec2(viewportHalfSize.x, viewportSize.y - boxSize.y / 2 - 90);
+        const boxPos = new Vec2(viewportHalfSize.x, viewportSize.y - boxSize.y / 2 - 40);
 
         this.addTextBox("dialogueText", boxPos, boxSize, "", this.dialogueFontSize, {
             halign: "left",

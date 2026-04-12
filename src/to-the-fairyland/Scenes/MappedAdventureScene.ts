@@ -17,10 +17,14 @@ import Graphic from "../../Wolfie2D/Nodes/Graphic";
 import Sprite from "../../Wolfie2D/Nodes/Sprites/Sprite";
 import SnowflakeBehavior, { SnowflakeSettings } from "../AI/SnowflakeBehavior";
 import DialogueScreen from "../UI/DialogueScreen";
-import { DialogueInteraction, getInteractionData } from "../GameSystems/InteractionSystem/InteractionDatabase";
 import { PlayerControlMode, PlayerInput } from "../AI/Player/PlayerController";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 import { AudioChannelType } from "../../Wolfie2D/Sound/AudioManager";
+import StoryManager from "../GameSystems/StorySystem/StoryManager";
+import FrozenBerries from "../GameSystems/ItemSystem/Items/FrozenBerries";
+import { DialogueChoiceOption, DialogueInteraction, getInteractionData } from "../GameSystems/InteractionSystem/InteractionDatabase";
+
+
 
 
 type AssetRef = Readonly<{
@@ -136,6 +140,7 @@ export default abstract class MappedAdventureScene extends Scene {
     protected inventoryScreen!: InventoryScreen;
     protected worldPaused: boolean = false;
     protected entrances: TiledObject[] = [];
+    protected readonly storyManager = StoryManager.getInstance();
 
     protected dialogueScreen!: DialogueScreen;
     protected activeDialogue: DialogueInteraction | null = null;
@@ -298,8 +303,10 @@ export default abstract class MappedAdventureScene extends Scene {
             this,
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize(),
+            this.player.inventory,
             { onEnterSFXKey: this.uiHover.key, onClickSFXKey: this.uiClick.key, onShowSFXKey: this.menuOpen.key, onHideSFXKey: this.menuClose.key }
         );
+        
         this.dialogueScreen = new DialogueScreen(
             "dialogueOverlay",
             this,
@@ -883,8 +890,7 @@ export default abstract class MappedAdventureScene extends Scene {
         this.dialogueScreen.hideChoices();
 
         this.dialogueScreen.showLine(
-            dialogue.lines[this.currentDialogueLine],
-            dialogue.charsPerSecond
+            dialogue.lines[this.currentDialogueLine]
         );
     }
 
@@ -913,7 +919,7 @@ export default abstract class MappedAdventureScene extends Scene {
                     this.dialogueChoiceResolved = true;
                     this.dialogueScreen.hideChoices();
 
-                    // Start the nested interaction from this choice
+                    this.handleDialogueChoiceAction(option);
                     this.startDialogue(option.interaction);
                 }
             }))
@@ -963,8 +969,7 @@ export default abstract class MappedAdventureScene extends Scene {
         }
     
         this.dialogueScreen.showLine(
-            this.activeDialogue.lines[this.currentDialogueLine],
-            this.activeDialogue.charsPerSecond
+            this.activeDialogue.lines[this.currentDialogueLine]
         );
     }
     
@@ -1024,4 +1029,30 @@ export default abstract class MappedAdventureScene extends Scene {
                 return "invalid asset name";
         }
     }
+
+    protected handleDialogueChoiceAction(option: DialogueChoiceOption): void {
+        switch (option.action) {
+            case "collectFrozenBerries":
+                this.giveFrozenBerries();
+                break;
+        }
+    }
+
+    protected giveFrozenBerries(): void {
+        const alreadyHasBerries = this.player.inventory.find(
+            item => item instanceof FrozenBerries
+        ) !== null;
+    
+        if (alreadyHasBerries) {
+            return;
+        }
+    
+        const berries = new FrozenBerries(1);
+        const addedItem = this.player.inventory.add(berries);
+    
+        if (addedItem !== null) {
+            this.storyManager.markFoodConsumed();
+        }
+    }
+    
 }

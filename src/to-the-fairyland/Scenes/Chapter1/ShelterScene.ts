@@ -3,6 +3,8 @@ import ForestScene  from "./ForestScene";
 import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 import MappedAdventureScene, { TimeOfDay, WeatherType } from "../MappedAdventureScene";
 import { GameEventType } from "../../../Wolfie2D/Events/GameEventType";
+import { getBedDialogue } from "../../GameSystems/InteractionSystem/InteractionDatabase";
+
 
 
 export default class ShelterScene extends MappedAdventureScene {
@@ -42,6 +44,13 @@ export default class ShelterScene extends MappedAdventureScene {
     }
 
     protected override handleInteraction(obj: TiledObject): void {
+        if (obj.name === "Bed") {
+            const step = this.storyManager.getChapter1MainQuestStep();
+            const dialogue = getBedDialogue(step);
+            this.startDialogue(dialogue);
+            return;
+        }
+
         this.tryStartInteractionDialogue(obj);
     }
     

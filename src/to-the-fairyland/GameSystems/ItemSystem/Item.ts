@@ -51,4 +51,13 @@ export default abstract class Item implements Unique, TargetableEntity {
     public get inventory(): Inventory | null { return this._inventory; }
     public set inventory(value: Inventory | null) { this._inventory = value; }
 
+    /**
+     * User-facing label for menus like the inventory screen.
+     * Subclasses can override this with a more specific item name.
+     */
+    public get displayName(): string {
+        return "Item";
+    }
+
+
 }
