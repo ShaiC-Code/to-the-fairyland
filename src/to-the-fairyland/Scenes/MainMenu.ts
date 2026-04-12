@@ -156,8 +156,8 @@ export default class MainMenu extends Scene {
                     {
                         showLoadingOverlay: true, 
                         useFadeTransition: true,
-                        fadeOutMs: 1000,
-                        fadeInMs: 1000
+                        fadeOutMs: 500,
+                        fadeInMs: 500
                     }
                 );
                 break;

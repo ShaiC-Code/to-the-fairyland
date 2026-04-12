@@ -4,9 +4,14 @@ import ShelterScene from "./ShelterScene";
 import MappedAdventureScene, { WeatherType } from "../MappedAdventureScene";
 import { GameEventType } from "../../../Wolfie2D/Events/GameEventType";
 import { Chapter1MainQuestStep } from "../../GameSystems/StorySystem/StoryState";
+import Sprite from "../../../Wolfie2D/Nodes/Sprites/Sprite";
 
 
 export default class ForestScene extends MappedAdventureScene {
+
+    private mapItemSprite: Sprite | null = null;
+    private mapItemObject: TiledObject | null = null;
+
 
     protected readonly tilemap = {
         key: "chapter1",
@@ -73,8 +78,12 @@ export default class ForestScene extends MappedAdventureScene {
             const mapItem = this.add.sprite("mapItem", "Interactables");
             mapItem.position.set(mapItemObj.x, mapItemObj.y);
             mapItem.setSortTile(this.ground.getTilemapPosition(mapItemObj.x, mapItemObj.y));
-            mapItem.setSortOrder(1);
+            mapItem.setSortOrder(1);        
+            
+            this.mapItemObject = mapItemObj;
+            this.mapItemSprite = mapItem;
         }
+
     }
 
     protected override handleInteraction(obj: TiledObject): void {
@@ -84,10 +93,31 @@ export default class ForestScene extends MappedAdventureScene {
 
     protected override handleAutoTransition(obj: TiledObject): void {
         if (obj.name === "DoorToShelter") {
-            this.sceneManager.changeToScene(ShelterScene, {spawnName: "Shelter", facing: Vec2.UP});
+            this.sceneManager.changeToScene(
+                ShelterScene, 
+                {spawnName: "Shelter", facing: Vec2.UP},
+                undefined,
+                {
+                    useFadeTransition: true,
+                    fadeOutMs: 300,
+                    fadeInMs: 300
+                }
+            );
             this.emitter.fireEvent(GameEventType.PLAY_SOUND, {key: this.woodenDoorSFX.key, loop: false, holdReference: false});
         }
     }
 
+    protected override onMapPickedUp(): void {
+        if (this.mapItemSprite) {
+            this.mapItemSprite.destroy();
+            this.mapItemSprite = null;
+        }
+    
+        if (this.mapItemObject) {
+            this.interactables = this.interactables.filter(obj => obj !== this.mapItemObject);
+            this.mapItemObject = null;
+        }
+    }
+    
 
 }

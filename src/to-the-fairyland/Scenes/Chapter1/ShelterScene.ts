@@ -79,7 +79,16 @@ export default class ShelterScene extends MappedAdventureScene {
 
     protected override handleAutoTransition(obj: TiledObject): void {
         if (obj.name === "DoorToOutside") {
-            this.sceneManager.changeToScene(ForestScene, {spawnName: "Outside", facing: Vec2.DOWN});
+            this.sceneManager.changeToScene(
+                ForestScene, 
+                {spawnName: "Outside", facing: Vec2.DOWN},
+                undefined,
+                {
+                    useFadeTransition: true,
+                    fadeOutMs: 300,
+                    fadeInMs: 300
+                }
+            );
             this.emitter.fireEvent(GameEventType.PLAY_SOUND, {key: this.woodenDoorSFX.key, loop: false, holdReference: false});
         }
     }

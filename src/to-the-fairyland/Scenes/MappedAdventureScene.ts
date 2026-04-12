@@ -1111,6 +1111,7 @@ export default abstract class MappedAdventureScene extends Scene {
     
         if (addedItem !== null) {
             this.storyManager.markMapPickedUp();
+            this.onMapPickedUp();
         }
     }
 }
