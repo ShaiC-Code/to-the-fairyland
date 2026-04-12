@@ -140,6 +140,8 @@ export default abstract class MappedAdventureScene extends Scene {
     protected dialogueScreen!: DialogueScreen;
     protected activeDialogue: DialogueInteraction | null = null;
     protected currentDialogueLine = 0;
+    protected dialogueChoiceActive = false;
+    protected dialogueChoiceResolved = false;
 
     private timeOverlay: Graphic | null = null;
     private snowflakes: Sprite[] = [];
@@ -302,7 +304,8 @@ export default abstract class MappedAdventureScene extends Scene {
             "dialogueOverlay",
             this,
             () => this.viewport.getCenter(),
-            () => this.viewport.getHalfSize()
+            () => this.viewport.getHalfSize(),
+            { onEnterSFXKey: this.uiHover.key, onClickSFXKey: this.uiClick.key }
         );
 
         this.startWeatherAmbienceLoops();
@@ -875,12 +878,66 @@ export default abstract class MappedAdventureScene extends Scene {
 
         this.activeDialogue = dialogue;
         this.currentDialogueLine = 0;
+        this.dialogueChoiceActive = false;
+        this.dialogueChoiceResolved = false;
+        this.dialogueScreen.hideChoices();
 
-        this.dialogueScreen.showLine(dialogue.lines[this.currentDialogueLine]);
+        this.dialogueScreen.showLine(
+            dialogue.lines[this.currentDialogueLine],
+            dialogue.charsPerSecond
+        );
+    }
+
+    protected shouldShowDialogueChoice(): boolean {
+        if (!this.activeDialogue || this.dialogueChoiceResolved) {
+            return false;
+        }
+
+        const choice = this.activeDialogue.choice;
+        return !!choice && this.currentDialogueLine === choice.lineIndex;
+    }
+
+    protected showDialogueChoicePrompt(): void {
+        if (!this.activeDialogue?.choice) {
+            return;
+        }
+
+        const choice = this.activeDialogue.choice;
+        this.dialogueChoiceActive = true;
+
+        this.dialogueScreen.setChoices(
+            choice.options.map(option => ({
+                label: option.label,
+                onSelect: () => {
+                    this.dialogueChoiceActive = false;
+                    this.dialogueChoiceResolved = true;
+                    this.dialogueScreen.hideChoices();
+
+                    // Start the nested interaction from this choice
+                    this.startDialogue(option.interaction);
+                }
+            }))
+        );
+
+        this.dialogueScreen.showChoices();
     }
     
     protected updateDialogue(): void {
         if (!this.activeDialogue) {
+            return;
+        }
+
+        if (this.dialogueChoiceActive) {
+            if (Input.isJustPressed(PlayerInput.MOVE_LEFT) || Input.isJustPressed(PlayerInput.MOVE_UP)) {
+                this.dialogueScreen.selectPreviousChoice();
+            } else if (Input.isJustPressed(PlayerInput.MOVE_RIGHT) || Input.isJustPressed(PlayerInput.MOVE_DOWN)) {
+                this.dialogueScreen.selectNextChoice();
+            }
+
+            if (Input.isJustPressed(PlayerInput.INTERACT)) {
+                this.dialogueScreen.confirmSelection();
+            }
+
             return;
         }
     
@@ -892,6 +949,11 @@ export default abstract class MappedAdventureScene extends Scene {
             this.dialogueScreen.revealCurrentLine();
             return;
         }
+
+        if (this.shouldShowDialogueChoice()) {
+            this.showDialogueChoicePrompt();
+            return;
+        }
     
         this.currentDialogueLine += 1;
     
@@ -901,7 +963,9 @@ export default abstract class MappedAdventureScene extends Scene {
         }
     
         this.dialogueScreen.showLine(
-            this.activeDialogue.lines[this.currentDialogueLine]);
+            this.activeDialogue.lines[this.currentDialogueLine],
+            this.activeDialogue.charsPerSecond
+        );
     }
     
     protected endDialogue(): void {
@@ -910,6 +974,9 @@ export default abstract class MappedAdventureScene extends Scene {
 
         this.activeDialogue = null;
         this.currentDialogueLine = 0;
+        this.dialogueChoiceActive = false;
+        this.dialogueChoiceResolved = false;
+        this.dialogueScreen.hideChoices();
         this.dialogueScreen.hide();
     }
 
