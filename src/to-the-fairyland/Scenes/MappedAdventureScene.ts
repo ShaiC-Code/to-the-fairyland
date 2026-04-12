@@ -27,6 +27,7 @@ import { DialogueChoiceOption, DialogueInteraction, getInteractionData } from ".
 import PlayerStateManager from "../GameSystems/PlayerSystem/PlayerStateManager";
 import GameSessionManager from "../GameSystems/GameSessionSystem/GameSessionManager";
 import { TimeOfDay } from "../GameSystems/WorldSystem/WorldState";
+import CookedBerries from "../GameSystems/ItemSystem/Items/CookedBerries";
 
 
 
@@ -1071,5 +1072,22 @@ export default abstract class MappedAdventureScene extends Scene {
             this.storyManager.markFoodConsumed();
         }
     }
+
+    protected giveCookedBerries(): void {
+        const alreadyHasBerries = this.playerStateManager.getPlayerState().inventory
+        .find(
+            item => item instanceof CookedBerries
+        ) !== null;
     
+        if (alreadyHasBerries) {
+            return;
+        }
+    
+        const berries = new CookedBerries(1);
+        const addedItem = this.playerStateManager.getPlayerState().inventory.add(berries);
+    
+        if (addedItem !== null) {
+            this.storyManager.markFoodConsumed();
+        }
+    }
 }
