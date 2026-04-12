@@ -39,6 +39,8 @@ export default class ResourceManager {
     public transitionFadeOutMs: number;
     /** Fade duration when leaving the loading transition (black -> scene). */
     public transitionFadeInMs: number;
+    /** Minimum time to keep loading overlay visible once shown. */
+    public loadingOverlayMinVisibleMs: number;
 
 
     /** Number to keep track of how many images need to be loaded*/
@@ -116,6 +118,7 @@ export default class ResourceManager {
         this.transitionFadeEnabled = false;
         this.transitionFadeOutMs = 0;
         this.transitionFadeInMs = 0;
+        this.loadingOverlayMinVisibleMs = 0;
 
         this.loadonly_imagesLoaded = 0;
         this.loadonly_imagesToLoad = 0;

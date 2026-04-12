@@ -9,6 +9,7 @@ import { GameEventType } from "../Events/GameEventType";
 type SceneTransitionOptions = {
 	showLoadingOverlay?: boolean;
 	loadingOverlayDelayMs?: number;
+	loadingOverlayMinVisibleMs?: number;
 	useFadeTransition?: boolean;
 	fadeOutMs?: number;
 	fadeInMs?: number;
@@ -38,7 +39,9 @@ export default class SceneManager {
 	protected pendingScene: Scene | null;
 	protected pendingSceneInit: Record<string, any> | undefined;
 	protected pendingSceneTransition: SceneTransitionOptions | null;
+	protected pendingSceneSwapAtMs: number | null;
 	private readonly defaultLoadingOverlayDelayMs = 100;
+	private readonly defaultLoadingOverlayMinVisibleMs = 0;
 	private readonly defaultFadeOutMs = 200;
 	private readonly defaultFadeInMs = 200;
 
@@ -58,6 +61,7 @@ export default class SceneManager {
 		this.currentScene = null;
 		this.pendingScene = null;
 		this.pendingSceneTransition = null;
+		this.pendingSceneSwapAtMs = null;
 
 		this.receiver = new Receiver();
 		this.receiver.subscribe(GameEventType.CHANGE_SCENE);
@@ -74,12 +78,38 @@ export default class SceneManager {
 		this.pendingScene = new constr(this.viewport, this, this.renderingManager, options);
 		this.pendingSceneInit = init;
 		this.pendingSceneTransition = transition ?? null;
+		this.pendingSceneSwapAtMs = null;
 	}
 
 	protected doSceneChange(){
 		if(!this.pendingScene){
 			return;
 		}
+
+		if(this.pendingSceneSwapAtMs === null){
+			const transition = this.pendingSceneTransition;
+			this.pendingSceneTransition = null;
+			this.resourceManager.loadingOverlayEnabled = transition?.showLoadingOverlay === true;
+			this.resourceManager.loadingOverlayDelayMs = transition?.loadingOverlayDelayMs ?? this.defaultLoadingOverlayDelayMs;
+			this.resourceManager.loadingOverlayMinVisibleMs = transition?.loadingOverlayMinVisibleMs ?? this.defaultLoadingOverlayMinVisibleMs;
+			this.resourceManager.transitionFadeEnabled = transition?.useFadeTransition === true;
+			this.resourceManager.transitionFadeOutMs = transition?.fadeOutMs ?? this.defaultFadeOutMs;
+			this.resourceManager.transitionFadeInMs = transition?.fadeInMs ?? this.defaultFadeInMs;
+
+			// Trigger transition visuals immediately so fast scene loads don't briefly expose the next scene.
+			if(this.resourceManager.onLoadProgress){
+				this.resourceManager.onLoadProgress(0);
+			}
+
+			if(this.resourceManager.transitionFadeEnabled && this.resourceManager.transitionFadeOutMs > 0){
+				this.pendingSceneSwapAtMs = performance.now() + this.resourceManager.transitionFadeOutMs;
+				return;
+			}
+		} else if(performance.now() < this.pendingSceneSwapAtMs){
+			return;
+		}
+
+		this.pendingSceneSwapAtMs = null;
 
 		console.log("Performing scene change");
 		this.viewport.setCenter(this.viewport.getHalfSize().x, this.viewport.getHalfSize().y);
@@ -100,14 +130,6 @@ export default class SceneManager {
 
 		// Make the pending scene null
 		this.pendingScene = null;
-
-		const transition = this.pendingSceneTransition;
-		this.pendingSceneTransition = null;
-		this.resourceManager.loadingOverlayEnabled = transition?.showLoadingOverlay === true;
-		this.resourceManager.loadingOverlayDelayMs = transition?.loadingOverlayDelayMs ?? this.defaultLoadingOverlayDelayMs;
-		this.resourceManager.transitionFadeEnabled = transition?.useFadeTransition === true;
-		this.resourceManager.transitionFadeOutMs = transition?.fadeOutMs ?? this.defaultFadeOutMs;
-		this.resourceManager.transitionFadeInMs = transition?.fadeInMs ?? this.defaultFadeInMs;
 
 		// Init the scene
 		this.currentScene.initScene(this.pendingSceneInit ?? {});

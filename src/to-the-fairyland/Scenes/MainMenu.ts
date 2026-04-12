@@ -11,6 +11,7 @@ import LevelSelectionScreen from "../UI/MainMenuScreens/LevelSelectionScreen";
 import ControlsScreen from "../UI/MainMenuScreens/ControlsScreen";
 import HelpScreen from "../UI/MainMenuScreens/HelpScreen";
 import MainScreen from "../UI/MainMenuScreens/MainScreen";
+import TestScreen from "../UI/MainMenuScreens/TestScreen";
 import GameSessionManager from "../GameSystems/GameSessionSystem/GameSessionManager";
 
 
@@ -26,6 +27,12 @@ export default class MainMenu extends Scene {
     private levelMenu!: LevelSelectionScreen;
     private controlsMenu!: ControlsScreen;
     private helpMenu!: HelpScreen;
+    private testMenu!: TestScreen;
+
+    protected readonly mainScreenImage: AssetRef = {
+    key: "main-screen-image",
+    path: "game_assets/images/main-screen-image.png"
+    };
 
     protected readonly uiHover: AssetRef = {
         key: "ui-hover",
@@ -38,6 +45,8 @@ export default class MainMenu extends Scene {
     };
 
     public loadScene(){
+        this.load.image(this.mainScreenImage.key, this.mainScreenImage.path);
+
         if (!this.resourceManager.getAudio(this.uiHover.key)) {
             this.load.audio(this.uiHover.key, this.uiHover.path);
         }
@@ -61,6 +70,7 @@ export default class MainMenu extends Scene {
             this,
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize(),
+            this.mainScreenImage.key,
             { onEnterSFXKey: this.uiHover.key, onClickSFXKey: this.uiClick.key }
         );
         this.mainMenu.show();
@@ -89,9 +99,18 @@ export default class MainMenu extends Scene {
             { onEnterSFXKey: this.uiHover.key, onClickSFXKey: this.uiClick.key }
         );
 
+        this.testMenu = new TestScreen(
+            "testMenu",
+            this,
+            () => this.viewport.getCenter(),
+            () => this.viewport.getHalfSize(),
+            { onEnterSFXKey: this.uiHover.key, onClickSFXKey: this.uiClick.key }
+        );
+
         this.receiver.subscribe("openLevelMenu");
         this.receiver.subscribe("openControlsMenu");
         this.receiver.subscribe("openHelpMenu");
+        this.receiver.subscribe("openTestMenu");
         this.receiver.subscribe("backToMain");
         this.receiver.subscribe("level1");
     }
@@ -116,6 +135,10 @@ export default class MainMenu extends Scene {
                 this.showScreen("helpMenu");
                 break;
             }
+            case "openTestMenu": {
+                this.showScreen("testMenu");
+                break;
+            }
             case "backToMain": {
                 this.showScreen("mainMenu");
                 break;
@@ -127,7 +150,8 @@ export default class MainMenu extends Scene {
                     ShelterScene,
                     {
                         spawnName: "SideOfBed",
-                        facing: Vec2.DOWN},
+                        facing: Vec2.DOWN
+                    },
                     undefined,
                     {
                         showLoadingOverlay: true, 
@@ -141,11 +165,12 @@ export default class MainMenu extends Scene {
         }
     }
 
-    private showScreen(screen: "mainMenu" | "levelMenu" | "controlsMenu" | "helpMenu"): void {
+    private showScreen(screen: "mainMenu" | "levelMenu" | "controlsMenu" | "helpMenu" | "testMenu"): void {
         this.mainMenu.hide();
         this.levelMenu.hide();
         this.controlsMenu.hide();
         this.helpMenu.hide();
+        this.testMenu.hide();
 
         switch(screen) {
             case "mainMenu":
@@ -160,10 +185,13 @@ export default class MainMenu extends Scene {
             case "helpMenu":
                 this.helpMenu.show();
                 break;
+            case "testMenu":
+                this.testMenu.show();
+                break;
         }
 
-        const demoTextBox = <TextBox>this.helpMenu.getUIElement("demoTextBox");
-        if (screen === "helpMenu") {
+        const demoTextBox = <TextBox>this.testMenu.getUIElement("demoTextBox");
+        if (screen === "testMenu") {
             demoTextBox.startTypewriter(32);
         } else {
             demoTextBox.stopTypewriter();
