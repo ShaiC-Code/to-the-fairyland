@@ -248,7 +248,7 @@ export default class UIScreen {
         this.addUIElement(key, imageElement);
     }
 
-    private playSFX(key?: string): void {
+    protected playSFX(key?: string): void {
         if (key) {
             this.emitter.fireEvent(GameEventType.PLAY_SFX, {key: key, loop: false, holdReference: false});
         }

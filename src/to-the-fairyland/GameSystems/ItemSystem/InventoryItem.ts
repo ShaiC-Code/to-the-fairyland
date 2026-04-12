@@ -1,5 +1,10 @@
 import Unique from "../../../Wolfie2D/DataTypes/Interfaces/Unique";
 import Inventory from "./Inventory";
+import { DialogueInteraction } from "../InteractionSystem/InteractionDatabase";
+
+export interface InventoryItemConsumeContext {
+    showDialogue: (interaction: DialogueInteraction) => void;
+}
 
 /**
  * Base class for items that live in the inventory as pure data.
@@ -44,4 +49,10 @@ export default abstract class InventoryItem implements Unique {
      * Each item subclass should return its own name.
      */
     public abstract displayName(): string;
+
+    /**
+     * Handles using this item from the inventory UI.
+     * Each item decides whether this consumes, confirms, or only shows a description.
+     */
+    public abstract consume(context: InventoryItemConsumeContext): void;
 }

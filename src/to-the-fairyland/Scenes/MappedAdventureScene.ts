@@ -22,10 +22,11 @@ import { PlayerControlMode, PlayerInput } from "../AI/Player/PlayerController";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 import { AudioChannelType } from "../../Wolfie2D/Sound/AudioManager";
 import StoryManager from "../GameSystems/StorySystem/StoryManager";
-import { DialogueChoiceOption, DialogueInteraction, getInteractionData } from "../GameSystems/InteractionSystem/InteractionDatabase";
+import { DialogueChoiceAction, DialogueChoiceActions, DialogueChoiceOption, DialogueInteraction, getInteractionData } from "../GameSystems/InteractionSystem/InteractionDatabase";
 import PlayerStateManager from "../GameSystems/PlayerSystem/PlayerStateManager";
 import GameSessionManager from "../GameSystems/GameSessionSystem/GameSessionManager";
 import { TimeOfDay } from "../GameSystems/WorldSystem/WorldState";
+import InventoryItem from "../GameSystems/ItemSystem/InventoryItem";
 import FrozenBerries from "../GameSystems/ItemSystem/Items/FrozenBerries";
 import CookedBerries from "../GameSystems/ItemSystem/Items/CookedBerries";
 import WorldMap from "../GameSystems/ItemSystem/Items/WorldMap";
@@ -164,6 +165,19 @@ export default abstract class MappedAdventureScene extends Scene {
     protected currentDialogueLine = 0;
     protected dialogueChoiceActive = false;
     protected dialogueChoiceResolved = false;
+    protected readonly dialogueChoiceActionHandlers: Readonly<Record<DialogueChoiceAction, () => void>> = {
+        [DialogueChoiceActions.COLLECT_FROZEN_BERRIES]: () => this.giveFrozenBerries(),
+        [DialogueChoiceActions.COOK_FROZEN_BERRIES]: () => this.giveCookedBerries(),
+        [DialogueChoiceActions.SLEEP]: () => {
+            this.storyManager.markSlept();
+
+            const worldState = this.gameSessionManager.getWorldState();
+            worldState.timeOfDay = TimeOfDay.DAY;
+
+            this.setTimeOfDay(worldState.timeOfDay);
+        },
+        [DialogueChoiceActions.PICKUP_MAP]: () => this.pickupMap()
+    };
 
     private timeOverlay: Graphic | null = null;
     private snowflakes: Sprite[] = [];
@@ -279,7 +293,13 @@ export default abstract class MappedAdventureScene extends Scene {
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize(),
             playerState.inventory,
-            { onEnterSFXKey: this.uiHover.key, onClickSFXKey: this.uiClick.key, onShowSFXKey: this.menuOpen.key, onHideSFXKey: this.menuClose.key }
+            (item: InventoryItem) => this.consumeInventoryItem(item),
+            {
+                onEnterSFXKey: this.uiHover.key,
+                onClickSFXKey: this.uiClick.key,
+                onShowSFXKey: this.menuOpen.key,
+                onHideSFXKey: this.menuClose.key,
+            }
         );
         
         this.dialogueScreen = new DialogueScreen(
@@ -926,7 +946,7 @@ export default abstract class MappedAdventureScene extends Scene {
                     this.dialogueChoiceActive = false;
                     this.dialogueChoiceResolved = true;
                     this.dialogueScreen.hideChoices();
-
+                    option.onSelect?.();
                     this.handleDialogueChoiceAction(option);
                     this.startDialogue(option.interaction);
                 }
@@ -1039,24 +1059,11 @@ export default abstract class MappedAdventureScene extends Scene {
     }
 
     protected handleDialogueChoiceAction(option: DialogueChoiceOption): void {
-        switch (option.action) {
-            case "collectFrozenBerries":
-                this.giveFrozenBerries();
-                break;
-
-            case "sleep":
-                this.storyManager.markSlept();
-
-                const worldState = this.gameSessionManager.getWorldState();
-                worldState.timeOfDay = TimeOfDay.DAY;
-                
-                this.setTimeOfDay(worldState.timeOfDay);
-                break;
-
-            case "pickupMap":
-                this.pickupMap();
-                break;
+        if (!option.action) {
+            return;
         }
+
+        this.dialogueChoiceActionHandlers[option.action]();
     }
 
     protected giveFrozenBerries(): void {
@@ -1073,26 +1080,34 @@ export default abstract class MappedAdventureScene extends Scene {
         const addedItem = this.playerStateManager.getPlayerState().inventory.add(berries);
     
         if (addedItem !== null) {
-            this.storyManager.markFoodConsumed();
+            this.storyManager.markFoodFound();
         }
     }
 
     protected giveCookedBerries(): void {
-        const alreadyHasBerries = this.playerStateManager.getPlayerState().inventory
+        const frozenBerries = this.playerStateManager.getPlayerState().inventory
         .find(
-            item => item instanceof CookedBerries
-        ) !== null;
+            item => item instanceof FrozenBerries
+        ) as FrozenBerries | null;
     
-        if (alreadyHasBerries) {
+        if (!frozenBerries) {
             return;
         }
-    
+
+        const removedItem = this.playerStateManager.getPlayerState().inventory.remove(frozenBerries.id);
         const berries = new CookedBerries(1);
         const addedItem = this.playerStateManager.getPlayerState().inventory.add(berries);
     
         if (addedItem !== null) {
-            this.storyManager.markFoodConsumed();
+            this.storyManager.markFoodCooked();
         }
+    }
+
+    protected consumeInventoryItem(item: InventoryItem): void {
+        this.inventoryScreen.hide();
+        item.consume({
+            showDialogue: interaction => this.startDialogue(interaction)
+        });
     }
     
     protected pickupMap(): void {
