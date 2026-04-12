@@ -5,9 +5,11 @@ import Button from "../../Wolfie2D/Nodes/UIElements/Button";
 import UIScreen from "./UIScreen";
 import NullFunc from "../../Wolfie2D/DataTypes/Functions/NullFunc";
 import Inventory from "../GameSystems/ItemSystem/Inventory";
+import InventoryItem from "../GameSystems/ItemSystem/InventoryItem";
 
 export default class InventoryScreen extends UIScreen {
     private readonly inventory: Inventory;
+    private readonly onItemSelected: ((item: InventoryItem) => void) | (() => void);
     private readonly itemButtonKeys = [
         "item1Btn",
         "item2Btn",
@@ -23,10 +25,12 @@ export default class InventoryScreen extends UIScreen {
         getViewportCenter: () => Vec2,
         getViewportHalfSize: () => Vec2,
         inventory: Inventory,
-        options?: { onClickSFXKey?: string, onEnterSFXKey?: string, onExitSFXKey?: string, onShowSFXKey?: string, onHideSFXKey?: string }
+        onItemSelected?: (item: InventoryItem) => void,
+        options?: { onClickSFXKey?: string, onEnterSFXKey?: string, onExitSFXKey?: string, onShowSFXKey?: string, onHideSFXKey?: string}
     ) {
         super(layerName, scene, getViewportCenter, getViewportHalfSize, options);
         this.inventory = inventory;
+        this.onItemSelected = onItemSelected ?? NullFunc;
         this.initializeUI();
         this.refreshItems();
     }
@@ -45,9 +49,17 @@ export default class InventoryScreen extends UIScreen {
 
             if (item) {
                 button.text = item.displayName();
+                button.onClick = () => {
+                    this.playSFX(this.onClickSFXKey);
+                    this.onItemSelected(item);
+                };
                 button.visible = true;
             } else {
                 button.text = "";
+                button.onClick = () => {
+                    this.playSFX(this.onClickSFXKey);
+                    NullFunc();
+                };
                 button.visible = false;
             }
         }

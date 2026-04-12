@@ -3,13 +3,21 @@ import { Chapter1MainQuestStep } from "../StorySystem/StoryState";
 export type InteractionType = "dialogue";
 export type InteractionData = DialogueInteraction;
 
-export type DialogueChoiceAction = "collectFrozenBerries" | "sleep" | "pickupMap";
+export const DialogueChoiceActions = {
+    COLLECT_FROZEN_BERRIES: "collectFrozenBerries",
+    COOK_FROZEN_BERRIES: "cookFrozenBerries",
+    SLEEP: "sleep",
+    PICKUP_MAP: "pickupMap"
+} as const;
+
+export type DialogueChoiceAction = typeof DialogueChoiceActions[keyof typeof DialogueChoiceActions];
 
 // Different choices and its associated action if any
 export interface DialogueChoiceOption {
     label: string;
     interaction: DialogueInteraction;
     action?: DialogueChoiceAction;
+    onSelect?: () => void;
 }
 
 export interface DialogueChoicePrompt {
@@ -37,7 +45,7 @@ const STATIC_INTERACTIONS: Readonly<Record<string, InteractionData>> = {
             options: [
                 {
                     label: "Yes",
-                    action: "collectFrozenBerries",
+                    action: DialogueChoiceActions.COLLECT_FROZEN_BERRIES,
                     interaction: {
                         type: "dialogue",
                         lines: ["You picked a few frozen berries."]
@@ -70,7 +78,7 @@ const STATIC_INTERACTIONS: Readonly<Record<string, InteractionData>> = {
             options: [
                 {
                     label: "Yes",
-                    action: "pickupMap",
+                    action: DialogueChoiceActions.PICKUP_MAP,
                     interaction: {
                         type: "dialogue",
                         lines: [
@@ -113,51 +121,118 @@ export function getInteractionData(interactionId: string): InteractionData | und
  */
 export function getBedDialogue(step: Chapter1MainQuestStep): DialogueInteraction {
     switch (step) {
-        case Chapter1MainQuestStep.NEED_FOOD:
-            return {
-                type: "dialogue",
-                lines: [
-                    "This bed looks warm and surprisingly comfortable.",
-                    "Hunger is preventing you from sleeping..."
-                ]
-            };
+    case Chapter1MainQuestStep.NEED_FOOD:
+    case Chapter1MainQuestStep.NEED_TO_COOK:
+    case Chapter1MainQuestStep.NEED_TO_EAT:
+        return {
+            type: "dialogue",
+            lines: [
+                "This bed looks warm and surprisingly comfortable.",
+                "Hunger is preventing you from sleeping..."
+            ]
+        };
 
-        case Chapter1MainQuestStep.RETURN_TO_BED:
-            return {
-                type: "dialogue",
-                lines: [
-                    "This bed looks warm and surprisingly comfortable.",
-                    "Take a rest?"
-                ],
-                choice: {
-                    lineIndex: 1,
-                    options: [
-                        {
-                            label: "Yes",
-                            action: "sleep",
-                            interaction: {
-                                type: "dialogue",
-                                lines: ["You rest."]
-                            }
-                        },
-                        {
-                            label: "No",
-                            interaction: {
-                                type: "dialogue",
-                                lines: ["Not Yet."]
-                            }
+    case Chapter1MainQuestStep.RETURN_TO_BED:
+        return {
+            type: "dialogue",
+            lines: [
+                "This bed looks warm and surprisingly comfortable.",
+                "Take a rest?"
+            ],
+            choice: {
+                lineIndex: 1,
+                options: [
+                    {
+                        label: "Yes",
+                        action: DialogueChoiceActions.SLEEP,
+                        interaction: {
+                            type: "dialogue",
+                            lines: ["You rest."]
                         }
-                    ]
-                }
-            };
-
-        default:
-            return {
-                type: "dialogue",
-                lines: [
-                    "You already got some rest."
+                    },
+                    {
+                        label: "No",
+                        interaction: {
+                            type: "dialogue",
+                            lines: ["Not Yet."]
+                        }
+                    }
                 ]
-            };
-    }
+            }
+        };
+        
 
+    case Chapter1MainQuestStep.SLEPT:
+        return {
+            type: "dialogue",
+            lines: ["You already got some rest."]
+        };
+
+    default:
+        return {
+            type: "dialogue",
+            lines: ["..."]
+        };
+    }
+}
+
+export function getPotDialogue(step: Chapter1MainQuestStep): DialogueInteraction {
+    switch (step) {
+    case Chapter1MainQuestStep.NEED_FOOD:
+        return {
+            type: "dialogue",
+            lines: [
+                "The lone pot sits in the corner waiting to be used.",
+                "You could cook here if you had food..."
+            ]
+        };
+
+    case Chapter1MainQuestStep.NEED_TO_COOK:
+        return {
+            type: "dialogue",
+            lines: [
+                "The lone pot sits in the corner waiting to be used.",
+                "Cook Frozen Berries?"
+            ],
+            choice: {
+                lineIndex: 1,
+                options: [
+                    {
+                        label: "Yes",
+                        action: DialogueChoiceActions.COOK_FROZEN_BERRIES,
+                        interaction: {
+                            type: "dialogue",
+                            lines: ["You cook the frozen berries."]
+                        }
+                    },
+                    {
+                        label: "No",
+                        interaction: {
+                            type: "dialogue",
+                            lines: ["No time for rest."]
+                        }
+                    }
+                ]
+            }
+        };
+
+    case Chapter1MainQuestStep.NEED_TO_EAT:
+    case Chapter1MainQuestStep.RETURN_TO_BED:
+        return {
+            type: "dialogue",
+            lines: ["The pot is still warm."]
+        };
+
+    case Chapter1MainQuestStep.SLEPT:
+        return {
+            type: "dialogue",
+            lines: ["Remnants from your meal remain."]
+        };
+
+    default:
+        return {
+            type: "dialogue",
+            lines: ["Remnants remain..."]
+        };
+    }
 }

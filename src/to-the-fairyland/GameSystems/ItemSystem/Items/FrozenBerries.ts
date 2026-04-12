@@ -1,4 +1,4 @@
-import InventoryItem from "../InventoryItem";
+import InventoryItem, { InventoryItemConsumeContext } from "../InventoryItem";
 
 /**
  * One inventory bundle of frozen berries.
@@ -22,5 +22,15 @@ export default class FrozenBerries extends InventoryItem {
 
     public set berryCount(value: number) {
         this.amount = Math.max(0, value);
+    }
+
+    public consume(context: InventoryItemConsumeContext): void {
+        context.showDialogue({
+            type: "dialogue",
+            lines: [
+                "These berries are frozen solid.",
+                "You should cook them before eating."
+            ]
+        });
     }
 }

@@ -52,10 +52,32 @@ export default class StoryManager {
     /**
      * Advances the quest once the player has successfully found food.
      */
-    public markFoodConsumed(): void {
+    public markFoodFound(): void {
         const state = this.getState();
 
         if (state.chapter1.mainQuestStep === Chapter1MainQuestStep.NEED_FOOD) {
+            state.chapter1.mainQuestStep = Chapter1MainQuestStep.NEED_TO_COOK;
+        }
+    }
+
+    /**
+     * Advances the quest once the player has successfully cooked.
+     */
+    public markFoodCooked(): void {
+        const state = this.getState();
+
+        if (state.chapter1.mainQuestStep === Chapter1MainQuestStep.NEED_TO_COOK) {
+            state.chapter1.mainQuestStep = Chapter1MainQuestStep.NEED_TO_EAT;
+        }
+    }
+
+    /**
+     * Advances the quest once the player has successfully consumed food.
+     */
+    public markFoodConsumed(): void {
+        const state = this.getState();
+
+        if (state.chapter1.mainQuestStep === Chapter1MainQuestStep.NEED_TO_EAT) {
             state.chapter1.mainQuestStep = Chapter1MainQuestStep.RETURN_TO_BED;
         }
     }
