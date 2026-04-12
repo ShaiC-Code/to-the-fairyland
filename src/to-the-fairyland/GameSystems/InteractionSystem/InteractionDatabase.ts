@@ -1,10 +1,15 @@
 import { Chapter1MainQuestStep } from "../StorySystem/StoryState";
 
 export type InteractionType = "dialogue";
+export type InteractionData = DialogueInteraction;
 
+export type DialogueChoiceAction = "collectFrozenBerries";
+
+// Different choices and its associated action if any
 export interface DialogueChoiceOption {
     label: string;
     interaction: DialogueInteraction;
+    action?: DialogueChoiceAction;
 }
 
 export interface DialogueChoicePrompt {
@@ -18,15 +23,35 @@ export interface DialogueInteraction {
     choice?: DialogueChoicePrompt;
 }
 
-export type InteractionData = DialogueInteraction;
 
 const STATIC_INTERACTIONS: Readonly<Record<string, InteractionData>> = {
     BushBerries: {
         type: "dialogue",
         lines: [
-            "A bush covered in red berries pokes through the snow.",
-            "Most of the berries are frozen solid."
-        ]
+            "A bush covered in blue berries pokes through the snow.",
+            "Most of the berries are frozen solid.",
+            "Collect berries?"
+        ],
+        choice: {
+            lineIndex: 2,
+            options: [
+                {
+                    label: "Yes",
+                    action: "collectFrozenBerries",
+                    interaction: {
+                        type: "dialogue",
+                        lines: ["You picked a few frozen berries."]
+                    }
+                },
+                {
+                    label: "No",
+                    interaction: {
+                        type: "dialogue",
+                        lines: ["You left the bush alone."]
+                    }
+                }
+            ]
+        }
     }
 };
 
@@ -42,11 +67,10 @@ const BED_DIALOGUES: Readonly<Record<Chapter1MainQuestStep, DialogueInteraction>
         type: "dialogue",
         lines: [
             "This bed looks warm and surprisingly comfortable.",
-            "Take a rest?",
-            "Ready to sleep?"
+            "Take a rest?"
         ],
         choice: {
-            lineIndex: 2,
+            lineIndex: 1,
             options: [
                 {
                     label: "Yes",
