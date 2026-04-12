@@ -1,6 +1,7 @@
 import { GameSessionState, createInitialGameSessionState } from "./GameSessionState";
 import { PlayerState } from "../PlayerSystem/PlayerState";
 import { StoryState } from "../StorySystem/StoryState";
+import { WorldState } from "../WorldSystem/WorldState";
 
 /**
  * Owns the live game session for the current run.
@@ -88,16 +89,23 @@ export default class GameSessionManager {
     }
 
     /**
-     * Convenience accessor for the persistent player slice of the session.
+     * Accessor for the State if the Player.
      */
     public getPlayerState(): PlayerState {
         return this.requireCurrentSession().player;
     }
 
     /**
-     * Convenience accessor for the persistent story slice of the session.
+     * Accessor for the State of the Story.
      */
     public getStoryState(): StoryState {
         return this.requireCurrentSession().story;
+    }
+
+    /**
+     * Accessor for the State of the world.
+     */
+    public getWorldState(): WorldState {
+        return this.requireCurrentSession().world;
     }
 }

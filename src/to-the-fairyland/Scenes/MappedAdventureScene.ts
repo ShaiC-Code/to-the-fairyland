@@ -26,6 +26,8 @@ import FrozenBerries from "../GameSystems/ItemSystem/Items/FrozenBerries";
 import { DialogueChoiceOption, DialogueInteraction, getInteractionData } from "../GameSystems/InteractionSystem/InteractionDatabase";
 import PlayerStateManager from "../GameSystems/PlayerSystem/PlayerStateManager";
 import GameSessionManager from "../GameSystems/GameSessionSystem/GameSessionManager";
+import { TimeOfDay } from "../GameSystems/WorldSystem/WorldState";
+
 
 
 
@@ -38,13 +40,6 @@ type AssetRef = Readonly<{
 type SceneEntranceData = {
     spawnName?: string;
 };
-
-export enum TimeOfDay {
-    DAY,
-    NOON,
-    DUSK,
-    NIGHT
-}
 
 export enum WeatherType {
     NONE,
@@ -296,6 +291,8 @@ export default abstract class MappedAdventureScene extends Scene {
             { onEnterSFXKey: this.uiHover.key, onClickSFXKey: this.uiClick.key }
         );
 
+        const worldState = this.gameSessionManager.getWorldState();
+        this.setTimeOfDay(worldState.timeOfDay);
         this.startWeatherAmbienceLoops();
     }
 
@@ -1043,6 +1040,15 @@ export default abstract class MappedAdventureScene extends Scene {
         switch (option.action) {
             case "collectFrozenBerries":
                 this.giveFrozenBerries();
+                break;
+
+            case "sleep":
+                this.storyManager.markSlept();
+
+                const worldState = this.gameSessionManager.getWorldState();
+                worldState.timeOfDay = TimeOfDay.DAY;
+                
+                this.setTimeOfDay(worldState.timeOfDay);
                 break;
         }
     }
