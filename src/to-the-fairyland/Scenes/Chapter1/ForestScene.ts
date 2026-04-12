@@ -1,7 +1,7 @@
 import { TiledObject, TiledTilemapData } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData";
 import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 import ShelterScene from "./ShelterScene";
-import MappedAdventureScene, { TimeOfDay, WeatherType } from "../MappedAdventureScene";
+import MappedAdventureScene, { WeatherType } from "../MappedAdventureScene";
 import { GameEventType } from "../../../Wolfie2D/Events/GameEventType";
 
 
@@ -19,7 +19,6 @@ export default class ForestScene extends MappedAdventureScene {
 
     public override startScene(): void {
         super.startScene();
-        this.setTimeOfDay(TimeOfDay.DUSK);
         this.setWeather(WeatherType.SNOWSTORM, 50);
     }
 

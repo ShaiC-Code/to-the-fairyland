@@ -1,6 +1,6 @@
-import Inventory from "../ItemSystem/Inventory";
 import { StoryState, createInitialStoryState } from "../StorySystem/StoryState";
 import { PlayerState, createInitialPlayerState } from "../PlayerSystem/PlayerState";
+import { WorldState, createInitialWorldState } from "../WorldSystem/WorldState";
 
 /**
  * Root state for one active play session.
@@ -12,6 +12,9 @@ export interface GameSessionState {
 
     /** Persistent story and quest progression. */
     story: StoryState;
+
+    /** State of the World in daytime | weather */
+    world: WorldState;
 }
 
 /**
@@ -21,6 +24,7 @@ export interface GameSessionState {
 export function createInitialGameSessionState(): GameSessionState {
     return {
         player: createInitialPlayerState(),
-        story: createInitialStoryState()
+        story: createInitialStoryState(),
+        world: createInitialWorldState()
     };
 }
