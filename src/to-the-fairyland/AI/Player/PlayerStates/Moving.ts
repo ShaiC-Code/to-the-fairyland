@@ -2,8 +2,8 @@ import Vec2 from "../../../../Wolfie2D/DataTypes/Vec2";
 import GameEvent from "../../../../Wolfie2D/Events/GameEvent";
 import { GameEventType } from "../../../../Wolfie2D/Events/GameEventType";
 import MappedAdventureScene from "../../../Scenes/MappedAdventureScene";
-import { PlayerStateType } from "./PlayerState";
-import PlayerState from "./PlayerState";
+import { PlayerStateType } from "./PlayerBehaviorState";
+import PlayerState from "./PlayerBehaviorState";
 
 export default class Moving extends PlayerState {
     private currentFootstepSFXKey: string | null = null;

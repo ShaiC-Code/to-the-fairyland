@@ -1,8 +1,8 @@
 {
     "activeFile": "Chapter1/Shelter.json",
     "expandedProjectPaths": [
-        "Chapter1",
         ".",
+        "Chapter1",
         "parsedObjects"
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
@@ -44,8 +44,8 @@
             "scale": 1.5,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 1463.6666666666665,
-                "y": 1633.9999999999998
+                "x": 1515,
+                "y": 1660.6666666666665
             }
         },
         "Chapter1/Shelter.json#Shelter": {

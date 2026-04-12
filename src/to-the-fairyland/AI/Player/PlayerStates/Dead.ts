@@ -1,6 +1,6 @@
 import GameEvent from "../../../../Wolfie2D/Events/GameEvent";
 import { PlayerEvent } from "../../../Events";
-import PlayerState from "./PlayerState";
+import PlayerState from "./PlayerBehaviorState";
 
 /**
  * The Dead state for the PlayerAI. While the player is in the "Dead" state, the player does not
