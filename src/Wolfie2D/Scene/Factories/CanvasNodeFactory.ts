@@ -3,6 +3,7 @@ import UIElement from "../../Nodes/UIElement";
 import Graphic from "../../Nodes/Graphic";
 import Sprite from "../../Nodes/Sprites/Sprite";
 import AnimatedSprite from "../../Nodes/Sprites/AnimatedSprite";
+import CanvasNode from "../../Nodes/CanvasNode";
 import { GraphicType } from "../../Nodes/Graphics/GraphicTypes";
 import { UIElementType } from "../../Nodes/UIElements/UIElementTypes";
 import Point from "../../Nodes/Graphics/Point";
@@ -28,6 +29,7 @@ export default class CanvasNodeFactory {
 	protected scene!: Scene;
 	protected resourceManager!: ResourceManager;
 	protected customUIElementBuilders: Map<string, (options?: Record<string, any>) => UIElement> = new Map();
+	protected customCanvasNodeBuilders: Map<string, (options?: Record<string, any>) => CanvasNode> = new Map();
 
 	init(scene: Scene): void {
 		this.scene = scene;
@@ -41,6 +43,15 @@ export default class CanvasNodeFactory {
 	 */
 	registerCustomUIElement(type: string, builder: (options?: Record<string, any>) => UIElement): void {
 		this.customUIElementBuilders.set(type, builder);
+	}
+
+	/**
+	 * Registers a custom CanvasNode builder that can be instantiated through add.customCanvasNode().
+	 * @param type The custom type key
+	 * @param builder A builder function that returns a CanvasNode instance
+	 */
+	registerCustomCanvasNode(type: string, builder: (options?: Record<string, any>) => CanvasNode): void {
+		this.customCanvasNodeBuilders.set(type, builder);
 	}
 
 	/**
@@ -180,6 +191,34 @@ export default class CanvasNodeFactory {
 		}
 
 		// Add instance to layer
+		layer.addNode(instance);
+
+		return instance;
+	}
+
+	/**
+	 * Adds an instance of a custom CanvasNode to the current scene.
+	 * @param type The custom type key
+	 * @param layerName The layer to add the node to
+	 * @param options Any additional arguments to feed to the constructor
+	 * @returns A new CanvasNode
+	 */
+	addCustomCanvasNode = (type: string, layerName: string, options?: Record<string, any>): CanvasNode => {
+		if(!this.customCanvasNodeBuilders.has(type)){
+			throw `CanvasNodeType '${type}' does not exist, or is registered incorrectly.`;
+		}
+
+		const builder = this.customCanvasNodeBuilders.get(type)!;
+		const instance = builder(options);
+		const layer = this.scene.getLayer(layerName);
+
+		instance.setScene(this.scene);
+		instance.id = this.scene.generateId();
+
+		if(!(this.scene.isParallaxLayer(layerName) || this.scene.isUILayer(layerName))){
+			this.scene.getSceneGraph().addNode(instance);
+		}
+
 		layer.addNode(instance);
 
 		return instance;

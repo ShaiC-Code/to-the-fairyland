@@ -11,6 +11,7 @@ import InventoryScreen from "../UI/InventoryScreen";
 import MainMenu from "./MainMenu";
 import { CustomUIElementType } from "../UI/CustomUIElements/CustomUIElementTypes";
 import HoverButton from "../UI/CustomUIElements/HoverButton";
+import UIImage from "../UI/CustomUIElements/UIImage";
 import { GraphicType } from "../../Wolfie2D/Nodes/Graphics/GraphicTypes";
 import Color from "../../Wolfie2D/Utils/Color";
 import Graphic from "../../Wolfie2D/Nodes/Graphic";
@@ -189,6 +190,10 @@ export default abstract class MappedAdventureScene extends Scene {
         
         this.add.registerCustomUIElement(CustomUIElementType.HOVER_BUTTON, (options?: Record<string, any>) => {
             return new HoverButton(options!.position, options!.text);
+        });
+
+        this.add.registerCustomCanvasNode(CustomUIElementType.UI_IMAGE, (options?: Record<string, any>) => {
+            return new UIImage(options!.imageKey);
         });
 
         this.load.image("snowflake1", "game_assets/sprites/particles/Snowflake1.png");

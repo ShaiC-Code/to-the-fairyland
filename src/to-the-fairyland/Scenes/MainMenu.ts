@@ -2,6 +2,7 @@ import Vec2 from "../../Wolfie2D/DataTypes/Vec2";
 import Scene from "../../Wolfie2D/Scene/Scene";
 import GameEvent from "../../Wolfie2D/Events/GameEvent";
 import HoverButton from "../UI/CustomUIElements/HoverButton";
+import UIImage from "../UI/CustomUIElements/UIImage";
 import ForestScene  from "./Chapter1/ForestScene";
 import ShelterScene from "./Chapter1/ShelterScene";
 import TextBox from "../../Wolfie2D/Nodes/UIElements/TextBox";
@@ -43,6 +44,10 @@ export default class MainMenu extends Scene {
 
         this.add.registerCustomUIElement(CustomUIElementType.HOVER_BUTTON, (options?: Record<string, any>) => {
             return new HoverButton(options!.position, options!.text);
+        });
+
+        this.add.registerCustomCanvasNode(CustomUIElementType.UI_IMAGE, (options?: Record<string, any>) => {
+            return new UIImage(options!.imageKey);
         });
     }
 
