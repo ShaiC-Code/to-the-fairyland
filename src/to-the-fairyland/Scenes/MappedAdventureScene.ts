@@ -77,6 +77,16 @@ export default abstract class MappedAdventureScene extends Scene {
         path: "game_assets/sounds/ui-click.wav"
     };
 
+    protected readonly menuOpen: AssetRef = {
+        key: "menu-open",
+        path: "game_assets/sounds/menu-open.wav"
+    };
+
+    protected readonly menuClose: AssetRef = {
+        key: "menu-close",
+        path: "game_assets/sounds/menu-close.wav"
+    };
+
     protected readonly woodenDoorSFX: AssetRef = {
         key: "door-wooden",
         path: "game_assets/sounds/door-wooden.wav"
@@ -160,6 +170,14 @@ export default abstract class MappedAdventureScene extends Scene {
             this.load.audio(this.uiClick.key, this.uiClick.path);
         }
 
+        if (!this.resourceManager.getAudio(this.menuOpen.key)) {
+            this.load.audio(this.menuOpen.key, this.menuOpen.path);
+        }
+
+        if (!this.resourceManager.getAudio(this.menuClose.key)) {
+            this.load.audio(this.menuClose.key, this.menuClose.path);
+        }
+
         if (!this.resourceManager.getAudio(this.woodenDoorSFX.key)) {
             this.load.audio(this.woodenDoorSFX.key, this.woodenDoorSFX.path);
         }
@@ -198,6 +216,8 @@ export default abstract class MappedAdventureScene extends Scene {
         // Keep the sfx audio
         this.load.keepAudio(this.uiHover.key);
         this.load.keepAudio(this.uiClick.key);
+        this.load.keepAudio(this.menuOpen.key);
+        this.load.keepAudio(this.menuClose.key);
         this.load.keepAudio(this.woodenDoorSFX.key);
         this.load.keepAudio(this.walkingWoodSFX.key);
         this.load.keepAudio(this.walkingSnowSFX.key);
@@ -260,14 +280,14 @@ export default abstract class MappedAdventureScene extends Scene {
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize(),
             () => this.sceneManager.changeToScene(MainMenu),
-            { onEnterSFXKey: this.uiHover.key, onClickSFXKey: this.uiClick.key }
+            { onEnterSFXKey: this.uiHover.key, onClickSFXKey: this.uiClick.key, onShowSFXKey: this.menuOpen.key, onHideSFXKey: this.menuClose.key }
         );
         this.inventoryScreen = new InventoryScreen(
             "inventoryOverlay",
             this,
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize(),
-            { onEnterSFXKey: this.uiHover.key, onClickSFXKey: this.uiClick.key }
+            { onEnterSFXKey: this.uiHover.key, onClickSFXKey: this.uiClick.key, onShowSFXKey: this.menuOpen.key, onHideSFXKey: this.menuClose.key }
         );
         this.dialogueScreen = new DialogueScreen(
             "dialogueOverlay",

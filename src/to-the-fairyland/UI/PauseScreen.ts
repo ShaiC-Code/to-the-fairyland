@@ -7,7 +7,7 @@ import NullFunc from "../../Wolfie2D/DataTypes/Functions/NullFunc";
 export default class PauseScreen extends UIScreen {
     private onQuit: () => void;
 
-    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, onQuit: () => void, options?: { onClickSFXKey?: string, onEnterSFXKey?: string, onExitSFXKey?: string }) {
+    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, onQuit: () => void, options?: { onClickSFXKey?: string, onEnterSFXKey?: string, onExitSFXKey?: string, onShowSFXKey?: string, onHideSFXKey?: string }) {
         super(layerName, scene, getViewportCenter, getViewportHalfSize, options);
         this.onQuit = onQuit;
 

@@ -4,7 +4,7 @@ import UIScreen from "../UIScreen";
 
 export default class ControlsScreen extends UIScreen {
 
-    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, options?: { onClickSFXKey?: string, onEnterSFXKey?: string, onExitSFXKey?: string }) {
+    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, options?: { onClickSFXKey?: string, onEnterSFXKey?: string, onExitSFXKey?: string, onShowSFXKey?: string, onHideSFXKey?: string }) {
         super(layerName, scene, getViewportCenter, getViewportHalfSize, options);
 
         this.initializeUI();

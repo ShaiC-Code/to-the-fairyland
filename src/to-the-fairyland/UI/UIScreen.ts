@@ -29,8 +29,10 @@ export default class UIScreen {
     protected onClickSFXKey?: string;
     protected onEnterSFXKey?: string;
     protected onExitSFXKey?: string;
+    protected onShowSFXKey?: string;
+    protected onHideSFXKey?: string;
 
-    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, options?: { onClickSFXKey?: string, onEnterSFXKey?: string, onExitSFXKey?: string }) {
+    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, options?: { onClickSFXKey?: string, onEnterSFXKey?: string, onExitSFXKey?: string, onShowSFXKey?: string, onHideSFXKey?: string }) {
         this.scene = scene;
         this.getViewportCenter = getViewportCenter;
         this.getViewportHalfSize = getViewportHalfSize;
@@ -45,6 +47,8 @@ export default class UIScreen {
         this.onClickSFXKey = options.onClickSFXKey;
         this.onEnterSFXKey = options.onEnterSFXKey;
         this.onExitSFXKey = options.onExitSFXKey;
+        this.onShowSFXKey = options.onShowSFXKey;
+        this.onHideSFXKey = options.onHideSFXKey;
     }
 
     protected initializeUI(): void {}
@@ -70,6 +74,7 @@ export default class UIScreen {
     
     public show(): void {
         if (this.isOpen) return;
+        this.playSFX(this.onShowSFXKey);
         this.isOpen = true;
 
         this.layer.setHidden(false);
@@ -77,6 +82,7 @@ export default class UIScreen {
 
     public hide(): void {
         if (!this.isOpen) return;
+        this.playSFX(this.onHideSFXKey);
         this.isOpen = false;
 
         this.layer.setHidden(true);
@@ -213,7 +219,7 @@ export default class UIScreen {
 
     private playSFX(key?: string): void {
         if (key) {
-            this.emitter.fireEvent(GameEventType.PLAY_SOUND, {key: key, loop: false, holdReference: false});
+            this.emitter.fireEvent(GameEventType.PLAY_SFX, {key: key, loop: false, holdReference: false});
         }
     }
 }

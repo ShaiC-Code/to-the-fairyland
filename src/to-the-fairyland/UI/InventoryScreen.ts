@@ -5,7 +5,8 @@ import UIScreen from "./UIScreen";
 import NullFunc from "../../Wolfie2D/DataTypes/Functions/NullFunc";
 
 export default class InventoryScreen extends UIScreen {
-    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, options?: { onClickSFXKey?: string, onEnterSFXKey?: string, onExitSFXKey?: string }) {
+    
+    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, options?: { onClickSFXKey?: string, onEnterSFXKey?: string, onExitSFXKey?: string, onShowSFXKey?: string, onHideSFXKey?: string }) {
         super(layerName, scene, getViewportCenter, getViewportHalfSize, options);
 
         this.initializeUI();
