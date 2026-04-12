@@ -6,16 +6,43 @@ import { PlayerStateType } from "./PlayerState";
 import PlayerState from "./PlayerState";
 
 export default class Moving extends PlayerState {
+    private currentFootstepSFXKey: string | null = null;
+
+    private syncFootstepSFX(): void {
+        const currentScene = this.owner.getScene() as MappedAdventureScene;
+        const groundType = currentScene.groundTypeAtTile(this.parent.currentTile);
+
+        let nextFootstepSFXKey: string | null = null;
+        if (groundType === "wood") {
+            nextFootstepSFXKey = currentScene.getAssetKey("walkingWoodSFX");
+        } else if (groundType === "snow") {
+            nextFootstepSFXKey = currentScene.getAssetKey("walkingSnowSFX");
+        } else if (groundType === "bush") {
+            nextFootstepSFXKey = currentScene.getAssetKey("walkingSnowBushSFX");
+        }
+
+        if (this.currentFootstepSFXKey === nextFootstepSFXKey) {
+            return;
+        }
+
+        if (this.currentFootstepSFXKey !== null) {
+            this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: this.currentFootstepSFXKey });
+        }
+
+        this.currentFootstepSFXKey = nextFootstepSFXKey;
+
+        if (this.currentFootstepSFXKey !== null) {
+            this.emitter.fireEvent(GameEventType.PLAY_SOUND, {
+                key: this.currentFootstepSFXKey,
+                loop: true,
+                holdReference: true
+            });
+        }
+    }
     
     public override onEnter(options: Record<string, any>): void {
         this.playFacingAnimation();
-        const currentScene = this.owner.getScene() as MappedAdventureScene;
-        const groundType = currentScene.groundTypeAtTile(this.parent.currentTile);
-        if (groundType === "wood") {
-            this.emitter.fireEvent(GameEventType.PLAY_SOUND, {key: currentScene.getAssetKey("walkingWoodSFX"), loop: true, holdReference: true});
-        } else if (groundType === "snow") {
-            this.emitter.fireEvent(GameEventType.PLAY_SOUND, {key: currentScene.getAssetKey("walkingSnowSFX"), loop: true, holdReference: true});
-        }
+        this.syncFootstepSFX();
     }
 
     public override handleInput(event: GameEvent): void { 
@@ -59,6 +86,9 @@ export default class Moving extends PlayerState {
                 return;
             }
 
+            // Update the walking sound to match the tile we are now standing on.
+            this.syncFootstepSFX();
+
             const nextTile = this.parent.currentTile.clone().add(dir);
             this.parent.targetTile = nextTile;
             this.parent.moveStart = this.owner.position.clone();
@@ -76,12 +106,9 @@ export default class Moving extends PlayerState {
     }
 
     public override onExit(): Record<string, any> {
-        const currentScene = this.owner.getScene() as MappedAdventureScene;
-        const groundType = currentScene.groundTypeAtTile(this.parent.currentTile);
-        if (groundType === "wood") {
-            this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: currentScene.getAssetKey("walkingWoodSFX")});
-        } else if (groundType === "snow") {
-            this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: currentScene.getAssetKey("walkingSnowSFX")});
+        if (this.currentFootstepSFXKey !== null) {
+            this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: this.currentFootstepSFXKey });
+            this.currentFootstepSFXKey = null;
         }
         return {};
     }

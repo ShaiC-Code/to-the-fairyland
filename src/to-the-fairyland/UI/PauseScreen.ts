@@ -7,8 +7,8 @@ import NullFunc from "../../Wolfie2D/DataTypes/Functions/NullFunc";
 export default class PauseScreen extends UIScreen {
     private onQuit: () => void;
 
-    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, onQuit: () => void) {
-        super(layerName, scene, getViewportCenter, getViewportHalfSize);
+    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, onQuit: () => void, options?: { onClickSFXKey?: string, onEnterSFXKey?: string, onExitSFXKey?: string, onShowSFXKey?: string, onHideSFXKey?: string }) {
+        super(layerName, scene, getViewportCenter, getViewportHalfSize, options);
         this.onQuit = onQuit;
 
         this.initializeUI();
@@ -35,9 +35,6 @@ export default class PauseScreen extends UIScreen {
 
         // Add semi-transparent background
         this.addRect("bg", screenCenter.clone(), viewportHalfSize.clone().scale(2), new Color(0, 0, 0, 0.7));
-
-        // Add "PAUSED" text
-        // this.addLabel("pausedLabel", menuButtonPos.pause, new Vec2(viewportSize.x, 100), "PAUSED", 64, {"halign": "left", "valign": "center"});
 
         // Add Resume button
         this.addHoverButton("resumeBtn", menuButtonPos.resume, menuButtonSize, "RESUME", {onClick: () => this.hide()});

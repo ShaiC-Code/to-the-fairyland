@@ -20,6 +20,7 @@ import DialogueScreen from "../UI/DialogueScreen";
 import { DialogueInteraction, getInteractionData } from "../GameSystems/InteractionSystem/InteractionDatabase";
 import { PlayerControlMode, PlayerInput } from "../AI/Player/PlayerController";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
+import { AudioChannelType } from "../../Wolfie2D/Sound/AudioManager";
 
 
 type AssetRef = Readonly<{
@@ -54,6 +55,8 @@ type SnowPreset = Readonly<{
 
 
 export default abstract class MappedAdventureScene extends Scene {
+    private static weatherAmbienceLoopsStarted = false;
+
     // The tilemap to load for the scene, pass from sub scenes
     protected abstract readonly tilemap: AssetRef;
 
@@ -64,6 +67,26 @@ export default abstract class MappedAdventureScene extends Scene {
     };
 
     // Sound effects
+    protected readonly uiHover: AssetRef = {
+        key: "ui-hover",
+        path: "game_assets/sounds/ui-hover.wav"
+    };
+
+    protected readonly uiClick: AssetRef = {
+        key: "ui-click",
+        path: "game_assets/sounds/ui-click.wav"
+    };
+
+    protected readonly menuOpen: AssetRef = {
+        key: "menu-open",
+        path: "game_assets/sounds/menu-open.wav"
+    };
+
+    protected readonly menuClose: AssetRef = {
+        key: "menu-close",
+        path: "game_assets/sounds/menu-close.wav"
+    };
+
     protected readonly woodenDoorSFX: AssetRef = {
         key: "door-wooden",
         path: "game_assets/sounds/door-wooden.wav"
@@ -77,6 +100,21 @@ export default abstract class MappedAdventureScene extends Scene {
     protected readonly walkingSnowSFX: AssetRef = {
         key: "walking-snow",
         path: "game_assets/sounds/walking-snow.wav"
+    };
+
+    protected readonly walkingSnowBushSFX: AssetRef = {
+        key: "walking-snow-bush",
+        path: "game_assets/sounds/walking-snow-bush.wav"
+    };
+
+    protected readonly weatherSnowInsideSFX: AssetRef = {
+        key: "weather-snow-inside",
+        path: "game_assets/sounds/weather-snow-inside.wav"
+    };
+
+    protected readonly weatherSnowOutsideSFX: AssetRef = {
+        key: "weather-snow-outside",
+        path: "game_assets/sounds/weather-snow-outside.wav"
     };
 
     protected readonly groundLayerName = "Ground";
@@ -110,6 +148,9 @@ export default abstract class MappedAdventureScene extends Scene {
     private weatherFadeInSpeed = 0.5;
     private weatherLayerCreated = false;
     private weatherLayerDepth = 50;
+    private weatherAmbienceMode: "inside" | "outside" | null = null;
+    private readonly weatherAmbienceFadeSeconds = 0.5;
+    private readonly weatherAmbienceInitialFadeSeconds = 1.0;
     
     private readonly weatherLayerName = "weather";
     private readonly snowflakeKeys = ["snowflake1", "snowflake2", "snowflake3"];
@@ -126,6 +167,22 @@ export default abstract class MappedAdventureScene extends Scene {
             this.load.spritesheet(this.playerSheet.key, this.playerSheet.path);
         }
 
+        if (!this.resourceManager.getAudio(this.uiHover.key)) {
+            this.load.audio(this.uiHover.key, this.uiHover.path);
+        }
+
+        if (!this.resourceManager.getAudio(this.uiClick.key)) {
+            this.load.audio(this.uiClick.key, this.uiClick.path);
+        }
+
+        if (!this.resourceManager.getAudio(this.menuOpen.key)) {
+            this.load.audio(this.menuOpen.key, this.menuOpen.path);
+        }
+
+        if (!this.resourceManager.getAudio(this.menuClose.key)) {
+            this.load.audio(this.menuClose.key, this.menuClose.path);
+        }
+
         if (!this.resourceManager.getAudio(this.woodenDoorSFX.key)) {
             this.load.audio(this.woodenDoorSFX.key, this.woodenDoorSFX.path);
         }
@@ -136,6 +193,18 @@ export default abstract class MappedAdventureScene extends Scene {
 
         if (!this.resourceManager.getAudio(this.walkingSnowSFX.key)) {
             this.load.audio(this.walkingSnowSFX.key, this.walkingSnowSFX.path);
+        }
+
+        if (!this.resourceManager.getAudio(this.walkingSnowBushSFX.key)) {
+            this.load.audio(this.walkingSnowBushSFX.key, this.walkingSnowBushSFX.path);
+        }
+
+        if (!this.resourceManager.getAudio(this.weatherSnowInsideSFX.key)) {
+            this.load.audio(this.weatherSnowInsideSFX.key, this.weatherSnowInsideSFX.path);
+        }
+
+        if (!this.resourceManager.getAudio(this.weatherSnowOutsideSFX.key)) {
+            this.load.audio(this.weatherSnowOutsideSFX.key, this.weatherSnowOutsideSFX.path);
         }
 
         this.loadExtraAssets();
@@ -154,13 +223,22 @@ export default abstract class MappedAdventureScene extends Scene {
         this.load.keepSpritesheet(this.playerSheet.key);
 
         // Keep the sfx audio
+        this.load.keepAudio(this.uiHover.key);
+        this.load.keepAudio(this.uiClick.key);
+        this.load.keepAudio(this.menuOpen.key);
+        this.load.keepAudio(this.menuClose.key);
         this.load.keepAudio(this.woodenDoorSFX.key);
         this.load.keepAudio(this.walkingWoodSFX.key);
         this.load.keepAudio(this.walkingSnowSFX.key);
-        
-        // Stop walking sfx when changing scenes
+        this.load.keepAudio(this.walkingSnowBushSFX.key);
+        this.load.keepAudio(this.weatherSnowInsideSFX.key);
+        this.load.keepAudio(this.weatherSnowOutsideSFX.key);
+
+        // Stop sfx when changing scenes
         this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: this.walkingWoodSFX.key});
         this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: this.walkingSnowSFX.key});
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: this.walkingSnowBushSFX.key});
+        this.muteWeatherAmbience();
     }
 
 
@@ -210,13 +288,15 @@ export default abstract class MappedAdventureScene extends Scene {
             this,
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize(),
-            () => this.sceneManager.changeToScene(MainMenu)
+            () => this.sceneManager.changeToScene(MainMenu),
+            { onEnterSFXKey: this.uiHover.key, onClickSFXKey: this.uiClick.key, onShowSFXKey: this.menuOpen.key, onHideSFXKey: this.menuClose.key }
         );
         this.inventoryScreen = new InventoryScreen(
             "inventoryOverlay",
             this,
             () => this.viewport.getCenter(),
-            () => this.viewport.getHalfSize()
+            () => this.viewport.getHalfSize(),
+            { onEnterSFXKey: this.uiHover.key, onClickSFXKey: this.uiClick.key, onShowSFXKey: this.menuOpen.key, onHideSFXKey: this.menuClose.key }
         );
         this.dialogueScreen = new DialogueScreen(
             "dialogueOverlay",
@@ -224,6 +304,8 @@ export default abstract class MappedAdventureScene extends Scene {
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize()
         );
+
+        this.startWeatherAmbienceLoops();
     }
 
     public override updateScene(_deltaT: number): void {
@@ -294,6 +376,8 @@ export default abstract class MappedAdventureScene extends Scene {
                 flake.alpha = this.weatherAlpha;
             }
         }
+
+        this.syncWeatherAmbience();
     }
 
     protected setWorldPaused(paused: boolean): void {
@@ -325,6 +409,97 @@ export default abstract class MappedAdventureScene extends Scene {
     protected handleInteraction(_obj: TiledObject): void {}
 
     protected handleAutoTransition(_obj: TiledObject): void {}
+
+    /**
+     * Override in child scenes if weather ambience should default indoors.
+     * This can later be made dynamic (e.g. based on player tile inside a room volume).
+     */
+    protected isWeatherAmbienceIndoors(): boolean {
+        return false;
+    }
+
+    protected syncWeatherAmbience(): void {
+        if (!this.weatherActive) {
+            this.muteWeatherAmbience(this.weatherAmbienceFadeSeconds);
+            return;
+        }
+
+        const fadeSeconds = this.weatherAmbienceMode === null
+            ? this.weatherAmbienceInitialFadeSeconds
+            : this.weatherAmbienceFadeSeconds;
+
+        this.setWeatherAmbience(this.isWeatherAmbienceIndoors(), fadeSeconds);
+    }
+
+    protected startWeatherAmbienceLoops(): void {
+        if (MappedAdventureScene.weatherAmbienceLoopsStarted) {
+            return;
+        }
+
+        MappedAdventureScene.weatherAmbienceLoopsStarted = true;
+
+        // Start weather ambience stems once and keep them running across mapped scenes.
+        this.emitter.fireEvent(GameEventType.PLAY_SFX, {
+            key: this.weatherSnowInsideSFX.key,
+            loop: true,
+            holdReference: true,
+            channel: AudioChannelType.CUSTOM_1,
+            fadeInSeconds: this.weatherAmbienceInitialFadeSeconds
+        });
+
+        this.emitter.fireEvent(GameEventType.PLAY_SFX, {
+            key: this.weatherSnowOutsideSFX.key,
+            loop: true,
+            holdReference: true,
+            channel: AudioChannelType.CUSTOM_2,
+            fadeInSeconds: this.weatherAmbienceInitialFadeSeconds
+        });
+    }
+
+    /**
+     * Crossfades between indoor and outdoor weather ambience channels.
+     * Uses channel-level fades so both weather stems stay phase-synced.
+     */
+    protected setWeatherAmbience(indoor: boolean, fadeSeconds: number = 0.35): void {
+        const nextMode: "inside" | "outside" = indoor ? "inside" : "outside";
+        if (this.weatherAmbienceMode === nextMode) {
+            return;
+        }
+
+        this.weatherAmbienceMode = nextMode;
+
+        const indoorEvent = {
+            channel: AudioChannelType.CUSTOM_1,
+            fadeSeconds
+        };
+        const outdoorEvent = {
+            channel: AudioChannelType.CUSTOM_2,
+            fadeSeconds
+        };
+
+        if (indoor) {
+            this.emitter.fireEvent(GameEventType.UNMUTE_CHANNEL, indoorEvent);
+            this.emitter.fireEvent(GameEventType.MUTE_CHANNEL, outdoorEvent);
+        } else {
+            this.emitter.fireEvent(GameEventType.MUTE_CHANNEL, indoorEvent);
+            this.emitter.fireEvent(GameEventType.UNMUTE_CHANNEL, outdoorEvent);
+        }
+    }
+
+    /**
+     * Mutes both weather ambience channels and clears the current ambience state.
+     */
+    protected muteWeatherAmbience(fadeSeconds: number = 0): void {
+        this.weatherAmbienceMode = null;
+        this.emitter.fireEvent(GameEventType.MUTE_CHANNEL, {
+            channel: AudioChannelType.CUSTOM_1,
+            fadeSeconds
+        });
+        this.emitter.fireEvent(GameEventType.MUTE_CHANNEL, {
+            channel: AudioChannelType.CUSTOM_2,
+            fadeSeconds
+        });
+    }
 
     /**
      * Retrieves a tile layer by name and throws an error if it is missing.
@@ -462,6 +637,7 @@ export default abstract class MappedAdventureScene extends Scene {
                 flake.visible = false;
             }
             this.weatherActive = false;
+            this.muteWeatherAmbience(this.weatherAmbienceFadeSeconds);
             return;
         }
     
@@ -493,6 +669,7 @@ export default abstract class MappedAdventureScene extends Scene {
         }
     
         this.weatherActive = true;
+        this.syncWeatherAmbience();
     }
     
     private ensureWeatherLayer(): void {
@@ -735,6 +912,14 @@ export default abstract class MappedAdventureScene extends Scene {
         this.currentDialogueLine = 0;
         this.dialogueScreen.hide();
     }
+
+    public playUIClickSFX(): void {
+        this.emitter.fireEvent(GameEventType.PLAY_SFX, {key: this.uiClick.key, loop: false, holdReference: false});
+    }
+
+    public playDialogueSFX(): void {
+        return; // Placeholder for now, can be used for dialogue-specific sound effects in the future
+    }
     
     // TEMPORARY function to determine ground type for sfx purposes, ideally this would be determined by properties on the tilemap
     public groundTypeAtTile(tile: Vec2): "snow" | "wood" | "bush" | null {
@@ -766,6 +951,8 @@ export default abstract class MappedAdventureScene extends Scene {
                 return this.walkingWoodSFX.key;
             case "walkingSnowSFX":
                 return this.walkingSnowSFX.key;
+            case "walkingSnowBushSFX":
+                return this.walkingSnowBushSFX.key;
             default:
                 return "invalid asset name";
         }

@@ -55,7 +55,7 @@ export enum GameEventType {
 	PLAY_RECORDING = "play_recording",
 
 	/**
-	 * Play Sound event. Has data: {key: string, loop: boolean, holdReference: boolean }
+	 * Play Sound event. Has data: {key: string, loop: boolean, holdReference: boolean, channel?: AudioChannelType, fadeInSeconds?: number }
 	 */
 	PLAY_SOUND = "play_sound",
 
@@ -65,7 +65,7 @@ export enum GameEventType {
 	STOP_SOUND = "stop_sound",
 
 	/**
-	 * Play Sound event. Has data: {key: string, loop: boolean, holdReference: boolean, channel: AudioChannelType }
+	 * Play Sound event. Has data: {key: string, loop: boolean, holdReference: boolean, channel: AudioChannelType, fadeInSeconds?: number }
 	 */
  	PLAY_SFX = "play_sfx",
 
@@ -75,12 +75,12 @@ export enum GameEventType {
   PLAY_MUSIC = "play_music",
 
 	/**
-	 * Mute audio channel event. Has data: {channel: AudioChannelType}
+	 * Mute audio channel event. Has data: {channel: AudioChannelType, fadeSeconds?: number}
 	 */
 	MUTE_CHANNEL = "mute_channel",
 
 	/**
-	 * Unmute audio channel event. Has data: {channel: AudioChannelType}
+	 * Unmute audio channel event. Has data: {channel: AudioChannelType, fadeSeconds?: number}
 	 */
 	UNMUTE_CHANNEL = "unmute_channel",
 

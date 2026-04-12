@@ -9,24 +9,46 @@ import { GraphicType } from "../../Wolfie2D/Nodes/Graphics/GraphicTypes";
 import Line from "../../Wolfie2D/Nodes/Graphics/Line";
 import CanvasNode from "../../Wolfie2D/Nodes/CanvasNode";
 import TextBox from "../../Wolfie2D/Nodes/UIElements/TextBox";
+import Receiver from "../../Wolfie2D/Events/Receiver";
+import Emitter from "../../Wolfie2D/Events/Emitter";
+import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 
 export default class UIScreen {
     protected scene: Scene;
     protected getViewportCenter: () => Vec2;
     protected getViewportHalfSize: () => Vec2;
 
+    protected reciever: Receiver;
+    protected emitter: Emitter;
+
     protected layerName: string;
     protected layer: Layer;
     protected elements: Map<string, CanvasNode | undefined>;
     protected isOpen: boolean = false;
 
-    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2) {
+    protected onClickSFXKey?: string;
+    protected onEnterSFXKey?: string;
+    protected onExitSFXKey?: string;
+    protected onShowSFXKey?: string;
+    protected onHideSFXKey?: string;
+
+    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, options?: { onClickSFXKey?: string, onEnterSFXKey?: string, onExitSFXKey?: string, onShowSFXKey?: string, onHideSFXKey?: string }) {
         this.scene = scene;
         this.getViewportCenter = getViewportCenter;
         this.getViewportHalfSize = getViewportHalfSize;
         this.layerName = layerName;
         this.layer = this.scene.addUILayer(layerName);
+
         this.elements = new Map();
+        this.reciever = new Receiver();
+        this.emitter = new Emitter();
+
+        options = options ?? {};
+        this.onClickSFXKey = options.onClickSFXKey;
+        this.onEnterSFXKey = options.onEnterSFXKey;
+        this.onExitSFXKey = options.onExitSFXKey;
+        this.onShowSFXKey = options.onShowSFXKey;
+        this.onHideSFXKey = options.onHideSFXKey;
     }
 
     protected initializeUI(): void {}
@@ -52,6 +74,7 @@ export default class UIScreen {
     
     public show(): void {
         if (this.isOpen) return;
+        this.playSFX(this.onShowSFXKey);
         this.isOpen = true;
 
         this.layer.setHidden(false);
@@ -59,6 +82,7 @@ export default class UIScreen {
 
     public hide(): void {
         if (!this.isOpen) return;
+        this.playSFX(this.onHideSFXKey);
         this.isOpen = false;
 
         this.layer.setHidden(true);
@@ -155,12 +179,17 @@ export default class UIScreen {
         button.borderWidth = 2;
         button.borderColor = Color.WHITE;
         button.backgroundColor = Color.TRANSPARENT;
-        if (onClick !== undefined) {
-            button.onClick = onClick;
-        }
+        button.onEnter = () => {this.playSFX(this.onEnterSFXKey);};
+        button.onClick = () => {
+            this.playSFX(this.onClickSFXKey);
+            if (onClick !== undefined) {
+                onClick();
+            }
+        };
         if (onClickEventId !== undefined) {
             button.onClickEventId = onClickEventId;
         }
+        button.onLeave = () => {this.playSFX(this.onExitSFXKey);};
         this.addUIElement(key, button);
     }
     
@@ -174,12 +203,23 @@ export default class UIScreen {
         button.size.set(size.x, size.y);
         button.borderWidth = 0;
         button.borderRadius = 0;
-        if (onClick !== undefined) {
-            button.onClick = onClick;
-        }
+        button.onEnter = () => {this.playSFX(this.onEnterSFXKey);};
+        button.onClick = () => {
+            this.playSFX(this.onClickSFXKey);
+            if (onClick !== undefined) {
+                onClick();
+            }
+        };
         if (onClickEventId !== undefined) {
             button.onClickEventId = onClickEventId;
         }
+        button.onLeave = () => {this.playSFX(this.onExitSFXKey);};
         this.addUIElement(key, button);
+    }
+
+    private playSFX(key?: string): void {
+        if (key) {
+            this.emitter.fireEvent(GameEventType.PLAY_SFX, {key: key, loop: false, holdReference: false});
+        }
     }
 }

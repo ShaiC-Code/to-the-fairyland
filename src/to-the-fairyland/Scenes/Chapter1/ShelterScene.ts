@@ -52,5 +52,8 @@ export default class ShelterScene extends MappedAdventureScene {
             this.emitter.fireEvent(GameEventType.PLAY_SOUND, {key: this.woodenDoorSFX.key, loop: false, holdReference: false});
         }
     }
-    
+
+    protected override isWeatherAmbienceIndoors(): boolean {
+        return true;
+    }
 }

@@ -11,13 +11,36 @@ import ControlsScreen from "../UI/MainMenuScreens/ControlsScreen";
 import HelpScreen from "../UI/MainMenuScreens/HelpScreen";
 import MainScreen from "../UI/MainMenuScreens/MainScreen";
 
+type AssetRef = Readonly<{
+    key: string;
+    path: string;
+}>;
+
 export default class MainMenu extends Scene {
     private mainMenu!: MainScreen;
     private levelMenu!: LevelSelectionScreen;
     private controlsMenu!: ControlsScreen;
     private helpMenu!: HelpScreen;
 
+    protected readonly uiHover: AssetRef = {
+        key: "ui-hover",
+        path: "game_assets/sounds/ui-hover.wav"
+    };
+
+    protected readonly uiClick: AssetRef = {
+        key: "ui-click",
+        path: "game_assets/sounds/ui-click.wav"
+    };
+
     public loadScene(){
+        if (!this.resourceManager.getAudio(this.uiHover.key)) {
+            this.load.audio(this.uiHover.key, this.uiHover.path);
+        }
+
+        if (!this.resourceManager.getAudio(this.uiClick.key)) {
+            this.load.audio(this.uiClick.key, this.uiClick.path);
+        }
+
         this.add.registerCustomUIElement(CustomUIElementType.HOVER_BUTTON, (options?: Record<string, any>) => {
             return new HoverButton(options!.position, options!.text);
         });
@@ -28,7 +51,8 @@ export default class MainMenu extends Scene {
             "mainMenu",
             this,
             () => this.viewport.getCenter(),
-            () => this.viewport.getHalfSize()
+            () => this.viewport.getHalfSize(),
+            { onEnterSFXKey: this.uiHover.key, onClickSFXKey: this.uiClick.key }
         );
         this.mainMenu.show();
 
@@ -36,21 +60,24 @@ export default class MainMenu extends Scene {
             "levelMenu",
             this,
             () => this.viewport.getCenter(),
-            () => this.viewport.getHalfSize()
+            () => this.viewport.getHalfSize(),
+            { onEnterSFXKey: this.uiHover.key, onClickSFXKey: this.uiClick.key }
         );
 
         this.controlsMenu = new ControlsScreen(
             "controlsMenu",
             this,
             () => this.viewport.getCenter(),
-            () => this.viewport.getHalfSize()
+            () => this.viewport.getHalfSize(),
+            { onEnterSFXKey: this.uiHover.key, onClickSFXKey: this.uiClick.key }
         );
 
         this.helpMenu = new HelpScreen(
             "helpMenu",
             this,
             () => this.viewport.getCenter(),
-            () => this.viewport.getHalfSize()
+            () => this.viewport.getHalfSize(),
+            { onEnterSFXKey: this.uiHover.key, onClickSFXKey: this.uiClick.key }
         );
 
         this.receiver.subscribe("openLevelMenu");
