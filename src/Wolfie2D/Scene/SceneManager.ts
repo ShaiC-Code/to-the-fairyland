@@ -6,13 +6,21 @@ import MemoryUtils from "../Utils/MemoryUtils";
 import Receiver from "../Events/Receiver";
 import { GameEventType } from "../Events/GameEventType";
 
+type SceneTransitionOptions = {
+	showLoadingOverlay?: boolean;
+	loadingOverlayDelayMs?: number;
+	useFadeTransition?: boolean;
+	fadeOutMs?: number;
+	fadeInMs?: number;
+};
+
 /**
  * The SceneManager acts as an interface to create Scenes, and handles the lifecycle methods of Scenes.
  * It gives Scenes access to information they need from the @reference[Game] class while keeping a layer of separation.
  */
 export default class SceneManager {
 	/** The current Scene of the game */
-	protected currentScene: Scene;
+	protected currentScene: Scene | null;
 
 	/** The Viewport of the game */
 	protected viewport: Viewport;
@@ -27,8 +35,12 @@ export default class SceneManager {
 	protected renderingManager: RenderingManager;
 
 	/** For consistency, only change scenes at the beginning of the update cycle */
-	protected pendingScene: Scene;
-	protected pendingSceneInit: Record<string, any>;
+	protected pendingScene: Scene | null;
+	protected pendingSceneInit: Record<string, any> | undefined;
+	protected pendingSceneTransition: SceneTransitionOptions | null;
+	private readonly defaultLoadingOverlayDelayMs = 100;
+	private readonly defaultFadeOutMs = 200;
+	private readonly defaultFadeInMs = 200;
 
 	protected receiver: Receiver;
 
@@ -43,7 +55,9 @@ export default class SceneManager {
 		this.viewport = viewport;
 		this.renderingManager = renderingManager;
 		this.idCounter = 0;
+		this.currentScene = null;
 		this.pendingScene = null;
+		this.pendingSceneTransition = null;
 
 		this.receiver = new Receiver();
 		this.receiver.subscribe(GameEventType.CHANGE_SCENE);
@@ -55,13 +69,18 @@ export default class SceneManager {
 	 * @param constr The constructor of the scene to add
 	 * @param init An object to pass to the init function of the new scene
 	 */
-	public changeToScene<T extends Scene>(constr: new (...args: any) => T, init?: Record<string, any>, options?: Record<string, any>): void {
+	public changeToScene<T extends Scene>(constr: new (...args: any) => T, init?: Record<string, any>, options?: Record<string, any>, transition?: SceneTransitionOptions): void {
 		console.log("Creating the new scene - change is pending until next update");
 		this.pendingScene = new constr(this.viewport, this, this.renderingManager, options);
 		this.pendingSceneInit = init;
+		this.pendingSceneTransition = transition ?? null;
 	}
 
 	protected doSceneChange(){
+		if(!this.pendingScene){
+			return;
+		}
+
 		console.log("Performing scene change");
 		this.viewport.setCenter(this.viewport.getHalfSize().x, this.viewport.getHalfSize().y);
 		
@@ -82,8 +101,16 @@ export default class SceneManager {
 		// Make the pending scene null
 		this.pendingScene = null;
 
+		const transition = this.pendingSceneTransition;
+		this.pendingSceneTransition = null;
+		this.resourceManager.loadingOverlayEnabled = transition?.showLoadingOverlay === true;
+		this.resourceManager.loadingOverlayDelayMs = transition?.loadingOverlayDelayMs ?? this.defaultLoadingOverlayDelayMs;
+		this.resourceManager.transitionFadeEnabled = transition?.useFadeTransition === true;
+		this.resourceManager.transitionFadeOutMs = transition?.fadeOutMs ?? this.defaultFadeOutMs;
+		this.resourceManager.transitionFadeInMs = transition?.fadeInMs ?? this.defaultFadeInMs;
+
 		// Init the scene
-		this.currentScene.initScene(this.pendingSceneInit);
+		this.currentScene.initScene(this.pendingSceneInit ?? {});
 
 		// Enqueue all scene asset loads
 		this.currentScene.loadScene();
@@ -92,8 +119,10 @@ export default class SceneManager {
 		console.log("Starting Scene Load");
 		this.resourceManager.loadResourcesFromQueue(() => {
 			console.log("Starting Scene");
-			this.currentScene.startScene();
-			this.currentScene.setRunning(true);
+			if(this.currentScene){
+				this.currentScene.startScene();
+				this.currentScene.setRunning(true);
+			}
 		});
 
 		this.renderingManager.setScene(this.currentScene);
@@ -123,7 +152,7 @@ export default class SceneManager {
 	public update(deltaT: number){
 		while (this.receiver.hasNextEvent()) {
 			let ev = this.receiver.getNextEvent();
-			if (ev.type === GameEventType.CHANGE_SCENE) this.changeToScene(ev.data.get("scene"), ev.data.get("init"));
+			if (ev.type === GameEventType.CHANGE_SCENE) this.changeToScene(ev.data.get("scene"), ev.data.get("init"), ev.data.get("options"), ev.data.get("transition"));
 		}
 
 		if(this.pendingScene !== null){

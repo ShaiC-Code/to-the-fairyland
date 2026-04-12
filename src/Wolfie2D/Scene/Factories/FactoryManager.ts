@@ -8,6 +8,7 @@ import Sprite from "../../Nodes/Sprites/Sprite";
 import { GraphicType } from "../../Nodes/Graphics/GraphicTypes";
 import Graphic from "../../Nodes/Graphic";
 import AnimatedSprite from "../../Nodes/Sprites/AnimatedSprite";
+import CanvasNode from "../../Nodes/CanvasNode";
 import Vec2 from "../../DataTypes/Vec2";
 import Layer from "../Layer";
 import Spritesheet from "../../DataTypes/Spritesheet";
@@ -48,6 +49,15 @@ export default class FactoryManager {
     }
 
     /**
+	 * Registers a custom CanvasNode builder for use with customCanvasNode().
+	 * @param type The custom type key
+	 * @param builder A builder function that returns a CanvasNode
+	 */
+    registerCustomCanvasNode(type: string, builder: (options?: Record<string, any>) => CanvasNode): void {
+        this.canvasNodeFactory.registerCustomCanvasNode(type, builder);
+    }
+
+    /**
 	 * Adds a sprite to the current scene
 	 * @param key The key of the image the sprite will represent
 	 * @param layerName The layer on which to add the sprite
@@ -76,6 +86,17 @@ export default class FactoryManager {
 	 */
 	graphic(type: GraphicType | string, layerName: string, options?: Record<string, any>): Graphic {
         return this.canvasNodeFactory.addGraphic(type, layerName, options);
+    }
+
+    /**
+     * Adds a custom CanvasNode to the current scene.
+     * @param type The custom type key
+     * @param layerName The layer on which to add the node
+     * @param options Any additional arguments for the node builder
+     * @returns A new CanvasNode
+     */
+    customCanvasNode(type: string, layerName: string, options?: Record<string, any>): CanvasNode {
+        return this.canvasNodeFactory.addCustomCanvasNode(type, layerName, options);
     }
 
     /**

@@ -11,6 +11,7 @@ import InventoryScreen from "../UI/InventoryScreen";
 import MainMenu from "./MainMenu";
 import { CustomUIElementType } from "../UI/CustomUIElements/CustomUIElementTypes";
 import HoverButton from "../UI/CustomUIElements/HoverButton";
+import UIImage from "../UI/CustomUIElements/UIImage";
 import { GraphicType } from "../../Wolfie2D/Nodes/Graphics/GraphicTypes";
 import Color from "../../Wolfie2D/Utils/Color";
 import Graphic from "../../Wolfie2D/Nodes/Graphic";
@@ -121,6 +122,23 @@ export default abstract class MappedAdventureScene extends Scene {
         path: "game_assets/sounds/weather-snow-outside.ogg"
     };
 
+    protected readonly persistentSpritesheets: ReadonlyArray<AssetRef> = [
+        this.playerSheet
+    ];
+
+    protected readonly persistentAudioAssets: ReadonlyArray<AssetRef> = [
+        this.uiHover,
+        this.uiClick,
+        this.menuOpen,
+        this.menuClose,
+        this.woodenDoorSFX,
+        this.walkingWoodSFX,
+        this.walkingSnowSFX,
+        this.walkingSnowBushSFX,
+        this.weatherSnowInsideSFX,
+        this.weatherSnowOutsideSFX
+    ];
+
     protected readonly groundLayerName = "Ground";
     protected readonly collisionLayerName = "CollisionLayer";
     protected readonly mapBoundsLayerName = "MapBoundLayer";
@@ -170,54 +188,17 @@ export default abstract class MappedAdventureScene extends Scene {
 
     public override loadScene(): void {
         this.load.tilemap(this.tilemap.key, this.tilemap.path);
-        if (!this.resourceManager.getSpritesheet(this.playerSheet.key)) {
-            this.load.spritesheet(this.playerSheet.key, this.playerSheet.path);
-        }
-
-        if (!this.resourceManager.getAudio(this.uiHover.key)) {
-            this.load.audio(this.uiHover.key, this.uiHover.path);
-        }
-
-        if (!this.resourceManager.getAudio(this.uiClick.key)) {
-            this.load.audio(this.uiClick.key, this.uiClick.path);
-        }
-
-        if (!this.resourceManager.getAudio(this.menuOpen.key)) {
-            this.load.audio(this.menuOpen.key, this.menuOpen.path);
-        }
-
-        if (!this.resourceManager.getAudio(this.menuClose.key)) {
-            this.load.audio(this.menuClose.key, this.menuClose.path);
-        }
-
-        if (!this.resourceManager.getAudio(this.woodenDoorSFX.key)) {
-            this.load.audio(this.woodenDoorSFX.key, this.woodenDoorSFX.path);
-        }
-
-        if (!this.resourceManager.getAudio(this.walkingWoodSFX.key)) {
-            this.load.audio(this.walkingWoodSFX.key, this.walkingWoodSFX.path);
-        }
-
-        if (!this.resourceManager.getAudio(this.walkingSnowSFX.key)) {
-            this.load.audio(this.walkingSnowSFX.key, this.walkingSnowSFX.path);
-        }
-
-        if (!this.resourceManager.getAudio(this.walkingSnowBushSFX.key)) {
-            this.load.audio(this.walkingSnowBushSFX.key, this.walkingSnowBushSFX.path);
-        }
-
-        if (!this.resourceManager.getAudio(this.weatherSnowInsideSFX.key)) {
-            this.load.audio(this.weatherSnowInsideSFX.key, this.weatherSnowInsideSFX.path);
-        }
-
-        if (!this.resourceManager.getAudio(this.weatherSnowOutsideSFX.key)) {
-            this.load.audio(this.weatherSnowOutsideSFX.key, this.weatherSnowOutsideSFX.path);
-        }
+        this.loadMissingSpritesheets(this.persistentSpritesheets);
+        this.loadMissingAudio(this.persistentAudioAssets);
 
         this.loadExtraAssets();
         
         this.add.registerCustomUIElement(CustomUIElementType.HOVER_BUTTON, (options?: Record<string, any>) => {
             return new HoverButton(options!.position, options!.text);
+        });
+
+        this.add.registerCustomCanvasNode(CustomUIElementType.UI_IMAGE, (options?: Record<string, any>) => {
+            return new UIImage(options!.imageKey);
         });
 
         this.load.image("snowflake1", "game_assets/sprites/particles/Snowflake1.png");
@@ -226,20 +207,8 @@ export default abstract class MappedAdventureScene extends Scene {
     }
 
     public unloadScene(): void {
-        // Keep the player's sprite
-        this.load.keepSpritesheet(this.playerSheet.key);
-
-        // Keep the sfx audio
-        this.load.keepAudio(this.uiHover.key);
-        this.load.keepAudio(this.uiClick.key);
-        this.load.keepAudio(this.menuOpen.key);
-        this.load.keepAudio(this.menuClose.key);
-        this.load.keepAudio(this.woodenDoorSFX.key);
-        this.load.keepAudio(this.walkingWoodSFX.key);
-        this.load.keepAudio(this.walkingSnowSFX.key);
-        this.load.keepAudio(this.walkingSnowBushSFX.key);
-        this.load.keepAudio(this.weatherSnowInsideSFX.key);
-        this.load.keepAudio(this.weatherSnowOutsideSFX.key);
+        this.keepSpritesheets(this.persistentSpritesheets);
+        this.keepAudioAssets(this.persistentAudioAssets);
 
         // Stop sfx when changing scenes
         this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: this.walkingWoodSFX.key});
@@ -408,6 +377,34 @@ export default abstract class MappedAdventureScene extends Scene {
 
     protected override isSimulationPaused(): boolean {
         return this.worldPaused;
+    }
+
+    protected loadMissingSpritesheets(assets: ReadonlyArray<AssetRef>): void {
+        for (const asset of assets) {
+            if (!this.resourceManager.getSpritesheet(asset.key)) {
+                this.load.spritesheet(asset.key, asset.path);
+            }
+        }
+    }
+
+    protected loadMissingAudio(assets: ReadonlyArray<AssetRef>): void {
+        for (const asset of assets) {
+            if (!this.resourceManager.getAudio(asset.key)) {
+                this.load.audio(asset.key, asset.path);
+            }
+        }
+    }
+
+    protected keepSpritesheets(assets: ReadonlyArray<AssetRef>): void {
+        for (const asset of assets) {
+            this.load.keepSpritesheet(asset.key);
+        }
+    }
+
+    protected keepAudioAssets(assets: ReadonlyArray<AssetRef>): void {
+        for (const asset of assets) {
+            this.load.keepAudio(asset.key);
+        }
     }
     
     protected loadExtraAssets(): void {}

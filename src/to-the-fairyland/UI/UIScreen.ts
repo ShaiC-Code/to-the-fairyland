@@ -217,6 +217,20 @@ export default class UIScreen {
         this.addUIElement(key, button);
     }
 
+    protected addUIImage(key: string, position: Vec2, imageKey: string, size?: Vec2): void {
+        const imageElement = this.scene.add.customCanvasNode(CustomUIElementType.UI_IMAGE, this.layerName, {
+            imageKey
+        });
+
+        imageElement.position.copy(position);
+
+        if (size) {
+            imageElement.size.copy(size);
+        }
+
+        this.addUIElement(key, imageElement);
+    }
+
     private playSFX(key?: string): void {
         if (key) {
             this.emitter.fireEvent(GameEventType.PLAY_SFX, {key: key, loop: false, holdReference: false});
