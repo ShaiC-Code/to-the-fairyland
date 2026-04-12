@@ -51,8 +51,8 @@ export default class SplashScreenScene extends Scene {
                 {
                     showLoadingOverlay: false,
                     useFadeTransition: true,
-                    fadeOutMs: 1000,
-                    fadeInMs: 1000
+                    fadeOutMs: 500,
+                    fadeInMs: 500
                 }
             ),
             { onClickSFXKey: this.splashProceed.key }
