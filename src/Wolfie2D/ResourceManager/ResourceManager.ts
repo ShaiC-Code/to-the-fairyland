@@ -29,6 +29,17 @@ export default class ResourceManager {
     /** A function that is called when loading completes */
     public onLoadComplete: Function;
 
+    /** Whether a loading overlay should be shown for the current load operation. */
+    public loadingOverlayEnabled: boolean;
+    /** Delay before showing the loading overlay, to avoid flashing on quick loads. */
+    public loadingOverlayDelayMs: number;
+    /** Whether a black screen fade should animate around a load transition. */
+    public transitionFadeEnabled: boolean;
+    /** Fade duration when entering the loading transition (scene -> black). */
+    public transitionFadeOutMs: number;
+    /** Fade duration when leaving the loading transition (black -> scene). */
+    public transitionFadeInMs: number;
+
 
     /** Number to keep track of how many images need to be loaded*/
     private loadonly_imagesLoaded: number;
@@ -99,6 +110,12 @@ export default class ResourceManager {
     private constructor(){
         this.loading = false;
         this.justLoaded = false;
+
+        this.loadingOverlayEnabled = false;
+        this.loadingOverlayDelayMs = 0;
+        this.transitionFadeEnabled = false;
+        this.transitionFadeOutMs = 0;
+        this.transitionFadeInMs = 0;
 
         this.loadonly_imagesLoaded = 0;
         this.loadonly_imagesToLoad = 0;

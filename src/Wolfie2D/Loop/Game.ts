@@ -54,6 +54,14 @@ export default class Game {
     private sceneManager: SceneManager;
     private audioManager: AudioManager;
     private renderingManager: RenderingManager;
+    private transitionOverlay: HTMLDivElement | null;
+    private loadingOverlay: HTMLDivElement | null;
+    private loadingBarFill: HTMLDivElement | null;
+    private loadingPercent: HTMLDivElement | null;
+    private loadingOverlayTimer: number | null;
+    private loadingOverlayReady: boolean;
+    private latestLoadingProgress: number;
+    private transitionOverlayFadeTimer: number | null;
 
     /**
      * Creates a new Game
@@ -111,7 +119,140 @@ export default class Game {
         this.sceneManager = new SceneManager(this.viewport, this.renderingManager);
         this.audioManager = AudioManager.getInstance();
         this.playbackManager = new PlaybackManager();
+
+        this.transitionOverlay = document.getElementById("transition-overlay") as HTMLDivElement | null;
+        this.loadingOverlay = document.getElementById("loading-overlay") as HTMLDivElement | null;
+        this.loadingBarFill = document.getElementById("loading-bar-fill") as HTMLDivElement | null;
+        this.loadingPercent = document.getElementById("loading-percent") as HTMLDivElement | null;
+        this.loadingOverlayTimer = null;
+        this.loadingOverlayReady = false;
+        this.latestLoadingProgress = 0;
+        this.transitionOverlayFadeTimer = null;
+        this.bindLoadingOverlay();
         
+    }
+
+    private bindLoadingOverlay(): void {
+        this.resourceManager.onLoadProgress = (progress: number) => {
+            const clamped = Math.max(0, Math.min(1, progress));
+            this.latestLoadingProgress = clamped;
+
+            if (!this.resourceManager.loadingOverlayEnabled) {
+                this.resetLoadingOverlayGate();
+                this.hideLoadingOverlay();
+            }
+
+            this.showTransitionOverlay();
+
+            if (!this.loadingOverlayReady) {
+                this.armLoadingOverlayGate();
+            }
+
+            if (this.loadingOverlayReady) {
+                this.showLoadingOverlay(clamped);
+            }
+        };
+
+        this.resourceManager.onLoadComplete = () => {
+            this.resetLoadingOverlayGate();
+            this.hideLoadingOverlay();
+            this.hideTransitionOverlay();
+        };
+    }
+
+    private showTransitionOverlay(): void {
+        if (!this.transitionOverlay || !this.resourceManager.transitionFadeEnabled) {
+            return;
+        }
+
+        if (this.transitionOverlayFadeTimer !== null) {
+            window.clearTimeout(this.transitionOverlayFadeTimer);
+            this.transitionOverlayFadeTimer = null;
+        }
+
+        const fadeOutMs = Math.max(0, this.resourceManager.transitionFadeOutMs ?? 0);
+        this.transitionOverlay.hidden = false;
+        this.transitionOverlay.style.transition = `opacity ${fadeOutMs}ms linear`;
+        // Force style application before driving the next opacity value.
+        this.transitionOverlay.getBoundingClientRect();
+        this.transitionOverlay.style.opacity = "1";
+    }
+
+    private hideTransitionOverlay(): void {
+        if (!this.transitionOverlay) {
+            return;
+        }
+
+        if (!this.resourceManager.transitionFadeEnabled) {
+            this.transitionOverlay.hidden = true;
+            this.transitionOverlay.style.opacity = "0";
+            return;
+        }
+
+        if (this.transitionOverlayFadeTimer !== null) {
+            window.clearTimeout(this.transitionOverlayFadeTimer);
+            this.transitionOverlayFadeTimer = null;
+        }
+
+        const fadeInMs = Math.max(0, this.resourceManager.transitionFadeInMs ?? 0);
+        this.transitionOverlay.style.transition = `opacity ${fadeInMs}ms linear`;
+        this.transitionOverlay.style.opacity = "0";
+
+        this.transitionOverlayFadeTimer = window.setTimeout(() => {
+            this.transitionOverlayFadeTimer = null;
+            if (this.transitionOverlay) {
+                this.transitionOverlay.hidden = true;
+            }
+        }, fadeInMs);
+    }
+
+    private armLoadingOverlayGate(): void {
+        if (this.loadingOverlayTimer !== null) {
+            return;
+        }
+
+        const delayMs = Math.max(0, this.resourceManager.loadingOverlayDelayMs ?? 0);
+        if (delayMs === 0) {
+            this.loadingOverlayReady = true;
+            this.showLoadingOverlay(this.latestLoadingProgress);
+            return;
+        }
+
+        this.loadingOverlayTimer = window.setTimeout(() => {
+            this.loadingOverlayTimer = null;
+            this.loadingOverlayReady = true;
+            this.showLoadingOverlay(this.latestLoadingProgress);
+        }, delayMs);
+    }
+
+    private resetLoadingOverlayGate(): void {
+        if (this.loadingOverlayTimer !== null) {
+            window.clearTimeout(this.loadingOverlayTimer);
+            this.loadingOverlayTimer = null;
+        }
+
+        this.loadingOverlayReady = false;
+        this.latestLoadingProgress = 0;
+    }
+
+    private showLoadingOverlay(progress: number): void {
+        if (this.loadingOverlay) {
+            this.loadingOverlay.hidden = false;
+        }
+
+        const percent = Math.round(progress * 100);
+        if (this.loadingBarFill) {
+            this.loadingBarFill.style.width = `${percent}%`;
+        }
+        if (this.loadingPercent) {
+            this.loadingPercent.textContent = `${percent}%`;
+        }
+    }
+
+    private hideLoadingOverlay(): void {
+        if (this.loadingOverlay) {
+            this.loadingOverlay.hidden = true;
+        }
     }
 
     /**
