@@ -121,7 +121,8 @@ export default class MainMenu extends Scene {
                     ShelterScene,
                     {
                         spawnName: "SideOfBed",
-                        facing: Vec2.DOWN},
+                        facing: Vec2.DOWN
+                    },
                     undefined,
                     {
                         showLoadingOverlay: true, 

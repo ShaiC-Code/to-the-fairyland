@@ -281,6 +281,7 @@ export default abstract class MappedAdventureScene extends Scene {
             this,
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize(),
+            undefined,
             { onEnterSFXKey: this.uiHover.key, onClickSFXKey: this.uiClick.key }
         );
 
