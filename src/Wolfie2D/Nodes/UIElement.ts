@@ -104,7 +104,12 @@ export default abstract class UIElement extends CanvasNode {
 
 		// Check if the mouse is hovering over this element
 		let mousePos = Input.getMousePosition();
-		if(mousePos && this.contains(mousePos.x, mousePos.y)){
+		const isHovering = mousePos !== null
+			&& this.contains(mousePos.x, mousePos.y)
+			&& this.visible
+			&& !this.layer.isHidden();
+
+		if(isHovering && !this.isEntered){
 			this.isEntered = true;
 
 			if(this.onEnter !== null){
@@ -115,7 +120,7 @@ export default abstract class UIElement extends CanvasNode {
 				this.emitter.fireEvent(this.onEnterEventId, data);
 			}
 
-		} else if(this.isEntered) {
+		} else if(!isHovering && this.isEntered) {
 			this.isEntered = false;
 
 			if(this.onLeave !== null){

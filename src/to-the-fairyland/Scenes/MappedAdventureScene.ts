@@ -67,6 +67,16 @@ export default abstract class MappedAdventureScene extends Scene {
     };
 
     // Sound effects
+    protected readonly uiHover: AssetRef = {
+        key: "ui-hover",
+        path: "game_assets/sounds/ui-hover.wav"
+    };
+
+    protected readonly uiClick: AssetRef = {
+        key: "ui-click",
+        path: "game_assets/sounds/ui-click.wav"
+    };
+
     protected readonly woodenDoorSFX: AssetRef = {
         key: "door-wooden",
         path: "game_assets/sounds/door-wooden.wav"
@@ -124,8 +134,8 @@ export default abstract class MappedAdventureScene extends Scene {
     private weatherLayerCreated = false;
     private weatherLayerDepth = 50;
     private weatherAmbienceMode: "inside" | "outside" | null = null;
-    private readonly weatherAmbienceFadeSeconds = 0.35;
-    private readonly weatherAmbienceInitialFadeSeconds = 0.75;
+    private readonly weatherAmbienceFadeSeconds = 0.5;
+    private readonly weatherAmbienceInitialFadeSeconds = 1.0;
     
     private readonly weatherLayerName = "weather";
     private readonly snowflakeKeys = ["snowflake1", "snowflake2", "snowflake3"];
@@ -140,6 +150,14 @@ export default abstract class MappedAdventureScene extends Scene {
         this.load.tilemap(this.tilemap.key, this.tilemap.path);
         if (!this.resourceManager.getSpritesheet(this.playerSheet.key)) {
             this.load.spritesheet(this.playerSheet.key, this.playerSheet.path);
+        }
+
+        if (!this.resourceManager.getAudio(this.uiHover.key)) {
+            this.load.audio(this.uiHover.key, this.uiHover.path);
+        }
+
+        if (!this.resourceManager.getAudio(this.uiClick.key)) {
+            this.load.audio(this.uiClick.key, this.uiClick.path);
         }
 
         if (!this.resourceManager.getAudio(this.woodenDoorSFX.key)) {
@@ -178,6 +196,8 @@ export default abstract class MappedAdventureScene extends Scene {
         this.load.keepSpritesheet(this.playerSheet.key);
 
         // Keep the sfx audio
+        this.load.keepAudio(this.uiHover.key);
+        this.load.keepAudio(this.uiClick.key);
         this.load.keepAudio(this.woodenDoorSFX.key);
         this.load.keepAudio(this.walkingWoodSFX.key);
         this.load.keepAudio(this.walkingSnowSFX.key);
@@ -185,6 +205,8 @@ export default abstract class MappedAdventureScene extends Scene {
         this.load.keepAudio(this.weatherSnowOutsideSFX.key);
 
         // Stop sfx when changing scenes
+        // this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: this.uiHover.key});
+        // this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: this.uiClick.key});
         this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: this.walkingWoodSFX.key});
         this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: this.walkingSnowSFX.key});
         this.muteWeatherAmbience();
@@ -237,13 +259,15 @@ export default abstract class MappedAdventureScene extends Scene {
             this,
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize(),
-            () => this.sceneManager.changeToScene(MainMenu)
+            () => this.sceneManager.changeToScene(MainMenu),
+            { onEnterSFXKey: this.uiHover.key, onClickSFXKey: this.uiClick.key }
         );
         this.inventoryScreen = new InventoryScreen(
             "inventoryOverlay",
             this,
             () => this.viewport.getCenter(),
-            () => this.viewport.getHalfSize()
+            () => this.viewport.getHalfSize(),
+            { onEnterSFXKey: this.uiHover.key, onClickSFXKey: this.uiClick.key }
         );
         this.dialogueScreen = new DialogueScreen(
             "dialogueOverlay",
@@ -858,6 +882,14 @@ export default abstract class MappedAdventureScene extends Scene {
         this.activeDialogue = null;
         this.currentDialogueLine = 0;
         this.dialogueScreen.hide();
+    }
+
+    public playUIClickSFX(): void {
+        this.emitter.fireEvent(GameEventType.PLAY_SFX, {key: this.uiClick.key, loop: false, holdReference: false});
+    }
+
+    public playDialogueSFX(): void {
+        return; // Placeholder for now, can be used for dialogue-specific sound effects in the future
     }
     
     // TEMPORARY function to determine ground type for sfx purposes, ideally this would be determined by properties on the tilemap
