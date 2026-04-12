@@ -136,11 +136,11 @@ export default class PlayerController {
     }
     
 
-     /** 
+    /** 
      * Checks if the player is attempting to interact.
      * @return true if the player is attempting to interact; false otherwise.
      */
-     public get interacting(): boolean {
+    public get interacting(): boolean {
         return this.controlMode === PlayerControlMode.GAMEPLAY && Input.isJustPressed(PlayerInput.INTERACT);
     }
 
