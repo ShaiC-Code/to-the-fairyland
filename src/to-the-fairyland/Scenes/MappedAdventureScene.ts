@@ -102,6 +102,11 @@ export default abstract class MappedAdventureScene extends Scene {
         path: "game_assets/sounds/walking-snow.wav"
     };
 
+    protected readonly walkingSnowBushSFX: AssetRef = {
+        key: "walking-snow-bush",
+        path: "game_assets/sounds/walking-snow-bush.wav"
+    };
+
     protected readonly weatherSnowInsideSFX: AssetRef = {
         key: "weather-snow-inside",
         path: "game_assets/sounds/weather-snow-inside.wav"
@@ -190,6 +195,10 @@ export default abstract class MappedAdventureScene extends Scene {
             this.load.audio(this.walkingSnowSFX.key, this.walkingSnowSFX.path);
         }
 
+        if (!this.resourceManager.getAudio(this.walkingSnowBushSFX.key)) {
+            this.load.audio(this.walkingSnowBushSFX.key, this.walkingSnowBushSFX.path);
+        }
+
         if (!this.resourceManager.getAudio(this.weatherSnowInsideSFX.key)) {
             this.load.audio(this.weatherSnowInsideSFX.key, this.weatherSnowInsideSFX.path);
         }
@@ -221,14 +230,14 @@ export default abstract class MappedAdventureScene extends Scene {
         this.load.keepAudio(this.woodenDoorSFX.key);
         this.load.keepAudio(this.walkingWoodSFX.key);
         this.load.keepAudio(this.walkingSnowSFX.key);
+        this.load.keepAudio(this.walkingSnowBushSFX.key);
         this.load.keepAudio(this.weatherSnowInsideSFX.key);
         this.load.keepAudio(this.weatherSnowOutsideSFX.key);
 
         // Stop sfx when changing scenes
-        // this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: this.uiHover.key});
-        // this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: this.uiClick.key});
         this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: this.walkingWoodSFX.key});
         this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: this.walkingSnowSFX.key});
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: this.walkingSnowBushSFX.key});
         this.muteWeatherAmbience();
     }
 
@@ -942,6 +951,8 @@ export default abstract class MappedAdventureScene extends Scene {
                 return this.walkingWoodSFX.key;
             case "walkingSnowSFX":
                 return this.walkingSnowSFX.key;
+            case "walkingSnowBushSFX":
+                return this.walkingSnowBushSFX.key;
             default:
                 return "invalid asset name";
         }

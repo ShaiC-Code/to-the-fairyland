@@ -36,9 +36,6 @@ export default class PauseScreen extends UIScreen {
         // Add semi-transparent background
         this.addRect("bg", screenCenter.clone(), viewportHalfSize.clone().scale(2), new Color(0, 0, 0, 0.7));
 
-        // Add "PAUSED" text
-        // this.addLabel("pausedLabel", menuButtonPos.pause, new Vec2(viewportSize.x, 100), "PAUSED", 64, {"halign": "left", "valign": "center"});
-
         // Add Resume button
         this.addHoverButton("resumeBtn", menuButtonPos.resume, menuButtonSize, "RESUME", {onClick: () => this.hide()});
 
