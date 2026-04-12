@@ -22,15 +22,13 @@ import { PlayerControlMode, PlayerInput } from "../AI/Player/PlayerController";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 import { AudioChannelType } from "../../Wolfie2D/Sound/AudioManager";
 import StoryManager from "../GameSystems/StorySystem/StoryManager";
-import FrozenBerries from "../GameSystems/ItemSystem/Items/FrozenBerries";
 import { DialogueChoiceOption, DialogueInteraction, getInteractionData } from "../GameSystems/InteractionSystem/InteractionDatabase";
 import PlayerStateManager from "../GameSystems/PlayerSystem/PlayerStateManager";
 import GameSessionManager from "../GameSystems/GameSessionSystem/GameSessionManager";
 import { TimeOfDay } from "../GameSystems/WorldSystem/WorldState";
+import FrozenBerries from "../GameSystems/ItemSystem/Items/FrozenBerries";
 import CookedBerries from "../GameSystems/ItemSystem/Items/CookedBerries";
-
-
-
+import WorldMap from "../GameSystems/ItemSystem/Items/WorldMap";
 
 
 type AssetRef = Readonly<{
@@ -427,6 +425,8 @@ export default abstract class MappedAdventureScene extends Scene {
     protected handleInteraction(_obj: TiledObject): void {}
 
     protected handleAutoTransition(_obj: TiledObject): void {}
+
+    protected onMapPickedUp(): void {}
 
     /**
      * Override in child scenes if weather ambience should default indoors.
@@ -1052,6 +1052,10 @@ export default abstract class MappedAdventureScene extends Scene {
                 
                 this.setTimeOfDay(worldState.timeOfDay);
                 break;
+
+            case "pickupMap":
+                this.pickupMap();
+                break;
         }
     }
 
@@ -1088,6 +1092,25 @@ export default abstract class MappedAdventureScene extends Scene {
     
         if (addedItem !== null) {
             this.storyManager.markFoodConsumed();
+        }
+    }
+    
+    protected pickupMap(): void {
+        const inventory = this.playerStateManager.getPlayerState().inventory;
+    
+        const alreadyHasMap = inventory.find(
+            item => item instanceof WorldMap
+        ) !== null;
+    
+        if (alreadyHasMap) {
+            return;
+        }
+    
+        const map = new WorldMap();
+        const addedItem = inventory.add(map);
+    
+        if (addedItem !== null) {
+            this.storyManager.markMapPickedUp();
         }
     }
 }

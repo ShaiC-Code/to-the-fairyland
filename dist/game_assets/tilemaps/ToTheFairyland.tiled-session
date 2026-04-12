@@ -20,32 +20,32 @@
         },
         "Chapter1/Chapter1.json": {
             "expandedObjectLayers": [
-                14,
                 7,
                 13,
+                14,
                 6
             ],
-            "scale": 1,
+            "scale": 0.75,
             "selectedLayer": 4,
             "viewCenter": {
-                "x": 1572.5,
-                "y": 1839
+                "x": 1340,
+                "y": 1748.6666666666665
             }
         },
         "Chapter1/Chapter1.json#Chapter1_Tilemap1": {
-            "scaleInDock": 0.5
+            "scaleInDock": 0.25
         },
         "Chapter1/Shelter.json": {
             "expandedObjectLayers": [
+                6,
                 3,
-                5,
-                6
+                5
             ],
             "scale": 1.5,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 1515,
-                "y": 1660.6666666666665
+                "x": 1425.3333333333333,
+                "y": 1641.6666666666665
             }
         },
         "Chapter1/Shelter.json#Shelter": {
