@@ -21,6 +21,10 @@ import { DialogueInteraction, getInteractionData } from "../GameSystems/Interact
 import { PlayerControlMode, PlayerInput } from "../AI/Player/PlayerController";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 import { AudioChannelType } from "../../Wolfie2D/Sound/AudioManager";
+import StoryManager from "../GameSystems/StorySystem/StoryManager";
+
+
+
 
 
 type AssetRef = Readonly<{
@@ -136,6 +140,7 @@ export default abstract class MappedAdventureScene extends Scene {
     protected inventoryScreen!: InventoryScreen;
     protected worldPaused: boolean = false;
     protected entrances: TiledObject[] = [];
+    protected readonly storyManager = StoryManager.getInstance();
 
     protected dialogueScreen!: DialogueScreen;
     protected activeDialogue: DialogueInteraction | null = null;

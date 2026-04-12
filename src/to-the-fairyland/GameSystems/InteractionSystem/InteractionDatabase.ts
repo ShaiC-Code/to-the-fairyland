@@ -1,35 +1,51 @@
+import { Chapter1MainQuestStep } from "../StorySystem/StoryState";
+
 export type InteractionType = "dialogue";
 
 export interface DialogueInteraction {
     type: "dialogue";
     lines: string[];
-    charsPerSecond?: number;
 }
 
 export type InteractionData = DialogueInteraction;
 
-const INTERACTION_DATABASE: Readonly<Record<string, InteractionData>> = {
-    Bed: {
-        type: "dialogue",
-        lines: [
-            "A simple bed stands against the wall.",
-            "It looks warm and surprisingly comfortable."
-        ]
-    },
-
+const STATIC_INTERACTIONS: Readonly<Record<string, InteractionData>> = {
     BushBerries: {
         type: "dialogue",
         lines: [
-            "A bush covered in blue berries pokes through the snow.",
+            "A bush covered in red berries pokes through the snow.",
             "Most of the berries are frozen solid."
         ]
     }
 };
 
+const BED_DIALOGUES: Readonly<Record<Chapter1MainQuestStep, DialogueInteraction>> = {
+    [Chapter1MainQuestStep.NEED_FOOD]: {
+        type: "dialogue",
+        lines: [
+            "This bed looks warm and surprisingly comfortable.",
+            "Hunger is preventing you from sleeping..."
+        ]
+    },
+    [Chapter1MainQuestStep.RETURN_TO_BED]: {
+        type: "dialogue",
+        lines: [
+            "This bed looks warm and surprisingly comfortable.",
+            "Ready to sleep?"
+        ]
+    },
+    [Chapter1MainQuestStep.SLEPT]: {
+        type: "dialogue",
+        lines: [
+            "You already got some rest."
+        ]
+    }
+};
+
 export function getInteractionData(interactionId: string): InteractionData | undefined {
-    return INTERACTION_DATABASE[interactionId];
+    return STATIC_INTERACTIONS[interactionId];
 }
 
-export function hasInteractionData(interactionId: string): boolean {
-    return interactionId in INTERACTION_DATABASE;
+export function getBedDialogue(step: Chapter1MainQuestStep): DialogueInteraction {
+    return BED_DIALOGUES[step];
 }
