@@ -22,15 +22,13 @@ import { PlayerControlMode, PlayerInput } from "../AI/Player/PlayerController";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 import { AudioChannelType } from "../../Wolfie2D/Sound/AudioManager";
 import StoryManager from "../GameSystems/StorySystem/StoryManager";
-import FrozenBerries from "../GameSystems/ItemSystem/Items/FrozenBerries";
 import { DialogueChoiceOption, DialogueInteraction, getInteractionData } from "../GameSystems/InteractionSystem/InteractionDatabase";
 import PlayerStateManager from "../GameSystems/PlayerSystem/PlayerStateManager";
 import GameSessionManager from "../GameSystems/GameSessionSystem/GameSessionManager";
 import { TimeOfDay } from "../GameSystems/WorldSystem/WorldState";
+import FrozenBerries from "../GameSystems/ItemSystem/Items/FrozenBerries";
+import CookedBerries from "../GameSystems/ItemSystem/Items/CookedBerries";
 import WorldMap from "../GameSystems/ItemSystem/Items/WorldMap";
-
-
-
 
 
 type AssetRef = Readonly<{
@@ -1079,6 +1077,24 @@ export default abstract class MappedAdventureScene extends Scene {
         }
     }
 
+    protected giveCookedBerries(): void {
+        const alreadyHasBerries = this.playerStateManager.getPlayerState().inventory
+        .find(
+            item => item instanceof CookedBerries
+        ) !== null;
+    
+        if (alreadyHasBerries) {
+            return;
+        }
+    
+        const berries = new CookedBerries(1);
+        const addedItem = this.playerStateManager.getPlayerState().inventory.add(berries);
+    
+        if (addedItem !== null) {
+            this.storyManager.markFoodConsumed();
+        }
+    }
+    
     protected pickupMap(): void {
         const inventory = this.playerStateManager.getPlayerState().inventory;
     
@@ -1098,6 +1114,4 @@ export default abstract class MappedAdventureScene extends Scene {
             this.onMapPickedUp();
         }
     }
-    
-    
 }

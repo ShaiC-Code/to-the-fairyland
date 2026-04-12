@@ -23,13 +23,13 @@ export default class LevelSelectionScreen extends UIScreen {
 
         const levelButtonSize = new Vec2(viewportSize.x, 50);
         const levelButtons = [
-            { key: "level1Btn", pos: new Vec2(screenCenter.x, listTop), text: "Level 1", eventId: "level1" },
-            { key: "level2Btn", pos: new Vec2(screenCenter.x, listTop + verticalOffset), text: "Level 2", eventId: "level2" },
-            { key: "level3Btn", pos: new Vec2(screenCenter.x, listTop + verticalOffset * 2), text: "Level 3", eventId: "level3" },
-            { key: "level4Btn", pos: new Vec2(screenCenter.x, listTop + verticalOffset * 3), text: "Level 4", eventId: "level4" },
-            { key: "level5Btn", pos: new Vec2(screenCenter.x, listTop + verticalOffset * 4), text: "Level 5", eventId: "level5" },
-            { key: "level6Btn", pos: new Vec2(screenCenter.x, listTop + verticalOffset * 5), text: "Level 6", eventId: "level6" },
-            { key: "backBtn", pos: new Vec2(screenCenter.x, listTop + verticalOffset * 6), text: "Back", eventId: "backToMain" }
+            { key: "level1Btn", pos: new Vec2(screenCenter.x, listTop), text: "LEVEL 1", eventId: "level1" },
+            { key: "level2Btn", pos: new Vec2(screenCenter.x, listTop + verticalOffset), text: "LEVEL 2", eventId: "level2" },
+            { key: "level3Btn", pos: new Vec2(screenCenter.x, listTop + verticalOffset * 2), text: "LEVEL 3", eventId: "level3" },
+            { key: "level4Btn", pos: new Vec2(screenCenter.x, listTop + verticalOffset * 3), text: "LEVEL 4", eventId: "level4" },
+            { key: "level5Btn", pos: new Vec2(screenCenter.x, listTop + verticalOffset * 4), text: "LEVEL 5", eventId: "level5" },
+            { key: "level6Btn", pos: new Vec2(screenCenter.x, listTop + verticalOffset * 5), text: "LEVEL 6", eventId: "level6" },
+            { key: "backBtn", pos: new Vec2(screenCenter.x, listTop + verticalOffset * 6), text: "BACK", eventId: "backToMain" }
         ];
         
         // Add Level Select label
