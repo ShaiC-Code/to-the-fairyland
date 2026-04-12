@@ -17,19 +17,16 @@ export default class SplashScreenScene extends Scene {
         path: "game_assets/images/splash-screen.png"
 	  };
 
-	  protected readonly uiClick: AssetRef = {
-        key: "ui-click",
-        path: "game_assets/sounds/ui-click.ogg"
+	  protected readonly splashProceed: AssetRef = {
+        key: "splash-screen-proceed",
+        path: "game_assets/sounds/splash-screen-proceed.ogg"
 	  };
 
     protected splashScreen!: SplashScreen;
 
 	  public loadScene(): void {
         this.load.image(this.splashImage.key, this.splashImage.path);
-
-        if (!this.resourceManager.getAudio(this.uiClick.key)) {
-            this.load.audio(this.uiClick.key, this.uiClick.path);
-        }
+        this.load.audio(this.splashProceed.key, this.splashProceed.path);
 
         this.add.registerCustomCanvasNode(CustomUIElementType.UI_IMAGE, (options?: Record<string, any>) => {
             return new UIImage(options!.imageKey);
@@ -54,11 +51,11 @@ export default class SplashScreenScene extends Scene {
                 {
                     showLoadingOverlay: false,
                     useFadeTransition: true,
-                    fadeOutMs: 500,
-                    fadeInMs: 500
+                    fadeOutMs: 1000,
+                    fadeInMs: 1000
                 }
             ),
-            { onClickSFXKey: this.uiClick.key }
+            { onClickSFXKey: this.splashProceed.key }
         );
         this.splashScreen.show();
     }
