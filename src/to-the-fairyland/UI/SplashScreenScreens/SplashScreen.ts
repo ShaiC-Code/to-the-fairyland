@@ -21,7 +21,7 @@ export default class SplashScreen extends UIScreen {
 
         this.addUIImage("splashImage", new Vec2(screenCenter.x, screenCenter.y), new Vec2(viewportSize.x, viewportSize.y), this.splashImageKey);
         this.addClickableOverlay("clickOverlay", new Vec2(screenCenter.x, screenCenter.y), new Vec2(viewportSize.x, viewportSize.y), {onClick: () => this.onProceed()});
-        this.setNavigationElements(["clickOverlay"]);
+        this.setNavigationButtons(["clickOverlay"]);
 
         // Hide by default
         this.layer.setHidden(true);

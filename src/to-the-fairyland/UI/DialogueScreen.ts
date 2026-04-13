@@ -65,6 +65,8 @@ export default class DialogueChoiceBoxScreen extends UIScreen {
     }
 
     private ensureChoiceButtons(requiredCount: number): void {
+        let createdButtons = false;
+
         if (requiredCount <= this.choiceButtonKeys.length) {
             return;
         }
@@ -77,6 +79,12 @@ export default class DialogueChoiceBoxScreen extends UIScreen {
             this.addButton(key, Vec2.ZERO, buttonSize, "", { onClick: () => this.invokeChoice(i) });
 
             this.choiceButtonKeys.push(key);
+            createdButtons = true;
+        }
+
+        if (createdButtons) {
+            // Register navigation callbacks only for newly-created button instances.
+            this.setNavigationButtons(this.choiceButtonKeys);
         }
     }
 
@@ -147,7 +155,6 @@ export default class DialogueChoiceBoxScreen extends UIScreen {
 
         this.choices = choices;
         this.ensureChoiceButtons(this.choices.length);
-        this.setNavigationButtons(this.choiceButtonKeys.slice(0, this.choices.length));
         this.layoutChoiceButtons();
 
         this.selectedChoiceIndex = 0;

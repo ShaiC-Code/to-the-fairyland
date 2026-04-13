@@ -82,6 +82,14 @@ export default abstract class UIElement extends CanvasNode {
 		this.suppressedMousePosition = mousePos ? mousePos.clone() : null;
 	}
 
+	public setFocused(isFocused: boolean): void {
+		this.isFocused = isFocused;
+	}
+
+	public clearEntered(): void {
+		this.isEntered = false;
+	}
+
 	private hasMouseMovedFromSuppressedPosition(mousePos: Vec2): boolean {
 		if (!this.suppressedMousePosition) {
 			return true;
