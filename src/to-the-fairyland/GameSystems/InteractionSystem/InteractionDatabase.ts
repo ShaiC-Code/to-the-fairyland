@@ -209,7 +209,7 @@ export function getPotDialogue(step: Chapter1MainQuestStep): DialogueInteraction
                         label: "No",
                         interaction: {
                             type: "dialogue",
-                            lines: ["No time for rest."]
+                            lines: ["..."]
                         }
                     }
                 ]
@@ -226,7 +226,7 @@ export function getPotDialogue(step: Chapter1MainQuestStep): DialogueInteraction
     case Chapter1MainQuestStep.SLEPT:
         return {
             type: "dialogue",
-            lines: ["Remnants from your meal remain."]
+            lines: ["Remnants from your last meal remain."]
         };
 
     default:
