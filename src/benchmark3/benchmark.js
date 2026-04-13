@@ -1,1 +1,0 @@
-// To be copied from a compiled bundle.js when benchmark 3 is completed

@@ -93,7 +93,7 @@
             "scaleInDock": 1
         }
     },
-    "last.imagePath": "D:/GameDev/CSE380/Project/to-the-fairyland/dist/game_assets/tilemaps/Chapter1",
+    "last.imagePath": "D:/GameDev/CSE380/Project/to-the-fairyland/dist/assets/tilemaps/Chapter1",
     "map.height": 60,
     "map.lastUsedFormat": "json",
     "map.tileHeight": 64,

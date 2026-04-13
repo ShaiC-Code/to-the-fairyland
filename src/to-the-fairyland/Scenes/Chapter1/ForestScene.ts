@@ -15,22 +15,22 @@ export default class ForestScene extends MappedAdventureScene {
 
     protected readonly tilemap = {
         key: "chapter1",
-        path: "game_assets/tilemaps/Chapter1/Chapter1.json"
+        path: "/assets/tilemaps/Chapter1/Chapter1.json"
     };
 
     protected readonly snowTreeImage = {
         key: "snowTree1",
-        path: "game_assets/sprites/SnowTree1.png"
+        path: "/assets/sprites/SnowTree1.png"
     };
 
     protected readonly bushBerriesImage = {
         key: "bushBerries",
-        path: "game_assets/sprites/BushBerries.png"
+        path: "/assets/sprites/BushBerries.png"
     };
 
     protected readonly mapItemImage = {
         key: "mapItem",
-        path: "game_assets/sprites/MapItem.png"
+        path: "/assets/sprites/MapItem.png"
     };
     
     protected override loadExtraAssets(): void {
