@@ -36,7 +36,8 @@ export default class SceneManager {
 	protected renderingManager: RenderingManager;
 
 	/** For consistency, only change scenes at the beginning of the update cycle */
-	protected pendingScene: Scene | null;
+	protected pendingSceneConstr: (new (...args: any) => Scene) | null;
+	protected pendingSceneOptions: Record<string, any> | undefined;
 	protected pendingSceneInit: Record<string, any> | undefined;
 	protected pendingSceneTransition: SceneTransitionOptions | null;
 	protected pendingSceneSwapAtMs: number | null;
@@ -59,7 +60,8 @@ export default class SceneManager {
 		this.renderingManager = renderingManager;
 		this.idCounter = 0;
 		this.currentScene = null;
-		this.pendingScene = null;
+		this.pendingSceneConstr = null;
+		this.pendingSceneOptions = undefined;
 		this.pendingSceneTransition = null;
 		this.pendingSceneSwapAtMs = null;
 
@@ -75,14 +77,15 @@ export default class SceneManager {
 	 */
 	public changeToScene<T extends Scene>(constr: new (...args: any) => T, init?: Record<string, any>, options?: Record<string, any>, transition?: SceneTransitionOptions): void {
 		console.log("Creating the new scene - change is pending until next update");
-		this.pendingScene = new constr(this.viewport, this, this.renderingManager, options);
+		this.pendingSceneConstr = constr;
+		this.pendingSceneOptions = options;
 		this.pendingSceneInit = init;
 		this.pendingSceneTransition = transition ?? null;
 		this.pendingSceneSwapAtMs = null;
 	}
 
 	protected doSceneChange(){
-		if(!this.pendingScene){
+		if(!this.pendingSceneConstr){
 			return;
 		}
 
@@ -112,7 +115,6 @@ export default class SceneManager {
 		this.pendingSceneSwapAtMs = null;
 
 		console.log("Performing scene change");
-		this.viewport.setCenter(this.viewport.getHalfSize().x, this.viewport.getHalfSize().y);
 		
 		if(this.currentScene){
 			console.log("Unloading old scene")
@@ -125,11 +127,14 @@ export default class SceneManager {
 		console.log("Unloading old resources...");
 		this.resourceManager.unloadAllResources();
 
-		// Make the pending scene the current one
-		this.currentScene = this.pendingScene;
+		const nextScene = new this.pendingSceneConstr(this.viewport, this, this.renderingManager, this.pendingSceneOptions);
 
-		// Make the pending scene null
-		this.pendingScene = null;
+		// Make the pending scene the current one
+		this.currentScene = nextScene;
+
+		// Clear pending scene request
+		this.pendingSceneConstr = null;
+		this.pendingSceneOptions = undefined;
 
 		// Init the scene
 		this.currentScene.initScene(this.pendingSceneInit ?? {});
@@ -177,8 +182,11 @@ export default class SceneManager {
 			if (ev.type === GameEventType.CHANGE_SCENE) this.changeToScene(ev.data.get("scene"), ev.data.get("init"), ev.data.get("options"), ev.data.get("transition"));
 		}
 
-		if(this.pendingScene !== null){
+		if(this.pendingSceneConstr !== null){
 			this.doSceneChange();
+			if (this.pendingSceneConstr !== null) {
+				return;
+			}
 		}
 
 		if(this.currentScene && this.currentScene.isRunning()){

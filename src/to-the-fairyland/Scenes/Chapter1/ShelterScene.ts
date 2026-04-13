@@ -75,7 +75,6 @@ export default class ShelterScene extends MappedAdventureScene {
 
         this.tryStartInteractionDialogue(obj);
     }
-    
 
     protected override handleAutoTransition(obj: TiledObject): void {
         if (obj.name === "DoorToOutside") {
