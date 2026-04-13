@@ -11,9 +11,20 @@ var { execSync } = require('child_process');
 
 var args = minimist(process.argv.slice(2));
 
-/**
- * Switch working tree to a commit (for benchmark2+ only)
- */
+/* -----------------------------
+   GIT HELPERS
+------------------------------ */
+
+function getCurrentBranch() {
+    try {
+        return execSync('git rev-parse --abbrev-ref HEAD')
+            .toString()
+            .trim();
+    } catch (e) {
+        return null; // detached HEAD case (CI)
+    }
+}
+
 function checkoutCommit(commit) {
     if (commit) {
         fancy_log("Checking out commit:", commit);
@@ -21,26 +32,23 @@ function checkoutCommit(commit) {
     }
 }
 
-/**
- * Restore main branch after build
- */
-function restoreMain() {
-    fancy_log("Restoring main branch...");
-    execSync(`git checkout main`, { stdio: 'inherit' });
+function restoreBranch(branch) {
+    if (branch) {
+        fancy_log("Restoring branch:", branch);
+        execSync(`git checkout ${branch}`, { stdio: 'inherit' });
+    }
 }
 
-/**
- * Ensure directory exists
- */
+/* -----------------------------
+   BUILD HELPERS
+------------------------------ */
+
 function ensureDir(dir) {
     if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
     }
 }
 
-/**
- * Create bundler
- */
 function createBundler(watch, entryFile) {
     let b = browserify({
         basedir: '.',
@@ -59,9 +67,6 @@ function createBundler(watch, entryFile) {
     return b;
 }
 
-/**
- * Bundle output
- */
 function bundle(bundler, outDir) {
     return bundler
         .bundle()
@@ -70,13 +75,14 @@ function bundle(bundler, outDir) {
         .pipe(gulp.dest(outDir));
 }
 
-/**
- * Copy HTML depending on benchmark type
- */
+/* -----------------------------
+   HTML COPY LOGIC
+------------------------------ */
+
 function copyHtml(targetDir, benchmark) {
     ensureDir(targetDir);
 
-    // benchmark1 = static design doc (NO bundle, NO commit logic)
+    // benchmark1 = static design doc
     if (benchmark === "benchmark1") {
         const srcHtml = path.join(__dirname, 'src', 'benchmark1', 'index.html');
 
@@ -85,11 +91,11 @@ function copyHtml(targetDir, benchmark) {
             path.join(targetDir, 'index.html')
         );
 
-        fancy_log("Copied benchmark1 design doc (no build)");
+        fancy_log("benchmark1 copied (static)");
         return;
     }
 
-    // all other cases use main template
+    // all others
     const srcHtml = path.join(__dirname, 'src', 'index.html');
 
     fs.copyFileSync(
@@ -98,9 +104,10 @@ function copyHtml(targetDir, benchmark) {
     );
 }
 
-/**
- * MAIN BUILD TASK
- */
+/* -----------------------------
+   MAIN BUILD TASK
+------------------------------ */
+
 gulp.task('build', function (done) {
 
     const benchmark = args.benchmark;
@@ -110,19 +117,25 @@ gulp.task('build', function (done) {
         ? path.join(__dirname, 'dist', benchmark)
         : path.join(__dirname, 'dist');
 
+    let originalBranch = null;
+
     try {
 
-        // CASE 1: benchmark1 (design docs only)
+        // Get current branch
+        originalBranch = getCurrentBranch();
+
+        // CASE 1: static benchmark
         if (benchmark === "benchmark1") {
             copyHtml(outDir, benchmark);
-            fancy_log("benchmark1 built (static only)");
+            fancy_log("benchmark1 built (no bundle)");
             done();
             return;
         }
 
-        // CASE 2: benchmark2+ or main app (needs build)
-
-        checkoutCommit(commit);
+        // CASE 2: snapshot builds (benchmark2+ / main app)
+        if (commit) {
+            checkoutCommit(commit);
+        }
 
         ensureDir(outDir);
 
@@ -133,24 +146,31 @@ gulp.task('build', function (done) {
 
         fancy_log("Build complete →", outDir);
 
+    } catch (err) {
+        fancy_log("Build failed:", err);
+        throw err;
+
     } finally {
-        if (commit) {
-            restoreMain();
+        // Restore original branch
+        if (originalBranch) {
+            restoreBranch(originalBranch);
         }
     }
 
     done();
 });
 
-/**
- * DEV MODE
- */
+/* -----------------------------
+   DEV TASK
+------------------------------ */
+
 gulp.task('dev', function () {
     const bundler = createBundler(true);
     return bundle(bundler, 'dist');
 });
 
-/**
- * DEFAULT
- */
+/* -----------------------------
+   DEFAULT
+------------------------------ */
+
 gulp.task('default', gulp.series('build'));
