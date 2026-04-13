@@ -12,6 +12,22 @@ import TextBox from "../../Wolfie2D/Nodes/UIElements/TextBox";
 import Receiver from "../../Wolfie2D/Events/Receiver";
 import Emitter from "../../Wolfie2D/Events/Emitter";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
+import Button from "../../Wolfie2D/Nodes/UIElements/Button";
+
+export type UIScreenActionBindings = {
+    navigatePrevious: () => boolean;
+    navigateNext: () => boolean;
+    confirm: () => boolean;
+};
+
+export type UIScreenOptions = {
+    onClickSFXKey?: string;
+    onEnterSFXKey?: string;
+    onExitSFXKey?: string;
+    onShowSFXKey?: string;
+    onHideSFXKey?: string;
+    uiActions?: Partial<UIScreenActionBindings>;
+};
 
 export default class UIScreen {
     protected scene: Scene;
@@ -31,8 +47,17 @@ export default class UIScreen {
     protected onExitSFXKey?: string;
     protected onShowSFXKey?: string;
     protected onHideSFXKey?: string;
+    protected navigationButtonKeys: string[] = [];
+    protected navigationButtonIndex: number = -1;
+    private readonly navigationButtonEnterCallbacks: Array<Function | null> = [];
+    private readonly navigationButtonLeaveCallbacks: Array<Function | null> = [];
+    private uiActions: UIScreenActionBindings = {
+        navigatePrevious: () => false,
+        navigateNext: () => false,
+        confirm: () => false
+    };
 
-    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, options?: { onClickSFXKey?: string, onEnterSFXKey?: string, onExitSFXKey?: string, onShowSFXKey?: string, onHideSFXKey?: string }) {
+    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, options?: UIScreenOptions) {
         this.scene = scene;
         this.getViewportCenter = getViewportCenter;
         this.getViewportHalfSize = getViewportHalfSize;
@@ -49,6 +74,10 @@ export default class UIScreen {
         this.onExitSFXKey = options.onExitSFXKey;
         this.onShowSFXKey = options.onShowSFXKey;
         this.onHideSFXKey = options.onHideSFXKey;
+        this.uiActions = {
+            ...this.uiActions,
+            ...options.uiActions
+        };
     }
 
     protected initializeUI(): void {}
@@ -78,6 +107,7 @@ export default class UIScreen {
         this.isOpen = true;
 
         this.layer.setHidden(false);
+        this.syncNavigationSelection();
     }
 
     public hide(): void {
@@ -86,6 +116,7 @@ export default class UIScreen {
         this.isOpen = false;
 
         this.layer.setHidden(true);
+        this.clearNavigationSelection();
     }
 
     public getIsOpen(): boolean {
@@ -97,6 +128,14 @@ export default class UIScreen {
             this.layer.setHidden(true);
         }
         this.isOpen = false;
+    }
+
+    public update(): void {
+        if (!this.isOpen) {
+            return;
+        }
+
+        this.updateNavigation();
     }
 
     protected addRect(key: string, position: Vec2, size: Vec2, color: Color): void {
@@ -214,6 +253,207 @@ export default class UIScreen {
         }
         button.onLeave = () => {this.playSFX(this.onExitSFXKey);};
         this.addUIElement(key, button);
+    }
+
+    protected setNavigationButtons(buttonKeys: string[]): void {
+        this.navigationButtonKeys = buttonKeys;
+        this.navigationButtonEnterCallbacks.length = 0;
+        this.navigationButtonLeaveCallbacks.length = 0;
+
+        for (let i = 0; i < this.navigationButtonKeys.length; i++) {
+            const button = this.getNavigationButton(i);
+
+            if (!button) {
+                this.navigationButtonEnterCallbacks.push(null);
+                this.navigationButtonLeaveCallbacks.push(null);
+                continue;
+            }
+
+            const previousOnEnter = button.onEnter;
+            const previousOnLeave = button.onLeave;
+
+            this.navigationButtonEnterCallbacks.push(previousOnEnter);
+            this.navigationButtonLeaveCallbacks.push(previousOnLeave);
+
+            button.onEnter = () => {
+                this.focusNavigationButton(i, true);
+            };
+
+            button.onLeave = () => {
+                previousOnLeave?.call(button);
+            };
+        }
+
+        this.navigationButtonIndex = this.findNextSelectableNavigationButtonIndex(0, 1);
+        this.syncNavigationSelection();
+    }
+
+    protected updateNavigation(): void {
+        if (this.navigationButtonKeys.length === 0) {
+            return;
+        }
+
+        if (this.uiActions.navigatePrevious()) {
+            this.selectPreviousNavigationButton();
+        } else if (this.uiActions.navigateNext()) {
+            this.selectNextNavigationButton();
+        }
+
+        if (this.uiActions.confirm()) {
+            this.confirmNavigationButton();
+        }
+    }
+
+    protected selectPreviousNavigationButton(): void {
+        this.moveNavigationSelection(-1);
+    }
+
+    protected selectNextNavigationButton(): void {
+        this.moveNavigationSelection(1);
+    }
+
+    protected confirmNavigationButton(): void {
+        const button = this.getNavigationButton(this.navigationButtonIndex);
+
+        if (!button || button.visible === false) {
+            return;
+        }
+
+        button.onClick?.call(button);
+
+        if (button.onClickEventId) {
+            this.emitter.fireEvent(button.onClickEventId, {});
+        }
+    }
+
+    protected syncNavigationSelection(): void {
+        if (this.navigationButtonKeys.length === 0) {
+            return;
+        }
+
+        const selectedButton = this.getNavigationButton(this.navigationButtonIndex);
+
+        if (selectedButton && selectedButton.visible !== false) {
+            (selectedButton as Button & { isFocused: boolean }).isFocused = true;
+            return;
+        }
+
+        const nextIndex = this.findNextSelectableNavigationButtonIndex(0, 1);
+        if (nextIndex >= 0) {
+            this.focusNavigationButton(nextIndex, false);
+        }
+    }
+
+    protected clearNavigationSelection(): void {
+        if (this.navigationButtonIndex >= 0) {
+            const button = this.getNavigationButton(this.navigationButtonIndex);
+            if (button) {
+                (button as Button & { isFocused: boolean }).isFocused = false;
+            }
+        }
+
+        this.navigationButtonIndex = -1;
+    }
+
+    protected focusNavigationButton(index: number, playCallbacks: boolean): void {
+        const nextIndex = this.findNextSelectableNavigationButtonIndex(index, 1);
+        if (nextIndex < 0) {
+            return;
+        }
+
+        const nextButton = this.getNavigationButton(nextIndex);
+
+        const currentIndex = this.navigationButtonIndex;
+        if (currentIndex === nextIndex) {
+            const currentButton = this.getNavigationButton(currentIndex);
+            if (currentButton) {
+                (currentButton as Button & { isFocused: boolean }).isFocused = true;
+            }
+
+            if (playCallbacks) {
+                this.navigationButtonEnterCallbacks[nextIndex]?.call(nextButton);
+            }
+
+            return;
+        }
+
+        const currentButton = this.getNavigationButton(currentIndex);
+
+        if (currentButton) {
+            (currentButton as Button & { isFocused: boolean }).isFocused = false;
+            if (playCallbacks) {
+                this.navigationButtonLeaveCallbacks[currentIndex]?.call(currentButton);
+            }
+        }
+
+        this.navigationButtonIndex = nextIndex;
+
+        if (nextButton) {
+            (nextButton as Button & { isFocused: boolean }).isFocused = true;
+            if (playCallbacks) {
+                this.navigationButtonEnterCallbacks[nextIndex]?.call(nextButton);
+            }
+        }
+    }
+
+    protected moveNavigationSelection(direction: -1 | 1): void {
+        if (this.navigationButtonKeys.length === 0) {
+            return;
+        }
+
+        this.suppressMouseHoverForNavigationButtons();
+
+        const startIndex = this.navigationButtonIndex >= 0 ? this.navigationButtonIndex + direction : 0;
+        const nextIndex = this.findNextSelectableNavigationButtonIndex(startIndex, direction);
+
+        if (nextIndex >= 0) {
+            this.focusNavigationButton(nextIndex, true);
+        }
+    }
+
+    protected suppressMouseHoverForNavigationButtons(): void {
+        for (let i = 0; i < this.navigationButtonKeys.length; i++) {
+            const button = this.getNavigationButton(i) as (Button & {
+                isEntered: boolean;
+                suppressHoverUntilMouseMoves?: () => void;
+            }) | undefined;
+
+            if (!button) {
+                continue;
+            }
+
+            button.isEntered = false;
+            button.suppressHoverUntilMouseMoves?.();
+        }
+    }
+
+    protected getNavigationButton(index: number): Button | undefined {
+        if (index < 0 || index >= this.navigationButtonKeys.length) {
+            return undefined;
+        }
+
+        return this.getUIElement(this.navigationButtonKeys[index]) as Button | undefined;
+    }
+
+    protected findNextSelectableNavigationButtonIndex(startIndex: number, step: number): number {
+        if (this.navigationButtonKeys.length === 0) {
+            return -1;
+        }
+
+        const length = this.navigationButtonKeys.length;
+        let index = ((startIndex % length) + length) % length;
+
+        for (let attempt = 0; attempt < length; attempt++) {
+            const button = this.getNavigationButton(index);
+
+            if (button && button.visible !== false) {
+                return index;
+            }
+
+            index = ((index + step) % length + length) % length;
+        }
+
+        return -1;
     }
 
     protected addClickableOverlay(key: string, position: Vec2, size: Vec2, options?: { onClick?: () => void; onClickEventId?: string }): void {

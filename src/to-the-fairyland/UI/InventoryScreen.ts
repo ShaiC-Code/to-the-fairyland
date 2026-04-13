@@ -2,7 +2,7 @@ import Scene from "../../Wolfie2D/Scene/Scene";
 import Vec2 from "../../Wolfie2D/DataTypes/Vec2";
 import Color from "../../Wolfie2D/Utils/Color";
 import Button from "../../Wolfie2D/Nodes/UIElements/Button";
-import UIScreen from "./UIScreen";
+import UIScreen, { UIScreenOptions } from "./UIScreen";
 import NullFunc from "../../Wolfie2D/DataTypes/Functions/NullFunc";
 import Inventory from "../GameSystems/ItemSystem/Inventory";
 import InventoryItem from "../GameSystems/ItemSystem/InventoryItem";
@@ -26,7 +26,7 @@ export default class InventoryScreen extends UIScreen {
         getViewportHalfSize: () => Vec2,
         inventory: Inventory,
         onItemSelected?: (item: InventoryItem) => void,
-        options?: { onClickSFXKey?: string, onEnterSFXKey?: string, onExitSFXKey?: string, onShowSFXKey?: string, onHideSFXKey?: string}
+        options?: UIScreenOptions
     ) {
         super(layerName, scene, getViewportCenter, getViewportHalfSize, options);
         this.inventory = inventory;
@@ -63,6 +63,8 @@ export default class InventoryScreen extends UIScreen {
                 button.visible = false;
             }
         }
+
+        this.syncNavigationSelection();
     }
 
     protected initializeUI(): void {
@@ -99,6 +101,8 @@ export default class InventoryScreen extends UIScreen {
         this.addHoverButton("item4Btn", menuButtonPos.item4, menuButtonSize, "", { onClick: NullFunc });
         this.addHoverButton("item5Btn", menuButtonPos.item5, menuButtonSize, "", { onClick: NullFunc });
         this.addHoverButton("item6Btn", menuButtonPos.item6, menuButtonSize, "", { onClick: NullFunc });
+
+        this.setNavigationButtons(this.itemButtonKeys);
 
         this.layer.setHidden(true);
     }

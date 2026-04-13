@@ -1,12 +1,12 @@
 import Scene from "../../../Wolfie2D/Scene/Scene";
 import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
-import UIScreen from "../UIScreen";
+import UIScreen, { UIScreenOptions } from "../UIScreen";
 import HoverButton from "../CustomUIElements/HoverButton";
 
 export default class MainScreen extends UIScreen {
     private mainMenuImageKey: string;
 
-    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, mainMenuImageKey: string, options?: { onClickSFXKey?: string, onEnterSFXKey?: string, onExitSFXKey?: string, onShowSFXKey?: string, onHideSFXKey?: string }) {
+    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, mainMenuImageKey: string, options?: UIScreenOptions) {
         super(layerName, scene, getViewportCenter, getViewportHalfSize, options);
 
         this.mainMenuImageKey = mainMenuImageKey;
@@ -45,6 +45,8 @@ export default class MainScreen extends UIScreen {
             currentBtn.setHAlign("center");
             currentBtn.setVAlign("center");
         }
+
+        this.setNavigationButtons(mainMenuButtons.map(button => button.key));
 
         // Hide by default
         this.layer.setHidden(true);

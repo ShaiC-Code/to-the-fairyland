@@ -3,7 +3,7 @@ import Vec2 from "../../Wolfie2D/DataTypes/Vec2";
 import TextBox from "../../Wolfie2D/Nodes/UIElements/TextBox";
 import Button from "../../Wolfie2D/Nodes/UIElements/Button";
 import Color from "../../Wolfie2D/Utils/Color";
-import UIScreen from "./UIScreen";
+import UIScreen, { UIScreenOptions } from "./UIScreen";
 
 type DialogueChoice = {
     label: string;
@@ -29,7 +29,7 @@ export default class DialogueChoiceBoxScreen extends UIScreen {
     private readonly unselectedButtonBackground = Color.TRANSPARENT;
     private readonly unselectedButtonText = Color.WHITE;
 
-    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, initialChoices?: DialogueChoice[], options?: { onClickSFXKey?: string, onEnterSFXKey?: string, onExitSFXKey?: string, onShowSFXKey?: string, onHideSFXKey?: string }) {
+    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, initialChoices?: DialogueChoice[], options?: UIScreenOptions) {
         super(layerName, scene, getViewportCenter, getViewportHalfSize, options);
 
         this.initializeUI();

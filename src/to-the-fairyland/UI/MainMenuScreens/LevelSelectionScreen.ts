@@ -1,10 +1,10 @@
 import Scene from "../../../Wolfie2D/Scene/Scene";
 import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
-import UIScreen from "../UIScreen";
+import UIScreen, { UIScreenOptions } from "../UIScreen";
 
 export default class LevelSelectionScreen extends UIScreen {
 
-    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, options?: { onClickSFXKey?: string, onEnterSFXKey?: string, onExitSFXKey?: string, onShowSFXKey?: string, onHideSFXKey?: string }) {
+    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, options?: UIScreenOptions) {
         super(layerName, scene, getViewportCenter, getViewportHalfSize, options);
 
         this.initializeUI();
@@ -42,6 +42,8 @@ export default class LevelSelectionScreen extends UIScreen {
         for (const button of levelButtons) {
             this.addHoverButton(button.key, button.pos, levelButtonSize, button.text, {onClickEventId: button.eventId});
         }
+
+        this.setNavigationButtons(levelButtons.map(button => button.key));
 
         // Hide by default
         this.layer.setHidden(true);

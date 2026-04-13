@@ -1,10 +1,10 @@
 import Scene from "../../../Wolfie2D/Scene/Scene";
 import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
-import UIScreen from "../UIScreen";
+import UIScreen, { UIScreenOptions } from "../UIScreen";
 
 export default class ControlsScreen extends UIScreen {
 
-    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, options?: { onClickSFXKey?: string, onEnterSFXKey?: string, onExitSFXKey?: string, onShowSFXKey?: string, onHideSFXKey?: string }) {
+    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, options?: UIScreenOptions) {
         super(layerName, scene, getViewportCenter, getViewportHalfSize, options);
 
         this.initializeUI();
@@ -48,7 +48,7 @@ export default class ControlsScreen extends UIScreen {
 
             {
               left: { key: "row5left", pos: new Vec2(controlsTableLeftX, listTop + verticalOffset * 4), text: "Interact/Confirm" },
-              right: { key: "row5right", pos: new Vec2(controlsTableRightX, listTop + verticalOffset * 4), text: "Z, J, E" }
+              right: { key: "row5right", pos: new Vec2(controlsTableRightX, listTop + verticalOffset * 4), text: "Z, J, E, ENTER" }
             },
 
             {
@@ -82,6 +82,8 @@ export default class ControlsScreen extends UIScreen {
 
         // Add Back button
         this.addButton("backBtn", new Vec2(screenCenter.x, listTop + verticalOffset * controlRows.length), new Vec2(200, 50), "Back", { onClickEventId: "backToMain" });
+
+        this.setNavigationButtons(["backBtn"]);
 
         // Hide by default
         this.layer.setHidden(true);
