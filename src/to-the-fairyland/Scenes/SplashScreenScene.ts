@@ -1,9 +1,11 @@
 import Scene from "../../Wolfie2D/Scene/Scene";
+import Input from "../../Wolfie2D/Input/Input";
 import UIImage from "../UI/CustomUIElements/UIImage";
 import ClickableOverlay from "../UI/CustomUIElements/ClickableOverlay";
 import { CustomUIElementType } from "../UI/CustomUIElements/CustomUIElementTypes";
 import SplashScreen from "../UI/SplashScreenScreens/SplashScreen";
 import MainMenu from "./MainMenu";
+import { PlayerInput } from "../AI/Player/PlayerController";
 
 type AssetRef = Readonly<{
     key: string;
@@ -55,8 +57,19 @@ export default class SplashScreenScene extends Scene {
                     fadeInMs: 500
                 }
             ),
-            { onClickSFXKey: this.splashProceed.key }
+            {
+                onClickSFXKey: this.splashProceed.key,
+                uiActions: {
+                    navigatePrevious: () => false,
+                    navigateNext: () => false,
+                    confirm: () => Input.isJustPressed(PlayerInput.INTERACT)
+                }
+            }
         );
         this.splashScreen.show();
+    }
+
+    public updateScene(): void {
+        this.splashScreen.update();
     }
 }

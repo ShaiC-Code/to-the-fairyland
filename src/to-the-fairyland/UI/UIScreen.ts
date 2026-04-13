@@ -13,6 +13,7 @@ import Receiver from "../../Wolfie2D/Events/Receiver";
 import Emitter from "../../Wolfie2D/Events/Emitter";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 import Button from "../../Wolfie2D/Nodes/UIElements/Button";
+import UIElement from "../../Wolfie2D/Nodes/UIElement";
 
 export type UIScreenActionBindings = {
     navigatePrevious: () => boolean;
@@ -27,6 +28,17 @@ export type UIScreenOptions = {
     onShowSFXKey?: string;
     onHideSFXKey?: string;
     uiActions?: Partial<UIScreenActionBindings>;
+};
+
+type NavigationElement = UIElement & {
+    visible: boolean;
+    onClick?: Function;
+    onClickEventId?: string;
+    onEnter?: Function;
+    onLeave?: Function;
+    isEntered: boolean;
+    isFocused: boolean;
+    suppressHoverUntilMouseMoves?: () => void;
 };
 
 export default class UIScreen {
@@ -256,7 +268,11 @@ export default class UIScreen {
     }
 
     protected setNavigationButtons(buttonKeys: string[]): void {
-        this.navigationButtonKeys = buttonKeys;
+        this.setNavigationElements(buttonKeys);
+    }
+
+    protected setNavigationElements(elementKeys: string[]): void {
+        this.navigationButtonKeys = elementKeys;
         this.navigationButtonEnterCallbacks.length = 0;
         this.navigationButtonLeaveCallbacks.length = 0;
 
@@ -313,7 +329,7 @@ export default class UIScreen {
     }
 
     protected confirmNavigationButton(): void {
-        const button = this.getNavigationButton(this.navigationButtonIndex);
+        const button = this.getNavigationElement(this.navigationButtonIndex);
 
         if (!button || button.visible === false) {
             return;
@@ -331,10 +347,10 @@ export default class UIScreen {
             return;
         }
 
-        const selectedButton = this.getNavigationButton(this.navigationButtonIndex);
+        const selectedButton = this.getNavigationElement(this.navigationButtonIndex);
 
         if (selectedButton && selectedButton.visible !== false) {
-            (selectedButton as Button & { isFocused: boolean }).isFocused = true;
+            selectedButton.isFocused = true;
             return;
         }
 
@@ -346,9 +362,9 @@ export default class UIScreen {
 
     protected clearNavigationSelection(): void {
         if (this.navigationButtonIndex >= 0) {
-            const button = this.getNavigationButton(this.navigationButtonIndex);
+            const button = this.getNavigationElement(this.navigationButtonIndex);
             if (button) {
-                (button as Button & { isFocused: boolean }).isFocused = false;
+                button.isFocused = false;
             }
         }
 
@@ -361,13 +377,13 @@ export default class UIScreen {
             return;
         }
 
-        const nextButton = this.getNavigationButton(nextIndex);
+        const nextButton = this.getNavigationElement(nextIndex);
 
         const currentIndex = this.navigationButtonIndex;
         if (currentIndex === nextIndex) {
-            const currentButton = this.getNavigationButton(currentIndex);
+            const currentButton = this.getNavigationElement(currentIndex);
             if (currentButton) {
-                (currentButton as Button & { isFocused: boolean }).isFocused = true;
+                currentButton.isFocused = true;
             }
 
             if (playCallbacks) {
@@ -377,10 +393,10 @@ export default class UIScreen {
             return;
         }
 
-        const currentButton = this.getNavigationButton(currentIndex);
+        const currentButton = this.getNavigationElement(currentIndex);
 
         if (currentButton) {
-            (currentButton as Button & { isFocused: boolean }).isFocused = false;
+            currentButton.isFocused = false;
             if (playCallbacks) {
                 this.navigationButtonLeaveCallbacks[currentIndex]?.call(currentButton);
             }
@@ -389,7 +405,7 @@ export default class UIScreen {
         this.navigationButtonIndex = nextIndex;
 
         if (nextButton) {
-            (nextButton as Button & { isFocused: boolean }).isFocused = true;
+            nextButton.isFocused = true;
             if (playCallbacks) {
                 this.navigationButtonEnterCallbacks[nextIndex]?.call(nextButton);
             }
@@ -413,10 +429,7 @@ export default class UIScreen {
 
     protected suppressMouseHoverForNavigationButtons(): void {
         for (let i = 0; i < this.navigationButtonKeys.length; i++) {
-            const button = this.getNavigationButton(i) as (Button & {
-                isEntered: boolean;
-                suppressHoverUntilMouseMoves?: () => void;
-            }) | undefined;
+            const button = this.getNavigationElement(i);
 
             if (!button) {
                 continue;
@@ -427,12 +440,16 @@ export default class UIScreen {
         }
     }
 
-    protected getNavigationButton(index: number): Button | undefined {
+    protected getNavigationElement(index: number): NavigationElement | undefined {
         if (index < 0 || index >= this.navigationButtonKeys.length) {
             return undefined;
         }
 
-        return this.getUIElement(this.navigationButtonKeys[index]) as Button | undefined;
+        return this.getUIElement(this.navigationButtonKeys[index]) as NavigationElement | undefined;
+    }
+
+    protected getNavigationButton(index: number): Button | undefined {
+        return this.getNavigationElement(index) as Button | undefined;
     }
 
     protected findNextSelectableNavigationButtonIndex(startIndex: number, step: number): number {
@@ -444,7 +461,7 @@ export default class UIScreen {
         let index = ((startIndex % length) + length) % length;
 
         for (let attempt = 0; attempt < length; attempt++) {
-            const button = this.getNavigationButton(index);
+            const button = this.getNavigationElement(index);
 
             if (button && button.visible !== false) {
                 return index;

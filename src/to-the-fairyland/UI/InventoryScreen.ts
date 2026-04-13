@@ -90,17 +90,23 @@ export default class InventoryScreen extends UIScreen {
             item6: new Vec2(screenCenter.x, listTop + verticalOffset * 5)
         };
 
+        const itemButtonPositions = [
+            menuButtonPos.item1,
+            menuButtonPos.item2,
+            menuButtonPos.item3,
+            menuButtonPos.item4,
+            menuButtonPos.item5,
+            menuButtonPos.item6
+        ];
+
         this.addRect("bg", screenCenter.clone(), viewportHalfSize.clone().scale(2), new Color(0, 0, 0, 0.7));
         this.initializePlayerInfoComponent();
         this.addLabel("inventoryLabel", new Vec2(screenCenter.x, screenTop + 225), new Vec2(viewportSize.x - 200, 50), "INVENTORY", 48, { halign: "left", valign: "center" });
         this.addLine("divider", new Vec2(screenLeft, screenTop + 275), new Vec2(screenRight, screenTop + 275), 2);
 
-        this.addHoverButton("item1Btn", menuButtonPos.item1, menuButtonSize, "", { onClick: NullFunc });
-        this.addHoverButton("item2Btn", menuButtonPos.item2, menuButtonSize, "", { onClick: NullFunc });
-        this.addHoverButton("item3Btn", menuButtonPos.item3, menuButtonSize, "", { onClick: NullFunc });
-        this.addHoverButton("item4Btn", menuButtonPos.item4, menuButtonSize, "", { onClick: NullFunc });
-        this.addHoverButton("item5Btn", menuButtonPos.item5, menuButtonSize, "", { onClick: NullFunc });
-        this.addHoverButton("item6Btn", menuButtonPos.item6, menuButtonSize, "", { onClick: NullFunc });
+        this.itemButtonKeys.forEach((buttonKey, index) => {
+            this.addHoverButton(buttonKey, itemButtonPositions[index], menuButtonSize, "", { onClick: NullFunc });
+        });
 
         this.setNavigationButtons(this.itemButtonKeys);
 
