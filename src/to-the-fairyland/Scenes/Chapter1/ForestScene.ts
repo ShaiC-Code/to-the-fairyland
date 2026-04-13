@@ -46,6 +46,7 @@ export default class ForestScene extends MappedAdventureScene {
 
     protected override configureLayers(): void {
         this.getLayer("Interactables").setDepth(this.actorLayerDepth);
+        this.getLayer("BloodStain").setDepth(this.actorLayerDepth);
         this.getLayer("Trees").setDepth(20);
         this.getLayer("Ground").setDepth(2);
     }
@@ -72,9 +73,11 @@ export default class ForestScene extends MappedAdventureScene {
             bush.setSortOrder(1);
         }
 
+        const step = this.storyManager.getChapter1MainQuestStep();
+        
         // Display the map item to be picked up
         const mapItemObj = interactLayer?.objects.find(obj => obj.name === "MapItem");
-        if (this.storyManager.getChapter1MainQuestStep() === Chapter1MainQuestStep.SLEPT && mapItemObj) {
+        if (step === Chapter1MainQuestStep.SLEPT && mapItemObj) {
             const mapItem = this.add.sprite("mapItem", "Interactables");
             mapItem.position.set(mapItemObj.x, mapItemObj.y);
             mapItem.setSortTile(this.ground.getTilemapPosition(mapItemObj.x, mapItemObj.y));
@@ -83,6 +86,12 @@ export default class ForestScene extends MappedAdventureScene {
             this.mapItemObject = mapItemObj;
             this.mapItemSprite = mapItem;
         }
+        
+        const bloodStain = this.getRequiredTilemap("BloodStain");
+
+        bloodStain.visible =
+            step === Chapter1MainQuestStep.SLEPT ||
+            step === Chapter1MainQuestStep.MAP_PICKED;
 
     }
 

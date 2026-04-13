@@ -54,7 +54,7 @@ export default class ShelterScene extends MappedAdventureScene {
 
         for (const obj of potObjects) {
             const pot = this.add.sprite(this.potImage.key, "Interactables");
-            pot.position.set(obj.x + obj.width / 2, obj.y + obj.height / 2);
+            pot.position.set(obj.x + obj.width / 2, obj.y + obj.height - pot.size.y / 2);
         }
     }
 

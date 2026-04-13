@@ -29,7 +29,7 @@
             "selectedLayer": 4,
             "viewCenter": {
                 "x": 1340,
-                "y": 1748.6666666666665
+                "y": 1654
             }
         },
         "Chapter1/Chapter1.json#Chapter1_Tilemap1": {
@@ -41,15 +41,15 @@
                 3,
                 5
             ],
-            "scale": 1.5,
+            "scale": 1,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 1425.3333333333333,
-                "y": 1641.6666666666665
+                "x": 1678,
+                "y": 1767.5
             }
         },
         "Chapter1/Shelter.json#Shelter": {
-            "scaleInDock": 1
+            "scaleInDock": 0.33
         },
         "Chapter2.json": {
             "scale": 0.34635416666666663,
