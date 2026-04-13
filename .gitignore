@@ -73,7 +73,7 @@ dist/*
 
 !dist/demo_assets
 
-!dist/game_assets
+!dist/assets
 
 **/.DS_store
 

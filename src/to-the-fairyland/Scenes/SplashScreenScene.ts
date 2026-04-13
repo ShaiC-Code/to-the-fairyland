@@ -16,12 +16,12 @@ export default class SplashScreenScene extends Scene {
 
 	  protected readonly splashScreenImage: AssetRef = {
         key: "splash-screen-image",
-        path: "game_assets/images/splash-screen-image.png"
+        path: "/assets/images/splash-screen-image.png"
 	  };
 
 	  protected readonly splashProceed: AssetRef = {
         key: "splash-screen-proceed",
-        path: "game_assets/sounds/splash-screen-proceed.ogg"
+        path: "/assets/sounds/splash-screen-proceed.ogg"
 	  };
 
     protected splashScreen!: SplashScreen;
