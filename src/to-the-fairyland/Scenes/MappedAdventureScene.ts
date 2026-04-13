@@ -30,6 +30,7 @@ import InventoryItem from "../GameSystems/ItemSystem/InventoryItem";
 import FrozenBerries from "../GameSystems/ItemSystem/Items/FrozenBerries";
 import CookedBerries from "../GameSystems/ItemSystem/Items/CookedBerries";
 import WorldMap from "../GameSystems/ItemSystem/Items/WorldMap";
+import { UIScreenActionBindings } from "../UI/UIScreen";
 
 
 type AssetRef = Readonly<{
@@ -275,6 +276,12 @@ export default abstract class MappedAdventureScene extends Scene {
         const ai = this.player.ai as PlayerAI;
         this.playIdleForFacing(ai.facing);
 
+        const uiActions: UIScreenActionBindings = {
+            navigatePrevious: () => Input.isJustPressed(PlayerInput.MOVE_LEFT) || Input.isJustPressed(PlayerInput.MOVE_UP),
+            navigateNext: () => Input.isJustPressed(PlayerInput.MOVE_RIGHT) || Input.isJustPressed(PlayerInput.MOVE_DOWN),
+            confirm: () => Input.isJustPressed(PlayerInput.INTERACT)
+        };
+
         this.applyCameraBounds();
         this.viewport.follow(this.player);
         this.viewport.setZoomLevel(this.zoomLevel);
@@ -287,7 +294,13 @@ export default abstract class MappedAdventureScene extends Scene {
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize(),
             () => this.sceneManager.changeToScene(MainMenu),
-            { onEnterSFXKey: this.uiHover.key, onClickSFXKey: this.uiClick.key, onShowSFXKey: this.menuOpen.key, onHideSFXKey: this.menuClose.key }
+            {
+                onEnterSFXKey: this.uiHover.key,
+                onClickSFXKey: this.uiClick.key,
+                onShowSFXKey: this.menuOpen.key,
+                onHideSFXKey: this.menuClose.key,
+                uiActions
+            }
         );
         this.inventoryScreen = new InventoryScreen(
             "inventoryOverlay",
@@ -301,6 +314,7 @@ export default abstract class MappedAdventureScene extends Scene {
                 onClickSFXKey: this.uiClick.key,
                 onShowSFXKey: this.menuOpen.key,
                 onHideSFXKey: this.menuClose.key,
+                uiActions
             }
         );
         
@@ -310,7 +324,11 @@ export default abstract class MappedAdventureScene extends Scene {
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize(),
             undefined,
-            { onEnterSFXKey: this.uiHover.key, onClickSFXKey: this.uiClick.key }
+            {
+                onEnterSFXKey: this.uiHover.key,
+                onClickSFXKey: this.uiClick.key,
+                uiActions
+            }
         );
 
         const worldState = this.gameSessionManager.getWorldState();
@@ -343,6 +361,14 @@ export default abstract class MappedAdventureScene extends Scene {
 
         const shouldPauseWorld = this.pauseScreen.getIsOpen() || this.inventoryScreen.getIsOpen();
         this.setWorldPaused(shouldPauseWorld);
+
+        if (pauseOpen) {
+            this.pauseScreen.update();
+        }
+
+        if (inventoryOpen) {
+            this.inventoryScreen.update();
+        }
 
         if (!pauseOpen && !inventoryOpen && dialogueOpen) {
             this.updateDialogue();
@@ -967,15 +993,7 @@ export default abstract class MappedAdventureScene extends Scene {
         }
 
         if (this.dialogueChoiceActive) {
-            if (Input.isJustPressed(PlayerInput.MOVE_LEFT) || Input.isJustPressed(PlayerInput.MOVE_UP)) {
-                this.dialogueScreen.selectPreviousChoice();
-            } else if (Input.isJustPressed(PlayerInput.MOVE_RIGHT) || Input.isJustPressed(PlayerInput.MOVE_DOWN)) {
-                this.dialogueScreen.selectNextChoice();
-            }
-
-            if (Input.isJustPressed(PlayerInput.INTERACT)) {
-                this.dialogueScreen.confirmSelection();
-            }
+            this.dialogueScreen.update();
 
             return;
         }

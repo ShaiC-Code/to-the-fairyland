@@ -6,6 +6,7 @@ import UIImage from "../UI/CustomUIElements/UIImage";
 import ForestScene  from "./Chapter1/ForestScene";
 import ShelterScene from "./Chapter1/ShelterScene";
 import TextBox from "../../Wolfie2D/Nodes/UIElements/TextBox";
+import Input from "../../Wolfie2D/Input/Input";
 import { CustomUIElementType } from "../UI/CustomUIElements/CustomUIElementTypes";
 import LevelSelectionScreen from "../UI/MainMenuScreens/LevelSelectionScreen";
 import ControlsScreen from "../UI/MainMenuScreens/ControlsScreen";
@@ -13,6 +14,8 @@ import HelpScreen from "../UI/MainMenuScreens/HelpScreen";
 import MainScreen from "../UI/MainMenuScreens/MainScreen";
 import TestScreen from "../UI/MainMenuScreens/TestScreen";
 import GameSessionManager from "../GameSystems/GameSessionSystem/GameSessionManager";
+import { PlayerInput } from "../AI/Player/PlayerController";
+import { UIScreenActionBindings } from "../UI/UIScreen";
 
 
 type AssetRef = Readonly<{
@@ -65,13 +68,19 @@ export default class MainMenu extends Scene {
     }
 
     public startScene(){
+        const uiActions: UIScreenActionBindings = {
+            navigatePrevious: () => Input.isJustPressed(PlayerInput.MOVE_LEFT) || Input.isJustPressed(PlayerInput.MOVE_UP),
+            navigateNext: () => Input.isJustPressed(PlayerInput.MOVE_RIGHT) || Input.isJustPressed(PlayerInput.MOVE_DOWN),
+            confirm: () => Input.isJustPressed(PlayerInput.INTERACT)
+        };
+
         this.mainMenu = new MainScreen(
             "mainMenu",
             this,
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize(),
             this.mainScreenImage.key,
-            { onEnterSFXKey: this.uiHover.key, onClickSFXKey: this.uiClick.key }
+            { onEnterSFXKey: this.uiHover.key, onClickSFXKey: this.uiClick.key, uiActions }
         );
         this.mainMenu.show();
 
@@ -80,7 +89,7 @@ export default class MainMenu extends Scene {
             this,
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize(),
-            { onEnterSFXKey: this.uiHover.key, onClickSFXKey: this.uiClick.key }
+            { onEnterSFXKey: this.uiHover.key, onClickSFXKey: this.uiClick.key, uiActions }
         );
 
         this.controlsMenu = new ControlsScreen(
@@ -88,7 +97,7 @@ export default class MainMenu extends Scene {
             this,
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize(),
-            { onEnterSFXKey: this.uiHover.key, onClickSFXKey: this.uiClick.key }
+            { onEnterSFXKey: this.uiHover.key, onClickSFXKey: this.uiClick.key, uiActions }
         );
 
         this.helpMenu = new HelpScreen(
@@ -96,7 +105,7 @@ export default class MainMenu extends Scene {
             this,
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize(),
-            { onEnterSFXKey: this.uiHover.key, onClickSFXKey: this.uiClick.key }
+            { onEnterSFXKey: this.uiHover.key, onClickSFXKey: this.uiClick.key, uiActions }
         );
 
         this.testMenu = new TestScreen(
@@ -104,7 +113,7 @@ export default class MainMenu extends Scene {
             this,
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize(),
-            { onEnterSFXKey: this.uiHover.key, onClickSFXKey: this.uiClick.key }
+            { onEnterSFXKey: this.uiHover.key, onClickSFXKey: this.uiClick.key, uiActions }
         );
 
         this.receiver.subscribe("openLevelMenu");
@@ -119,6 +128,12 @@ export default class MainMenu extends Scene {
         while(this.receiver.hasNextEvent()){
             this.handleEvent(this.receiver.getNextEvent());
         }
+
+        this.mainMenu.update();
+        this.levelMenu.update();
+        this.controlsMenu.update();
+        this.helpMenu.update();
+        this.testMenu.update();
     }
 
     public handleEvent(event: GameEvent): void {

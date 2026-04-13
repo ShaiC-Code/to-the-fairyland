@@ -1,18 +1,18 @@
 import Scene from "../../../Wolfie2D/Scene/Scene";
 import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 import TextBox from "../../../Wolfie2D/Nodes/UIElements/TextBox";
-import UIScreen from "../UIScreen";
+import UIScreen, { UIScreenOptions } from "../UIScreen";
 import Color from "../../../Wolfie2D/Utils/Color";
 
 export default class HelpScreen extends UIScreen {
 
-    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, options?: { onClickSFXKey?: string, onEnterSFXKey?: string, onExitSFXKey?: string, onShowSFXKey?: string, onHideSFXKey?: string }) {
+    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, options?: UIScreenOptions) {
         super(layerName, scene, getViewportCenter, getViewportHalfSize, options);
 
         this.initializeUI();
     }
 
-    protected initializeUI(): void {
+    protected override initializeUI(): void {
         const viewportHalfSize = this.getViewportHalfSize();
         const viewportSize = viewportHalfSize.clone().scale(2);
         const screenCenter = viewportHalfSize.clone();
@@ -120,6 +120,11 @@ export default class HelpScreen extends UIScreen {
             "Main Menu",
             { onClickEventId: "backToMain" }
         );
+
+        this.setNavigationButtons([
+            "openTestScreenBtn",
+            "backToMainBtn"
+        ]);
 
         // Hide by default
         this.layer.setHidden(true);

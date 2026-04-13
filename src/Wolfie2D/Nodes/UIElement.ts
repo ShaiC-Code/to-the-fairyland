@@ -21,26 +21,31 @@ export default abstract class UIElement extends CanvasNode {
 
 	// EventAttributes
 	/** The reaction of this UIElement on a click */
-	onClick: Function;
+	onClick: Function | undefined;
 	/** The event propagated on click */
-	onClickEventId: string;
+	onClickEventId: string | undefined;
 	/** The reaction to the release of a click */
-	onRelease: Function;
+	onRelease: Function | undefined;
 	/** The event propagated on the release of a click */
-	onReleaseEventId: string;
+	onReleaseEventId: string | undefined;
 	/** The reaction when a mouse enters this UIElement */
-	onEnter: Function;
+	onEnter: Function | undefined;
 	/** The event propagated when a mouse enters this UIElement */
-	onEnterEventId: string;
+	onEnterEventId: string | undefined;
 	/** The reaction when a mouse leaves this UIElement */
-	onLeave: Function;
+	onLeave: Function | undefined;
 	/** The event propogated when a mouse leaves this UIElement */
-	onLeaveEventId: string;
+	onLeaveEventId: string | undefined;
 
 	/** Whether or not this UIElement is currently clicked on */
 	protected isClicked: boolean;
 	/** Whether or not this UIElement is currently hovered over */
 	protected isEntered: boolean;
+	/** Whether or not this UIElement is being kept highlighted by keyboard/controller focus */
+	protected isFocused: boolean;
+	/** Suppresses mouse hover highlight until the mouse position changes */
+	protected suppressHoverUntilMouseMove: boolean;
+	private suppressedMousePosition: Vec2 | null;
 
 	constructor(position: Vec2){
 		super();
@@ -52,18 +57,46 @@ export default abstract class UIElement extends CanvasNode {
 		this.borderWidth = 1;
 		this.padding = Vec2.ZERO;
 
-		this.onClick = null;
-		this.onClickEventId = null;
-		this.onRelease = null;
-		this.onReleaseEventId = null;
+		this.onClick = undefined;
+		this.onClickEventId = undefined;
+		this.onRelease = undefined;
+		this.onReleaseEventId = undefined;
 
-		this.onEnter = null;
-		this.onEnterEventId = null;
-		this.onLeave = null;
-		this.onLeaveEventId = null;
+		this.onEnter = undefined;
+		this.onEnterEventId = undefined;
+		this.onLeave = undefined;
+		this.onLeaveEventId = undefined;
 
 		this.isClicked = false;
 		this.isEntered = false;
+		this.isFocused = false;
+		this.suppressHoverUntilMouseMove = false;
+		this.suppressedMousePosition = null;
+	}
+
+	public suppressHoverUntilMouseMoves(): void {
+		this.suppressHoverUntilMouseMove = true;
+		this.isEntered = false;
+
+		const mousePos = Input.getMousePosition();
+		this.suppressedMousePosition = mousePos ? mousePos.clone() : null;
+	}
+
+	public setFocused(isFocused: boolean): void {
+		this.isFocused = isFocused;
+	}
+
+	public clearEntered(): void {
+		this.isEntered = false;
+	}
+
+	private hasMouseMovedFromSuppressedPosition(mousePos: Vec2): boolean {
+		if (!this.suppressedMousePosition) {
+			return true;
+		}
+
+		return mousePos.x !== this.suppressedMousePosition.x
+			|| mousePos.y !== this.suppressedMousePosition.y;
 	}
 
 	// @deprecated
@@ -85,10 +118,10 @@ export default abstract class UIElement extends CanvasNode {
 			if(this.contains(clickPos.x, clickPos.y) && this.visible && !this.layer.isHidden()){
 				this.isClicked = true;
 
-				if(this.onClick !== null){
+				if(this.onClick !== undefined){
 					this.onClick();
 				}
-				if(this.onClickEventId !== null){
+				if(this.onClickEventId !== undefined){
 					let data = {};
 					this.emitter.fireEvent(this.onClickEventId, data);
 				}
@@ -104,6 +137,16 @@ export default abstract class UIElement extends CanvasNode {
 
 		// Check if the mouse is hovering over this element
 		let mousePos = Input.getMousePosition();
+
+		if (this.suppressHoverUntilMouseMove) {
+			if (mousePos !== null && this.hasMouseMovedFromSuppressedPosition(mousePos)) {
+				this.suppressHoverUntilMouseMove = false;
+				this.suppressedMousePosition = null;
+			} else {
+				mousePos = null;
+			}
+		}
+
 		const isHovering = mousePos !== null
 			&& this.contains(mousePos.x, mousePos.y)
 			&& this.visible
@@ -112,10 +155,10 @@ export default abstract class UIElement extends CanvasNode {
 		if(isHovering && !this.isEntered){
 			this.isEntered = true;
 
-			if(this.onEnter !== null){
+			if(this.onEnter !== undefined){
 				this.onEnter();
 			}
-			if(this.onEnterEventId !== null){
+			if(this.onEnterEventId !== undefined){
 				let data = {};
 				this.emitter.fireEvent(this.onEnterEventId, data);
 			}
@@ -123,10 +166,10 @@ export default abstract class UIElement extends CanvasNode {
 		} else if(!isHovering && this.isEntered) {
 			this.isEntered = false;
 
-			if(this.onLeave !== null){
+			if(this.onLeave !== undefined){
 				this.onLeave();
 			}
-			if(this.onLeaveEventId !== null){
+			if(this.onLeaveEventId !== undefined){
 				let data = {};
 				this.emitter.fireEvent(this.onLeaveEventId, data);
 			}

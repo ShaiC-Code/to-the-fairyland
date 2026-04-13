@@ -2,7 +2,7 @@ import Scene from "../../Wolfie2D/Scene/Scene";
 import Vec2 from "../../Wolfie2D/DataTypes/Vec2";
 import Color from "../../Wolfie2D/Utils/Color";
 import Button from "../../Wolfie2D/Nodes/UIElements/Button";
-import UIScreen from "./UIScreen";
+import UIScreen, { UIScreenOptions } from "./UIScreen";
 import NullFunc from "../../Wolfie2D/DataTypes/Functions/NullFunc";
 import Inventory from "../GameSystems/ItemSystem/Inventory";
 import InventoryItem from "../GameSystems/ItemSystem/InventoryItem";
@@ -26,7 +26,7 @@ export default class InventoryScreen extends UIScreen {
         getViewportHalfSize: () => Vec2,
         inventory: Inventory,
         onItemSelected?: (item: InventoryItem) => void,
-        options?: { onClickSFXKey?: string, onEnterSFXKey?: string, onExitSFXKey?: string, onShowSFXKey?: string, onHideSFXKey?: string}
+        options?: UIScreenOptions
     ) {
         super(layerName, scene, getViewportCenter, getViewportHalfSize, options);
         this.inventory = inventory;
@@ -63,9 +63,11 @@ export default class InventoryScreen extends UIScreen {
                 button.visible = false;
             }
         }
+
+        this.syncNavigationSelection();
     }
 
-    protected initializeUI(): void {
+    protected override initializeUI(): void {
         const viewportHalfSize = this.getViewportHalfSize();
         const viewportSize = viewportHalfSize.clone().scale(2);
         const screenCenter = viewportHalfSize.clone();
@@ -88,17 +90,25 @@ export default class InventoryScreen extends UIScreen {
             item6: new Vec2(screenCenter.x, listTop + verticalOffset * 5)
         };
 
+        const itemButtonPositions = [
+            menuButtonPos.item1,
+            menuButtonPos.item2,
+            menuButtonPos.item3,
+            menuButtonPos.item4,
+            menuButtonPos.item5,
+            menuButtonPos.item6
+        ];
+
         this.addRect("bg", screenCenter.clone(), viewportHalfSize.clone().scale(2), new Color(0, 0, 0, 0.7));
         this.initializePlayerInfoComponent();
         this.addLabel("inventoryLabel", new Vec2(screenCenter.x, screenTop + 225), new Vec2(viewportSize.x - 200, 50), "INVENTORY", 48, { halign: "left", valign: "center" });
         this.addLine("divider", new Vec2(screenLeft, screenTop + 275), new Vec2(screenRight, screenTop + 275), 2);
 
-        this.addHoverButton("item1Btn", menuButtonPos.item1, menuButtonSize, "", { onClick: NullFunc });
-        this.addHoverButton("item2Btn", menuButtonPos.item2, menuButtonSize, "", { onClick: NullFunc });
-        this.addHoverButton("item3Btn", menuButtonPos.item3, menuButtonSize, "", { onClick: NullFunc });
-        this.addHoverButton("item4Btn", menuButtonPos.item4, menuButtonSize, "", { onClick: NullFunc });
-        this.addHoverButton("item5Btn", menuButtonPos.item5, menuButtonSize, "", { onClick: NullFunc });
-        this.addHoverButton("item6Btn", menuButtonPos.item6, menuButtonSize, "", { onClick: NullFunc });
+        this.itemButtonKeys.forEach((buttonKey, index) => {
+            this.addHoverButton(buttonKey, itemButtonPositions[index], menuButtonSize, "", { onClick: NullFunc });
+        });
+
+        this.setNavigationButtons(this.itemButtonKeys);
 
         this.layer.setHidden(true);
     }

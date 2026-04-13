@@ -3,7 +3,7 @@ import Vec2 from "../../Wolfie2D/DataTypes/Vec2";
 import TextBox from "../../Wolfie2D/Nodes/UIElements/TextBox";
 import Button from "../../Wolfie2D/Nodes/UIElements/Button";
 import Color from "../../Wolfie2D/Utils/Color";
-import UIScreen from "./UIScreen";
+import UIScreen, { UIScreenOptions } from "./UIScreen";
 
 type DialogueChoice = {
     label: string;
@@ -29,14 +29,14 @@ export default class DialogueChoiceBoxScreen extends UIScreen {
     private readonly unselectedButtonBackground = Color.TRANSPARENT;
     private readonly unselectedButtonText = Color.WHITE;
 
-    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, initialChoices?: DialogueChoice[], options?: { onClickSFXKey?: string, onEnterSFXKey?: string, onExitSFXKey?: string, onShowSFXKey?: string, onHideSFXKey?: string }) {
+    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, initialChoices?: DialogueChoice[], options?: UIScreenOptions) {
         super(layerName, scene, getViewportCenter, getViewportHalfSize, options);
 
         this.initializeUI();
         this.setChoices(initialChoices ?? [{ label: "Yes" }, { label: "No" }]);
     }
 
-    protected initializeUI(): void {
+    protected override initializeUI(): void {
         const viewportHalfSize = this.getViewportHalfSize();
         const viewportSize = viewportHalfSize.clone().scale(2);
 
@@ -65,6 +65,8 @@ export default class DialogueChoiceBoxScreen extends UIScreen {
     }
 
     private ensureChoiceButtons(requiredCount: number): void {
+        let createdButtons = false;
+
         if (requiredCount <= this.choiceButtonKeys.length) {
             return;
         }
@@ -77,6 +79,12 @@ export default class DialogueChoiceBoxScreen extends UIScreen {
             this.addButton(key, Vec2.ZERO, buttonSize, "", { onClick: () => this.invokeChoice(i) });
 
             this.choiceButtonKeys.push(key);
+            createdButtons = true;
+        }
+
+        if (createdButtons) {
+            // Register navigation callbacks only for newly-created button instances.
+            this.setNavigationButtons(this.choiceButtonKeys);
         }
     }
 
@@ -131,6 +139,15 @@ export default class DialogueChoiceBoxScreen extends UIScreen {
         this.choices[index].onSelect?.();
     }
 
+    protected override onNavigationSelectionChanged(index: number): void {
+        if (index < 0 || index >= this.choices.length) {
+            return;
+        }
+
+        this.selectedChoiceIndex = index;
+        this.updateChoiceHighlighting();
+    }
+
     public setChoices(choices: DialogueChoice[]): void {
         if (choices.length === 0) {
             throw new Error("DialogueChoiceBoxScreen requires at least one choice.");
@@ -147,6 +164,7 @@ export default class DialogueChoiceBoxScreen extends UIScreen {
     public showChoices(): void {
         this.choicesVisible = true;
         this.layoutChoiceButtons();
+        this.syncNavigationSelection();
         this.updateChoiceHighlighting();
     }
 
@@ -157,44 +175,6 @@ export default class DialogueChoiceBoxScreen extends UIScreen {
 
     public areChoicesVisible(): boolean {
         return this.choicesVisible;
-    }
-
-    public selectChoice(index: number): void {
-        if (index < 0 || index >= this.choices.length) {
-            return;
-        }
-
-        if (index === this.selectedChoiceIndex) {
-            return;
-        }
-
-        this.selectedChoiceIndex = index;
-        this.getChoiceButton(index).onEnter?.();
-        this.updateChoiceHighlighting();
-    }
-
-    public selectPreviousChoice(): void {
-        const previousIndex = (this.selectedChoiceIndex - 1 + this.choices.length) % this.choices.length;
-        this.selectChoice(previousIndex);
-    }
-
-    public selectNextChoice(): void {
-        const nextIndex = (this.selectedChoiceIndex + 1) % this.choices.length;
-        this.selectChoice(nextIndex);
-    }
-
-    public confirmSelection(): number {
-        const index = this.selectedChoiceIndex;
-        this.getChoiceButton(index).onClick?.();
-        return index;
-    }
-
-    public getSelectedChoiceIndex(): number {
-        return this.selectedChoiceIndex;
-    }
-
-    public getSelectedChoiceLabel(): string {
-        return this.choices[this.selectedChoiceIndex].label;
     }
 
     public getTextBox(): TextBox {
