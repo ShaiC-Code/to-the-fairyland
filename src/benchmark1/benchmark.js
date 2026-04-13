@@ -1,1 +1,0 @@
-// There is no code for benchmark 1, so this file is intentionally left blank.
