@@ -51,7 +51,6 @@ export default class SplashScreenScene extends Scene {
                 undefined,
                 undefined,
                 {
-                    showLoadingOverlay: false,
                     useFadeTransition: true,
                     fadeOutMs: 500,
                     fadeInMs: 500

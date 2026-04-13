@@ -1,4 +1,5 @@
 import InventoryItem, { InventoryItemConsumeContext } from "../InventoryItem";
+import { dialogue } from "../../InteractionSystem/InteractionDatabase";
 
 /**
  * One inventory bundle of frozen berries.
@@ -25,12 +26,11 @@ export default class FrozenBerries extends InventoryItem {
     }
 
     public consume(context: InventoryItemConsumeContext): void {
-        context.showDialogue({
-            type: "dialogue",
-            lines: [
+        context.showDialogue(
+            dialogue([
                 "These berries are frozen solid.",
                 "You should cook them before eating."
-            ]
-        });
+            ])
+        );
     }
 }

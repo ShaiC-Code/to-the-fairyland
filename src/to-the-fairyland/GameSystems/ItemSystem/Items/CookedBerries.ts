@@ -1,5 +1,6 @@
 import InventoryItem, { InventoryItemConsumeContext } from "../InventoryItem";
 import StoryManager from "../../StorySystem/StoryManager";
+import { choiceOption, dialogue, dialogueWithChoice } from "../../InteractionSystem/InteractionDatabase";
 
 /**
  * One inventory bundle of cooked berries.
@@ -26,30 +27,25 @@ export default class CookedBerries extends InventoryItem {
     }
 
     public consume(context: InventoryItemConsumeContext): void {
-        context.showDialogue({
-            type: "dialogue",
-            lines: ["Eat the cooked berries?"],
-            choice: {
-                lineIndex: 0,
-                options: [
-                    {
-                        label: "Yes",
-                        onSelect: () => this.consumeConfirmed(),
-                        interaction: {
-                            type: "dialogue",
-                            lines: ["You eat the cooked berries."]
-                        }
-                    },
-                    {
-                        label: "No",
-                        interaction: {
-                            type: "dialogue",
-                            lines: ["You put the cooked berries away."]
-                        }
-                    }
-                ]
-            }
-        });
+        context.showDialogue(
+            dialogueWithChoice(
+                ["Eat the cooked berries?"],
+                {
+                    lineIndex: 0,
+                    options: [
+                        choiceOption(
+                            "Yes",
+                            dialogue(["You eat the cooked berries."]),
+                            { onSelect: () => this.consumeConfirmed() }
+                        ),
+                        choiceOption(
+                            "No",
+                            dialogue(["You put the cooked berries away."])
+                        )
+                    ]
+                }
+            )
+        );
     }
 
     private consumeConfirmed(): void {

@@ -22,7 +22,7 @@ import { PlayerControlMode, PlayerInput } from "../AI/Player/PlayerController";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 import { AudioChannelType } from "../../Wolfie2D/Sound/AudioManager";
 import StoryManager from "../GameSystems/StorySystem/StoryManager";
-import { DialogueChoiceAction, DialogueChoiceActions, DialogueChoiceOption, DialogueInteraction, getInteractionData } from "../GameSystems/InteractionSystem/InteractionDatabase";
+import { DialogueChoiceAction, DialogueChoiceActions, DialogueChoiceOption, DialogueInteraction, DialogueReadAction, DialogueReadActions, getInteractionData } from "../GameSystems/InteractionSystem/InteractionDatabase";
 import PlayerStateManager from "../GameSystems/PlayerSystem/PlayerStateManager";
 import GameSessionManager from "../GameSystems/GameSessionSystem/GameSessionManager";
 import { TimeOfDay } from "../GameSystems/WorldSystem/WorldState";
@@ -31,6 +31,7 @@ import FrozenBerries from "../GameSystems/ItemSystem/Items/FrozenBerries";
 import CookedBerries from "../GameSystems/ItemSystem/Items/CookedBerries";
 import WorldMap from "../GameSystems/ItemSystem/Items/WorldMap";
 import { UIScreenActionBindings } from "../UI/UIScreen";
+import EndOfDemoScene from "./Chapter2/EndOfDemoScene";
 
 
 type AssetRef = Readonly<{
@@ -167,6 +168,11 @@ export default abstract class MappedAdventureScene extends Scene {
     protected currentDialogueLine = 0;
     protected dialogueChoiceActive = false;
     protected dialogueChoiceResolved = false;
+
+    protected readonly dialogueReadActionHandlers: Readonly<Record<DialogueReadAction, () => void>> = {
+        [DialogueReadActions.GOTO_CHAPTER2]: () => this.gotoChapter2(),
+    };
+
     protected readonly dialogueChoiceActionHandlers: Readonly<Record<DialogueChoiceAction, () => void>> = {
         [DialogueChoiceActions.COLLECT_FROZEN_BERRIES]: () => this.giveFrozenBerries(),
         [DialogueChoiceActions.COOK_FROZEN_BERRIES]: () => this.giveCookedBerries(),
@@ -947,6 +953,10 @@ export default abstract class MappedAdventureScene extends Scene {
         this.dialogueChoiceActive = false;
         this.dialogueChoiceResolved = false;
         this.dialogueScreen.hideChoices();
+        this.dialogueScreen.setOnReadCallback(() => {
+            dialogue.onRead?.();
+            this.handleDialogueReadAction(dialogue);
+        });
 
         this.dialogueScreen.showLine(
             dialogue.lines[this.currentDialogueLine]
@@ -971,7 +981,7 @@ export default abstract class MappedAdventureScene extends Scene {
         this.dialogueChoiceActive = true;
 
         this.dialogueScreen.setChoices(
-            choice.options.map(option => ({
+            choice.options.map((option: DialogueChoiceOption) => ({
                 label: option.label,
                 onSelect: () => {
                     this.dialogueChoiceActive = false;
@@ -994,7 +1004,6 @@ export default abstract class MappedAdventureScene extends Scene {
 
         if (this.dialogueChoiceActive) {
             this.dialogueScreen.update();
-
             return;
         }
     
@@ -1015,6 +1024,7 @@ export default abstract class MappedAdventureScene extends Scene {
         this.currentDialogueLine += 1;
     
         if (this.currentDialogueLine >= this.activeDialogue.lines.length) {
+            this.dialogueScreen.completeRead();
             this.endDialogue();
             return;
         }
@@ -1025,6 +1035,11 @@ export default abstract class MappedAdventureScene extends Scene {
     }
     
     protected endDialogue(): void {
+        const dialogue = this.activeDialogue;
+        const callbackHandledByReadCompletion = !!dialogue
+            && !dialogue.choice
+            && this.currentDialogueLine >= dialogue.lines.length;
+
         const ai = this.player.ai as PlayerAI;
         ai.controller.setControlMode(PlayerControlMode.GAMEPLAY);
 
@@ -1032,6 +1047,9 @@ export default abstract class MappedAdventureScene extends Scene {
         this.currentDialogueLine = 0;
         this.dialogueChoiceActive = false;
         this.dialogueChoiceResolved = false;
+        if (!callbackHandledByReadCompletion) {
+            this.dialogueScreen.clearOnReadCallback();
+        }
         this.dialogueScreen.hideChoices();
         this.dialogueScreen.hide();
     }
@@ -1081,12 +1099,20 @@ export default abstract class MappedAdventureScene extends Scene {
         }
     }
 
-    protected handleDialogueChoiceAction(option: DialogueChoiceOption): void {
-        if (!option.action) {
+    protected handleDialogueReadAction(option: DialogueInteraction): void {
+        if (!option.readAction) {
             return;
         }
 
-        this.dialogueChoiceActionHandlers[option.action]();
+        this.dialogueReadActionHandlers[option.readAction]();
+    }
+
+    protected handleDialogueChoiceAction(option: DialogueChoiceOption): void {
+        if (!option.choiceAction) {
+            return;
+        }
+
+        this.dialogueChoiceActionHandlers[option.choiceAction]();
     }
 
     protected giveFrozenBerries(): void {
@@ -1151,5 +1177,18 @@ export default abstract class MappedAdventureScene extends Scene {
             this.storyManager.markMapPickedUp();
             this.onMapPickedUp();
         }
+    }
+
+    protected gotoChapter2(): void {
+        this.sceneManager.changeToScene(
+            EndOfDemoScene,
+            undefined,
+            undefined,
+            {
+                useFadeTransition: true,
+                fadeOutMs: 2000,
+                fadeInMs: 2000
+            }
+        );
     }
 }
