@@ -3,6 +3,12 @@ import { Chapter1MainQuestStep } from "../StorySystem/StoryState";
 export type InteractionType = "dialogue";
 export type InteractionData = DialogueInteraction;
 
+export const DialogueReadActions = {
+    GOTO_CHAPTER2: "gotoChapter2"
+} as const;
+
+export type DialogueReadAction = typeof DialogueReadActions[keyof typeof DialogueReadActions];
+
 export const DialogueChoiceActions = {
     COLLECT_FROZEN_BERRIES: "collectFrozenBerries",
     COOK_FROZEN_BERRIES: "cookFrozenBerries",
@@ -16,7 +22,7 @@ export type DialogueChoiceAction = typeof DialogueChoiceActions[keyof typeof Dia
 export interface DialogueChoiceOption {
     label: string;
     interaction: DialogueInteraction;
-    action?: DialogueChoiceAction;
+    choiceAction?: DialogueChoiceAction;
     onSelect?: () => void;
 }
 
@@ -25,46 +31,78 @@ export interface DialogueChoicePrompt {
     options: DialogueChoiceOption[];
 }
 
-export interface DialogueInteraction {
+interface DialogueInteractionBase {
     type: "dialogue";
     lines: string[];
-    choice?: DialogueChoicePrompt;
 }
 
+export interface DialogueInteractionWithChoice extends DialogueInteractionBase {
+    choice: DialogueChoicePrompt;
+    readAction?: never;
+    onRead?: never;
+}
+
+export interface DialogueInteractionWithoutChoice extends DialogueInteractionBase {
+    choice?: never;
+    readAction?: DialogueReadAction;
+    onRead?: () => void;
+}
+
+export type DialogueInteraction = DialogueInteractionWithChoice | DialogueInteractionWithoutChoice;
+
+export const dialogue = (
+    lines: string[],
+    extra?: Omit<DialogueInteractionWithoutChoice, "type" | "lines">
+): DialogueInteractionWithoutChoice => ({
+    type: "dialogue",
+    lines,
+    ...extra
+});
+
+export const dialogueWithChoice = (
+    lines: string[],
+    choice: DialogueChoicePrompt
+): DialogueInteractionWithChoice => ({
+    type: "dialogue",
+    lines,
+    choice
+});
+
+export const choiceOption = (
+    label: string,
+    interaction: DialogueInteraction,
+    extra?: Omit<DialogueChoiceOption, "label" | "interaction">
+): DialogueChoiceOption => ({
+    label,
+    interaction,
+    ...extra
+});
 
 const STATIC_INTERACTIONS: Readonly<Record<string, InteractionData>> = {
-    BushBerries: {
-        type: "dialogue",
-        lines: [
+    BushBerries: dialogueWithChoice(
+        [
             "A bush covered in blue berries pokes through the snow.",
             "Most of the berries are frozen solid.",
             "Collect berries?"
         ],
-        choice: {
+        {
             lineIndex: 2,
             options: [
-                {
-                    label: "Yes",
-                    action: DialogueChoiceActions.COLLECT_FROZEN_BERRIES,
-                    interaction: {
-                        type: "dialogue",
-                        lines: ["You picked a few frozen berries."]
-                    }
-                },
-                {
-                    label: "No",
-                    interaction: {
-                        type: "dialogue",
-                        lines: ["You left the bush alone."]
-                    }
-                }
+                choiceOption(
+                    "Yes",
+                    dialogue(["You picked a few frozen berries."]),
+                    { choiceAction: DialogueChoiceActions.COLLECT_FROZEN_BERRIES }
+                ),
+                choiceOption(
+                    "No",
+                    dialogue(["You left the bush alone."])
+                )
             ]
         }
-    },
+    ),
 
-    MapItem: {
-        type: "dialogue",
-        lines: [
+    MapItem: dialogueWithChoice(
+        [
             "A blood-stained map rests in the snow.",
             "It must have belonged to one of the fallen expedition members.",
             "Three monster kingdoms are drawn across the worn map.",
@@ -73,34 +111,27 @@ const STATIC_INTERACTIONS: Readonly<Record<string, InteractionData>> = {
             "'Humanity's last hope.'",
             "Pick up map?"
         ],
-        choice: {
+        {
             lineIndex: 6,
             options: [
-                {
-                    label: "Yes",
-                    action: DialogueChoiceActions.PICKUP_MAP,
-                    interaction: {
-                        type: "dialogue",
-                        lines: [
-                            "You take the map.",
-                            "Whatever happened here, their final hope now rests with you."
-                        ]
-                    }
-                },
-                {
-                    label: "No",
-                    interaction: {
-                        type: "dialogue",
-                        lines: [
-                            "You hesitate and leave the map untouched.",
-                            "The frozen wind rustles its edges."
-                        ]
-                    }
-                }
+                choiceOption(
+                    "Yes",
+                    dialogue([
+                        "You take the map.",
+                        "Whatever happened here, their final hope now rests with you."
+                    ]),
+                    { choiceAction: DialogueChoiceActions.PICKUP_MAP }
+                ),
+                choiceOption(
+                    "No",
+                    dialogue([
+                        "You hesitate and leave the map untouched.",
+                        "The frozen wind rustles its edges."
+                    ])
+                )
             ]
         }
-    }
-    
+    )
 };
 
 /**
@@ -113,7 +144,6 @@ export function getInteractionData(interactionId: string): InteractionData | und
     return STATIC_INTERACTIONS[interactionId];
 }
 
-
 /**
  * Returns the bed dialogue that matches the player's current Chapter 1 main quest step.
  * @param step The current Chapter 1 main quest step.
@@ -124,115 +154,91 @@ export function getBedDialogue(step: Chapter1MainQuestStep): DialogueInteraction
     case Chapter1MainQuestStep.NEED_FOOD:
     case Chapter1MainQuestStep.NEED_TO_COOK:
     case Chapter1MainQuestStep.NEED_TO_EAT:
-        return {
-            type: "dialogue",
-            lines: [
-                "This bed looks warm and surprisingly comfortable.",
-                "Hunger is preventing you from sleeping..."
-            ]
-        };
+        return dialogue([
+            "This bed looks warm and surprisingly comfortable.",
+            "Hunger is preventing you from sleeping..."
+        ]);
 
     case Chapter1MainQuestStep.RETURN_TO_BED:
-        return {
-            type: "dialogue",
-            lines: [
+        return dialogueWithChoice(
+            [
                 "This bed looks warm and surprisingly comfortable.",
                 "Take a rest?"
             ],
-            choice: {
+            {
                 lineIndex: 1,
                 options: [
-                    {
-                        label: "Yes",
-                        action: DialogueChoiceActions.SLEEP,
-                        interaction: {
-                            type: "dialogue",
-                            lines: ["You rest."]
-                        }
-                    },
-                    {
-                        label: "No",
-                        interaction: {
-                            type: "dialogue",
-                            lines: ["Not Yet."]
-                        }
-                    }
+                    choiceOption(
+                        "Yes",
+                        dialogue(["You rest."]),
+                        { choiceAction: DialogueChoiceActions.SLEEP }
+                    ),
+                    choiceOption(
+                        "No",
+                        dialogue(["Not Yet."])
+                    )
                 ]
             }
-        };
-        
+        );
 
     case Chapter1MainQuestStep.SLEPT:
-        return {
-            type: "dialogue",
-            lines: ["You already got some rest."]
-        };
+        return dialogue(["You already got some rest."]);
+
+    case Chapter1MainQuestStep.MAP_PICKED:
+        return dialogue(
+            [
+                "...",
+                "No time for rest."
+            ],
+            { readAction: DialogueReadActions.GOTO_CHAPTER2 }
+        );
 
     default:
-        return {
-            type: "dialogue",
-            lines: ["..."]
-        };
+        return dialogue(["..."]);
     }
 }
 
 export function getPotDialogue(step: Chapter1MainQuestStep): DialogueInteraction {
     switch (step) {
     case Chapter1MainQuestStep.NEED_FOOD:
-        return {
-            type: "dialogue",
-            lines: [
-                "The lone pot sits in the corner waiting to be used.",
-                "You could cook here if you had food..."
-            ]
-        };
+        return dialogue([
+            "The lone pot sits in the corner waiting to be used.",
+            "You could cook here if you had food..."
+        ]);
 
     case Chapter1MainQuestStep.NEED_TO_COOK:
-        return {
-            type: "dialogue",
-            lines: [
+        return dialogueWithChoice(
+            [
                 "The lone pot sits in the corner waiting to be used.",
                 "Cook Frozen Berries?"
             ],
-            choice: {
+            {
                 lineIndex: 1,
                 options: [
-                    {
-                        label: "Yes",
-                        action: DialogueChoiceActions.COOK_FROZEN_BERRIES,
-                        interaction: {
-                            type: "dialogue",
-                            lines: ["You cook the frozen berries."]
-                        }
-                    },
-                    {
-                        label: "No",
-                        interaction: {
-                            type: "dialogue",
-                            lines: ["..."]
-                        }
-                    }
+                    choiceOption(
+                        "Yes",
+                        dialogue(["You cook the frozen berries."]),
+                        { choiceAction: DialogueChoiceActions.COOK_FROZEN_BERRIES }
+                    ),
+                    choiceOption(
+                        "No",
+                        dialogue(["..."])
+                    )
                 ]
             }
-        };
+        );
 
     case Chapter1MainQuestStep.NEED_TO_EAT:
     case Chapter1MainQuestStep.RETURN_TO_BED:
-        return {
-            type: "dialogue",
-            lines: ["The pot is still warm."]
-        };
+        return dialogue(["The pot is still warm."]);
 
     case Chapter1MainQuestStep.SLEPT:
-        return {
-            type: "dialogue",
-            lines: ["Remnants from your last meal remain."]
-        };
+        return dialogue(["Remnants of your last meal remain."]);
+
+    case Chapter1MainQuestStep.MAP_PICKED:
+        return dialogue(["Remnants remain..."]);
 
     default:
-        return {
-            type: "dialogue",
-            lines: ["Remnants remain..."]
-        };
+        return dialogue(["..."]);
     }
 }
