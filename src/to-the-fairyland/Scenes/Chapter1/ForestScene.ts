@@ -90,8 +90,7 @@ export default class ForestScene extends MappedAdventureScene {
         this.tryStartInteractionDialogue(obj);
     }
     
-
-    protected override handleAutoTransition(obj: TiledObject): void {
+    protected override handleAutoTransition(obj: TiledObject): void {        
         if (obj.name === "DoorToShelter") {
             this.sceneManager.changeToScene(
                 ShelterScene, 

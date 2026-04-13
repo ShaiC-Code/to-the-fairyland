@@ -158,6 +158,7 @@ export default abstract class MappedAdventureScene extends Scene {
     protected inventoryScreen!: InventoryScreen;
     protected worldPaused: boolean = false;
     protected entrances: TiledObject[] = [];
+    protected transitioning = false;
     protected readonly storyManager = StoryManager.getInstance();
 
     protected dialogueScreen!: DialogueScreen;
@@ -254,6 +255,7 @@ export default abstract class MappedAdventureScene extends Scene {
         // ================================================================================
 
         this.entrances = entranceLayer?.objects ?? [];
+        this.transitioning = false;
         this.interactables = interactLayer?.objects ?? [];
 
         // Spawn the Player
@@ -354,7 +356,10 @@ export default abstract class MappedAdventureScene extends Scene {
             if (ai.targetTile) {
                 const entrance = this.findObjectAtTile(this.entrances, ai.targetTile);
                 if (entrance) {
-                    this.handleAutoTransition(entrance);
+                    if (!this.transitioning) {
+                        this.transitioning = true;
+                        this.handleAutoTransition(entrance);
+                    }
                 }
             }
             
