@@ -67,7 +67,7 @@ export default class InventoryScreen extends UIScreen {
         this.syncNavigationSelection();
     }
 
-    protected initializeUI(): void {
+    protected override initializeUI(): void {
         const viewportHalfSize = this.getViewportHalfSize();
         const viewportSize = viewportHalfSize.clone().scale(2);
         const screenCenter = viewportHalfSize.clone();

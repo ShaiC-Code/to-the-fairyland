@@ -36,7 +36,7 @@ export default class DialogueChoiceBoxScreen extends UIScreen {
         this.setChoices(initialChoices ?? [{ label: "Yes" }, { label: "No" }]);
     }
 
-    protected initializeUI(): void {
+    protected override initializeUI(): void {
         const viewportHalfSize = this.getViewportHalfSize();
         const viewportSize = viewportHalfSize.clone().scale(2);
 
@@ -131,6 +131,15 @@ export default class DialogueChoiceBoxScreen extends UIScreen {
         this.choices[index].onSelect?.();
     }
 
+    protected override onNavigationSelectionChanged(index: number): void {
+        if (index < 0 || index >= this.choices.length) {
+            return;
+        }
+
+        this.selectedChoiceIndex = index;
+        this.updateChoiceHighlighting();
+    }
+
     public setChoices(choices: DialogueChoice[]): void {
         if (choices.length === 0) {
             throw new Error("DialogueChoiceBoxScreen requires at least one choice.");
@@ -138,6 +147,7 @@ export default class DialogueChoiceBoxScreen extends UIScreen {
 
         this.choices = choices;
         this.ensureChoiceButtons(this.choices.length);
+        this.setNavigationButtons(this.choiceButtonKeys.slice(0, this.choices.length));
         this.layoutChoiceButtons();
 
         this.selectedChoiceIndex = 0;
@@ -147,6 +157,7 @@ export default class DialogueChoiceBoxScreen extends UIScreen {
     public showChoices(): void {
         this.choicesVisible = true;
         this.layoutChoiceButtons();
+        this.syncNavigationSelection();
         this.updateChoiceHighlighting();
     }
 
@@ -157,44 +168,6 @@ export default class DialogueChoiceBoxScreen extends UIScreen {
 
     public areChoicesVisible(): boolean {
         return this.choicesVisible;
-    }
-
-    public selectChoice(index: number): void {
-        if (index < 0 || index >= this.choices.length) {
-            return;
-        }
-
-        if (index === this.selectedChoiceIndex) {
-            return;
-        }
-
-        this.selectedChoiceIndex = index;
-        this.getChoiceButton(index).onEnter?.();
-        this.updateChoiceHighlighting();
-    }
-
-    public selectPreviousChoice(): void {
-        const previousIndex = (this.selectedChoiceIndex - 1 + this.choices.length) % this.choices.length;
-        this.selectChoice(previousIndex);
-    }
-
-    public selectNextChoice(): void {
-        const nextIndex = (this.selectedChoiceIndex + 1) % this.choices.length;
-        this.selectChoice(nextIndex);
-    }
-
-    public confirmSelection(): number {
-        const index = this.selectedChoiceIndex;
-        this.getChoiceButton(index).onClick?.();
-        return index;
-    }
-
-    public getSelectedChoiceIndex(): number {
-        return this.selectedChoiceIndex;
-    }
-
-    public getSelectedChoiceLabel(): string {
-        return this.choices[this.selectedChoiceIndex].label;
     }
 
     public getTextBox(): TextBox {

@@ -12,7 +12,6 @@ import TextBox from "../../Wolfie2D/Nodes/UIElements/TextBox";
 import Receiver from "../../Wolfie2D/Events/Receiver";
 import Emitter from "../../Wolfie2D/Events/Emitter";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
-import Button from "../../Wolfie2D/Nodes/UIElements/Button";
 import UIElement from "../../Wolfie2D/Nodes/UIElement";
 
 export type UIScreenActionBindings = {
@@ -93,6 +92,8 @@ export default class UIScreen {
     }
 
     protected initializeUI(): void {}
+
+    protected onNavigationSelectionChanged(_index: number): void {}
 
     protected updateUIElement(element: CanvasNode | undefined, position: Vec2 | null, size: Vec2 | null): void {
       if (element) {
@@ -277,7 +278,7 @@ export default class UIScreen {
         this.navigationButtonLeaveCallbacks.length = 0;
 
         for (let i = 0; i < this.navigationButtonKeys.length; i++) {
-            const button = this.getNavigationButton(i);
+            const button = this.getNavigationElement(i);
 
             if (!button) {
                 this.navigationButtonEnterCallbacks.push(null);
@@ -351,6 +352,7 @@ export default class UIScreen {
 
         if (selectedButton && selectedButton.visible !== false) {
             selectedButton.isFocused = true;
+            this.onNavigationSelectionChanged(this.navigationButtonIndex);
             return;
         }
 
@@ -369,6 +371,7 @@ export default class UIScreen {
         }
 
         this.navigationButtonIndex = -1;
+        this.onNavigationSelectionChanged(this.navigationButtonIndex);
     }
 
     protected focusNavigationButton(index: number, playCallbacks: boolean): void {
@@ -385,6 +388,8 @@ export default class UIScreen {
             if (currentButton) {
                 currentButton.isFocused = true;
             }
+
+            this.onNavigationSelectionChanged(nextIndex);
 
             if (playCallbacks) {
                 this.navigationButtonEnterCallbacks[nextIndex]?.call(nextButton);
@@ -403,6 +408,7 @@ export default class UIScreen {
         }
 
         this.navigationButtonIndex = nextIndex;
+        this.onNavigationSelectionChanged(nextIndex);
 
         if (nextButton) {
             nextButton.isFocused = true;
@@ -446,10 +452,6 @@ export default class UIScreen {
         }
 
         return this.getUIElement(this.navigationButtonKeys[index]) as NavigationElement | undefined;
-    }
-
-    protected getNavigationButton(index: number): Button | undefined {
-        return this.getNavigationElement(index) as Button | undefined;
     }
 
     protected findNextSelectableNavigationButtonIndex(startIndex: number, step: number): number {

@@ -324,7 +324,11 @@ export default abstract class MappedAdventureScene extends Scene {
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize(),
             undefined,
-            { onEnterSFXKey: this.uiHover.key, onClickSFXKey: this.uiClick.key }
+            {
+                onEnterSFXKey: this.uiHover.key,
+                onClickSFXKey: this.uiClick.key,
+                uiActions
+            }
         );
 
         const worldState = this.gameSessionManager.getWorldState();
@@ -989,15 +993,7 @@ export default abstract class MappedAdventureScene extends Scene {
         }
 
         if (this.dialogueChoiceActive) {
-            if (Input.isJustPressed(PlayerInput.MOVE_LEFT) || Input.isJustPressed(PlayerInput.MOVE_UP)) {
-                this.dialogueScreen.selectPreviousChoice();
-            } else if (Input.isJustPressed(PlayerInput.MOVE_RIGHT) || Input.isJustPressed(PlayerInput.MOVE_DOWN)) {
-                this.dialogueScreen.selectNextChoice();
-            }
-
-            if (Input.isJustPressed(PlayerInput.INTERACT)) {
-                this.dialogueScreen.confirmSelection();
-            }
+            this.dialogueScreen.update();
 
             return;
         }
