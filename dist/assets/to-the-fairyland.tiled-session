@@ -1,0 +1,95 @@
+{
+    "activeFile": "tilemaps/Chapter2/Village.json",
+    "expandedProjectPaths": [
+        "tilemaps/Chapter2",
+        "tilemaps/Chapter6",
+        "tilemaps/Chapter1",
+        "tilemaps",
+        "spritesheets",
+        ".",
+        "tilemaps/Chapter5"
+    ],
+    "fileStates": {
+        "tilemaps/Chapter1/Chapter1.json": {
+            "scale": 0.33,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 1890.9090909090905,
+                "y": 1819.6969696969697
+            }
+        },
+        "tilemaps/Chapter1/Chapter1.json#Chapter1_Tilemap1": {
+            "scaleInDock": 1
+        },
+        "tilemaps/Chapter1/Shelter.json": {
+            "scale": 0.75,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 1261.3333333333335,
+                "y": 1736.6666666666665
+            }
+        },
+        "tilemaps/Chapter1/Shelter.json#Shelter": {
+            "scaleInDock": 1
+        },
+        "tilemaps/Chapter2/Village.json": {
+            "scale": 0.33,
+            "selectedLayer": 3,
+            "viewCenter": {
+                "x": 1887.8787878787875,
+                "y": 1913.6363636363637
+            }
+        },
+        "tilemaps/Chapter2/Village.json#Village": {
+            "scaleInDock": 1
+        },
+        "tilemaps/Chapter5/UndergroundTunnel.json": {
+            "scale": 0.125,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 3584,
+                "y": 5036
+            }
+        },
+        "tilemaps/Chapter5/UndergroundTunnel.json#DesertLand": {
+            "scaleInDock": 1
+        },
+        "tilemaps/Chapter6/DesertLand.json": {
+            "scale": 0.25,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 1916,
+                "y": 1918
+            }
+        },
+        "tilemaps/Chapter6/DesertLand.json#DesertLand": {
+            "scaleInDock": 1
+        }
+    },
+    "last.imagePath": "D:/GameDev/CSE380/Project/to-the-fairyland/dist/assets/tilemaps/Chapter2",
+    "map.height": 60,
+    "map.lastUsedFormat": "json",
+    "map.tileHeight": 64,
+    "map.tileWidth": 64,
+    "map.width": 60,
+    "openFiles": [
+        "tilemaps/Chapter1/Chapter1.json",
+        "tilemaps/Chapter1/Shelter.json",
+        "tilemaps/Chapter6/DesertLand.json",
+        "tilemaps/Chapter5/UndergroundTunnel.json",
+        "tilemaps/Chapter2/Village.json"
+    ],
+    "project": "to-the-fairyland.tiled-project",
+    "recentFiles": [
+        "tilemaps/Chapter1/Chapter1.json",
+        "tilemaps/Chapter1/Shelter.json",
+        "tilemaps/Chapter6/DesertLand.json",
+        "tilemaps/Chapter5/UndergroundTunnel.json",
+        "tilemaps/Chapter2/Village.json"
+    ],
+    "tileset.embedInMap": true,
+    "tileset.tileSize": {
+        "height": 64,
+        "width": 64
+    }
+}
