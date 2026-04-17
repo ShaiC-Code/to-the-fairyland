@@ -3,8 +3,8 @@ import Scene from "../../Wolfie2D/Scene/Scene";
 import GameEvent from "../../Wolfie2D/Events/GameEvent";
 import HoverButton from "../UI/CustomUIElements/HoverButton";
 import UIImage from "../UI/CustomUIElements/UIImage";
-import ForestScene  from "./Chapter1/ForestScene";
 import ShelterScene from "./Chapter1/ShelterScene";
+import VillageScene from "./Chapter2/VillageScene";
 import TextBox from "../../Wolfie2D/Nodes/UIElements/TextBox";
 import Input from "../../Wolfie2D/Input/Input";
 import { CustomUIElementType } from "../UI/CustomUIElements/CustomUIElementTypes";
@@ -122,6 +122,8 @@ export default class MainMenu extends Scene {
         this.receiver.subscribe("openTestMenu");
         this.receiver.subscribe("backToMain");
         this.receiver.subscribe("level1");
+        this.receiver.subscribe("level2");
+
     }
 
     public updateScene(){
@@ -159,7 +161,7 @@ export default class MainMenu extends Scene {
                 break;
             }
             case "level1": {
-                this.gameSessionManager.startNewGame();
+                this.gameSessionManager.startNewChapter1Game();
                 
                 this.sceneManager.changeToScene(
                     ShelterScene,
@@ -177,6 +179,23 @@ export default class MainMenu extends Scene {
                 );
                 break;
             }
+            case "level2": {
+                this.gameSessionManager.startNewChapter2Game();
+            
+                this.sceneManager.changeToScene(
+                    VillageScene,
+                    { spawnName: "RoadStart" },
+                    undefined,
+                    {
+                        showLoadingOverlay: true,
+                        useFadeTransition: true,
+                        fadeOutMs: 500,
+                        fadeInMs: 500
+                    }
+                );
+                break;
+            }
+            
         }
     }
 
