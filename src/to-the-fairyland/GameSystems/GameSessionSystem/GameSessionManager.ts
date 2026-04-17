@@ -1,4 +1,8 @@
-import { GameSessionState, createInitialGameSessionState } from "./GameSessionState";
+import {
+    GameSessionState,
+    createInitialChapter1GameSessionState,
+    createInitialChapter2GameSessionState
+} from "./GameSessionState";
 import { PlayerState } from "../PlayerSystem/PlayerState";
 import { StoryState } from "../StorySystem/StoryState";
 import { WorldState } from "../WorldSystem/WorldState";
@@ -42,7 +46,15 @@ export default class GameSessionManager {
      * Call this when the user presses "New Game".
      */
     public startNewGame(): void {
-        this.currentSession = createInitialGameSessionState();
+        this.startNewChapter1Game();
+    }
+
+    public startNewChapter1Game(): void {
+        this.currentSession = createInitialChapter1GameSessionState();
+    }
+    
+    public startNewChapter2Game(): void {
+        this.currentSession = createInitialChapter2GameSessionState();
     }
 
     /**

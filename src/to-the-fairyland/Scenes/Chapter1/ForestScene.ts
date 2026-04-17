@@ -73,7 +73,7 @@ export default class ForestScene extends MappedAdventureScene {
             bush.setSortOrder(1);
         }
 
-        const step = this.storyManager.getChapter1MainQuestStep();
+        const step = this.storyManager.chapter1.getMainQuestStep();
         
         // Display the map item to be picked up
         const mapItemObj = interactLayer?.objects.find(obj => obj.name === "MapItem");

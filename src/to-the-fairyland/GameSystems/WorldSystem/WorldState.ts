@@ -13,11 +13,12 @@ export interface WorldState {
     timeOfDay: TimeOfDay;
 }
 
+
 /**
  * Default world state for a brand-new run.
  */
-export function createInitialWorldState(): WorldState {
+export function createInitialWorldState(timeOfDay: TimeOfDay = TimeOfDay.DAY): WorldState {
     return {
-        timeOfDay: TimeOfDay.DUSK
+        timeOfDay
     };
 }

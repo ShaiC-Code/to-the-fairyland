@@ -60,14 +60,14 @@ export default class ShelterScene extends MappedAdventureScene {
 
     protected override handleInteraction(obj: TiledObject): void {
         if (obj.name === "Bed") {
-            const step = this.storyManager.getChapter1MainQuestStep();
+            const step = this.storyManager.chapter1.getMainQuestStep();
             const dialogue = getBedDialogue(step);
             this.startDialogue(dialogue);
             return;
         }
 
         if (obj.name === "Pot") {
-            const step = this.storyManager.getChapter1MainQuestStep();
+            const step = this.storyManager.chapter1.getMainQuestStep();
             const dialogue = getPotDialogue(step);
             this.startDialogue(dialogue);
             return;

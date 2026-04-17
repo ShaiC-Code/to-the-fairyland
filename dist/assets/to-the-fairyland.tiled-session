@@ -11,37 +11,41 @@
     ],
     "fileStates": {
         "tilemaps/Chapter1/Chapter1.json": {
-            "scale": 0.33,
-            "selectedLayer": 0,
+            "scale": 0.5,
+            "selectedLayer": 9,
             "viewCenter": {
-                "x": 1890.9090909090905,
-                "y": 1819.6969696969697
+                "x": 1923,
+                "y": 1639
             }
         },
         "tilemaps/Chapter1/Chapter1.json#Chapter1_Tilemap1": {
             "scaleInDock": 1
         },
         "tilemaps/Chapter1/Shelter.json": {
-            "scale": 0.75,
-            "selectedLayer": 0,
+            "scale": 2,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 1261.3333333333335,
-                "y": 1736.6666666666665
+                "x": 1450.75,
+                "y": 1738.75
             }
         },
         "tilemaps/Chapter1/Shelter.json#Shelter": {
             "scaleInDock": 1
         },
         "tilemaps/Chapter2/Village.json": {
-            "scale": 0.33,
-            "selectedLayer": 3,
+            "expandedObjectLayers": [
+                4,
+                5
+            ],
+            "scale": 0.75,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 1887.8787878787875,
-                "y": 1913.6363636363637
+                "x": 981.9999999999999,
+                "y": 983.3333333333334
             }
         },
         "tilemaps/Chapter2/Village.json#Village": {
-            "scaleInDock": 1
+            "scaleInDock": 0.75
         },
         "tilemaps/Chapter5/UndergroundTunnel.json": {
             "scale": 0.125,
@@ -81,12 +85,13 @@
     ],
     "project": "to-the-fairyland.tiled-project",
     "recentFiles": [
-        "tilemaps/Chapter1/Chapter1.json",
-        "tilemaps/Chapter1/Shelter.json",
         "tilemaps/Chapter6/DesertLand.json",
         "tilemaps/Chapter5/UndergroundTunnel.json",
+        "tilemaps/Chapter1/Chapter1.json",
+        "tilemaps/Chapter1/Shelter.json",
         "tilemaps/Chapter2/Village.json"
     ],
+    "resizeMap.removeObjects": false,
     "tileset.embedInMap": true,
     "tileset.tileSize": {
         "height": 64,

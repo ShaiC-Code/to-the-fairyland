@@ -1,0 +1,15 @@
+{
+    "name": "NPC5",
+    "spriteSheetImage": "NPC5.png",
+    "spriteWidth": 64,
+    "spriteHeight": 128,
+    "columns": 1,
+    "rows": 1,
+    "durationType": "time",
+    "animations": [
+      {
+        "name": "IDLE_DOWN",
+        "frames": [{ "index": 0, "duration": 12 }]
+      }
+    ]
+  }

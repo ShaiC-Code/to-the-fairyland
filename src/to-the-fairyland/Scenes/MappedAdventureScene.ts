@@ -177,12 +177,8 @@ export default abstract class MappedAdventureScene extends Scene {
         [DialogueChoiceActions.COLLECT_FROZEN_BERRIES]: () => this.giveFrozenBerries(),
         [DialogueChoiceActions.COOK_FROZEN_BERRIES]: () => this.giveCookedBerries(),
         [DialogueChoiceActions.SLEEP]: () => {
-            this.storyManager.markSlept();
-
-            const worldState = this.gameSessionManager.getWorldState();
-            worldState.timeOfDay = TimeOfDay.DAY;
-
-            this.setTimeOfDay(worldState.timeOfDay);
+            this.storyManager.chapter1.markSlept();
+            this.setTimeOfDay(this.gameSessionManager.getWorldState().timeOfDay);
         },
         [DialogueChoiceActions.PICKUP_MAP]: () => this.pickupMap()
     };
@@ -1129,7 +1125,7 @@ export default abstract class MappedAdventureScene extends Scene {
         const addedItem = this.playerStateManager.getPlayerState().inventory.add(berries);
     
         if (addedItem !== null) {
-            this.storyManager.markFoodFound();
+            this.storyManager.chapter1.markFoodFound();
         }
     }
 
@@ -1148,7 +1144,7 @@ export default abstract class MappedAdventureScene extends Scene {
         const addedItem = this.playerStateManager.getPlayerState().inventory.add(berries);
     
         if (addedItem !== null) {
-            this.storyManager.markFoodCooked();
+            this.storyManager.chapter1.markFoodCooked();
         }
     }
 
@@ -1174,7 +1170,7 @@ export default abstract class MappedAdventureScene extends Scene {
         const addedItem = inventory.add(map);
     
         if (addedItem !== null) {
-            this.storyManager.markMapPickedUp();
+            this.storyManager.chapter1.markMapPickedUp();
             this.onMapPickedUp();
         }
     }

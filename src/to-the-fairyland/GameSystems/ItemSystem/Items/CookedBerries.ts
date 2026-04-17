@@ -50,7 +50,7 @@ export default class CookedBerries extends InventoryItem {
 
     private consumeConfirmed(): void {
         if (this.inventory?.remove(this.id)) {
-            StoryManager.getInstance().markFoodConsumed();
+            StoryManager.getInstance().chapter1.markFoodConsumed();
         }
     }
 }
