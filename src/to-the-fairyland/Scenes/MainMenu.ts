@@ -34,17 +34,17 @@ export default class MainMenu extends Scene {
 
     protected readonly mainScreenImage: AssetRef = {
     key: "main-screen-image",
-    path: "/assets/images/main-screen-image.png"
+    path: "assets/images/main-screen-image.png"
     };
 
     protected readonly uiHover: AssetRef = {
         key: "ui-hover",
-        path: "/assets/sounds/ui-hover.ogg"
+        path: "assets/sounds/ui-hover.ogg"
     };
 
     protected readonly uiClick: AssetRef = {
         key: "ui-click",
-        path: "/assets/sounds/ui-click.ogg"
+        path: "assets/sounds/ui-click.ogg"
     };
 
     public loadScene(){

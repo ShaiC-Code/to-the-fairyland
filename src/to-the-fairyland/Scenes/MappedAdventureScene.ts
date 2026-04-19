@@ -70,58 +70,58 @@ export default abstract class MappedAdventureScene extends Scene {
     // The player to load for the scenes
     protected readonly playerSheet: AssetRef = {
         key: "fate",
-        path: "/assets/spritesheets/Fate.json"
+        path: "assets/spritesheets/Fate.json"
     };
 
     // Sound effects
     protected readonly uiHover: AssetRef = {
         key: "ui-hover",
-        path: "/assets/sounds/ui-hover.ogg"
+        path: "assets/sounds/ui-hover.ogg"
     };
 
     protected readonly uiClick: AssetRef = {
         key: "ui-click",
-        path: "/assets/sounds/ui-click.ogg"
+        path: "assets/sounds/ui-click.ogg"
     };
 
     protected readonly menuOpen: AssetRef = {
         key: "menu-open",
-        path: "/assets/sounds/menu-open.ogg"
+        path: "assets/sounds/menu-open.ogg"
     };
 
     protected readonly menuClose: AssetRef = {
         key: "menu-close",
-        path: "/assets/sounds/menu-close.ogg"
+        path: "assets/sounds/menu-close.ogg"
     };
 
     protected readonly woodenDoorSFX: AssetRef = {
         key: "door-wooden",
-        path: "/assets/sounds/door-wooden.ogg"
+        path: "assets/sounds/door-wooden.ogg"
     };
 
     protected readonly walkingWoodSFX: AssetRef = {
         key: "walking-wood",
-        path: "/assets/sounds/walking-wood.ogg"
+        path: "assets/sounds/walking-wood.ogg"
     };
 
     protected readonly walkingSnowSFX: AssetRef = {
         key: "walking-snow",
-        path: "/assets/sounds/walking-snow.ogg"
+        path: "assets/sounds/walking-snow.ogg"
     };
 
     protected readonly walkingSnowBushSFX: AssetRef = {
         key: "walking-snow-bush",
-        path: "/assets/sounds/walking-snow-bush.ogg"
+        path: "assets/sounds/walking-snow-bush.ogg"
     };
 
     protected readonly weatherSnowInsideSFX: AssetRef = {
         key: "weather-snow-inside",
-        path: "/assets/sounds/weather-snow-inside.ogg"
+        path: "assets/sounds/weather-snow-inside.ogg"
     };
 
     protected readonly weatherSnowOutsideSFX: AssetRef = {
         key: "weather-snow-outside",
-        path: "/assets/sounds/weather-snow-outside.ogg"
+        path: "assets/sounds/weather-snow-outside.ogg"
     };
 
     protected readonly persistentSpritesheets: ReadonlyArray<AssetRef> = [
@@ -222,9 +222,9 @@ export default abstract class MappedAdventureScene extends Scene {
             return new UIImage(options!.imageKey);
         });
 
-        this.load.image("snowflake1", "/assets/sprites/particles/Snowflake1.png");
-        this.load.image("snowflake2", "/assets/sprites/particles/Snowflake2.png");
-        this.load.image("snowflake3", "/assets/sprites/particles/Snowflake3.png");
+        this.load.image("snowflake1", "assets/sprites/particles/Snowflake1.png");
+        this.load.image("snowflake2", "assets/sprites/particles/Snowflake2.png");
+        this.load.image("snowflake3", "assets/sprites/particles/Snowflake3.png");
     }
 
     public unloadScene(): void {

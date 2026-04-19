@@ -10,17 +10,17 @@ import { getBedDialogue, getPotDialogue } from "../../GameSystems/InteractionSys
 export default class ShelterScene extends MappedAdventureScene {
     protected readonly tilemap = {
         key: "shelter",
-        path: "/assets/tilemaps/Chapter1/Shelter.json"
+        path: "assets/tilemaps/Chapter1/Shelter.json"
     };
 
     protected readonly bedImage = {
         key: "bed",
-        path: "/assets/sprites/Bed.png"
+        path: "assets/sprites/Bed.png"
     };
 
     protected readonly potImage = {
         key: "pot",
-        path: "/assets/sprites/Pot.png"
+        path: "assets/sprites/Pot.png"
     };
 
     // Shelter.json currently uses "Shelter" as its main walkable/render layer.
