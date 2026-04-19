@@ -1,13 +1,39 @@
-import MappedAdventureScene, { ChapterSceneDefinition } from "../MappedAdventureScene";
+import MappedAdventureScene, { AssetBundle, ChapterSceneDefinition } from "../MappedAdventureScene";
 import StoryManager from "../../GameSystems/StorySystem/StoryManager";
 import { DialogueChoiceActions, DialogueReadActions } from "../../GameSystems/InteractionSystem/InteractionDatabase";
 import FrozenBerries from "../../GameSystems/ItemSystem/Items/FrozenBerries";
 import CookedBerries from "../../GameSystems/ItemSystem/Items/CookedBerries";
 import WorldMap from "../../GameSystems/ItemSystem/Items/WorldMap";
 import EndOfDemoScene from "../Chapter2/EndOfDemoScene";
+import { GameEventType } from "../../../Wolfie2D/Events/GameEventType";
 
 export default abstract class MappedAdventureChapter1Scene extends MappedAdventureScene {
     protected readonly storyManager = StoryManager.getInstance();
+
+    protected static readonly assetBundle: AssetBundle = {
+        tilemaps: {},
+        spritesheets: {},
+        sprites: {},
+        sounds: {
+            walkingSnowSFX: { key: "walking-snow", path: "/assets/sounds/walking-snow.ogg" },
+            walkingWoodSFX: { key: "walking-wood", path: "/assets/sounds/walking-wood.ogg" },
+            walkingSnowBushSFX: { key: "walking-snow-bush", path: "/assets/sounds/walking-snow-bush.ogg" }
+        }
+    };
+
+    public override unloadScene(): void {
+        super.unloadScene();
+        this.keepAssets(MappedAdventureChapter1Scene.assetBundle);
+
+        // Stop sfx when changing scenes
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: this.assets.sounds.walkingWoodSFX.key});
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: this.assets.sounds.walkingSnowSFX.key});
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: this.assets.sounds.walkingSnowBushSFX.key});
+    }
+
+    protected combinedAssetBundles(): AssetBundle {
+        return this.mergeAssetBundles(super.combinedAssetBundles(), MappedAdventureChapter1Scene.assetBundle);
+    }
 
     protected readonly chapterDefinition: ChapterSceneDefinition = {
         dialogueReadActionHandlers: {

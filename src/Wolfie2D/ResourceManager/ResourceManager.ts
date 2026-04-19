@@ -209,11 +209,7 @@ export default class ResourceManager {
      * @returns The image element associated with this key
      */
     public getImage(key: string): HTMLImageElement {
-        let image = this.images.get(key);
-        if(image === undefined){
-            throw `There is no image associated with key "${key}"`
-        }
-        return image;
+        return this.images.get(key);
     }
 
     /**

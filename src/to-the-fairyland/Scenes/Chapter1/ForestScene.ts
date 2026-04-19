@@ -1,42 +1,36 @@
 import { TiledObject, TiledTilemapData } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData";
 import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 import ShelterScene from "./ShelterScene";
-import { WeatherType } from "../MappedAdventureScene";
+import { AssetBundle, WeatherType } from "../MappedAdventureScene";
 import MappedAdventureChapter1Scene from "./MappedAdventureChapter1Scene";
 import { GameEventType } from "../../../Wolfie2D/Events/GameEventType";
 import { Chapter1MainQuestStep } from "../../GameSystems/StorySystem/StoryState";
 import Sprite from "../../../Wolfie2D/Nodes/Sprites/Sprite";
 
 export default class ForestScene extends MappedAdventureChapter1Scene {
-
     private mapItemSprite: Sprite | null = null;
     private mapItemObject: TiledObject | null = null;
-
 
     protected readonly tilemap = {
         key: "chapter1",
         path: "/assets/tilemaps/Chapter1/Chapter1.json"
     };
-
-    protected readonly snowTreeImage = {
-        key: "snowTree1",
-        path: "/assets/sprites/SnowTree1.png"
-    };
-
-    protected readonly bushBerriesImage = {
-        key: "bushBerries",
-        path: "/assets/sprites/BushBerries.png"
-    };
-
-    protected readonly mapItemImage = {
-        key: "mapItem",
-        path: "/assets/sprites/MapItem.png"
-    };
     
-    protected override loadExtraAssets(): void {
-        this.load.image(this.snowTreeImage.key, this.snowTreeImage.path);
-        this.load.image(this.bushBerriesImage.key, this.bushBerriesImage.path);
-        this.load.image(this.mapItemImage.key, this.mapItemImage.path);
+    protected static readonly assetBundle: AssetBundle = {
+        tilemaps: {
+            chapter1: { key: "chapter1", path: "/assets/tilemaps/Chapter1/Chapter1.json" }
+        },
+        spritesheets: {},
+        sprites: {
+            snowTreeSprite: { key: "snowTree1", path: "/assets/sprites/SnowTree1.png" },
+            bushBerriesSprite: { key: "bushBerries", path: "/assets/sprites/BushBerries.png" },
+            mapItemSprite: { key: "mapItem", path: "/assets/sprites/MapItem.png" }
+        },
+        sounds: {}
+    };
+
+    protected combinedAssetBundles(): AssetBundle {
+        return this.mergeAssetBundles(super.combinedAssetBundles(), ForestScene.assetBundle);
     }
 
     public override startScene(): void {
@@ -57,7 +51,7 @@ export default class ForestScene extends MappedAdventureChapter1Scene {
 
         // Display all the trees
         for (const point of treePoints) {
-            const tree = this.add.sprite(this.snowTreeImage.key, "Trees");
+            const tree = this.add.sprite(this.assets.sprites.snowTreeSprite.key, "Trees");
             tree.position.set(point.x, point.y - tree.size.y / 2);
         }
 
@@ -66,7 +60,7 @@ export default class ForestScene extends MappedAdventureChapter1Scene {
 
         //Display all the bushes
         for (const point of bushPoints) {
-            const bush = this.add.sprite(this.bushBerriesImage.key, "Interactables");
+            const bush = this.add.sprite(this.assets.sprites.bushBerriesSprite.key, "Interactables");
             bush.position.set(point.x, point.y - bush.size.y / 2 + 20);
 
             bush.setSortTile(this.ground.getTilemapPosition(point.x, point.y));
@@ -78,7 +72,7 @@ export default class ForestScene extends MappedAdventureChapter1Scene {
         // Display the map item to be picked up
         const mapItemObj = interactLayer?.objects.find(obj => obj.name === "MapItem");
         if (step === Chapter1MainQuestStep.SLEPT && mapItemObj) {
-            const mapItem = this.add.sprite("mapItem", "Interactables");
+            const mapItem = this.add.sprite(this.assets.sprites.mapItemSprite.key, "Interactables");
             mapItem.position.set(mapItemObj.x, mapItemObj.y);
             mapItem.setSortTile(this.ground.getTilemapPosition(mapItemObj.x, mapItemObj.y));
             mapItem.setSortOrder(1);        
@@ -111,7 +105,7 @@ export default class ForestScene extends MappedAdventureChapter1Scene {
                     fadeInMs: 300
                 }
             );
-            this.emitter.fireEvent(GameEventType.PLAY_SOUND, {key: this.woodenDoorSFX.key, loop: false, holdReference: false});
+            this.emitter.fireEvent(GameEventType.PLAY_SOUND, {key: this.assets.sounds.woodenDoorSFX.key, loop: false, holdReference: false});
         }
     }
 
