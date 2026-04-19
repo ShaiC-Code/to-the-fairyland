@@ -1,46 +1,18 @@
 var gulp = require('gulp');
 var browserify = require('browserify');
 var source = require('vinyl-source-stream');
-var watchify = require('watchify');
 var tsify = require('tsify');
 var fancy_log = require('fancy-log');
 var fs = require('fs');
 var path = require('path');
 var minimist = require('minimist');
 var { execSync } = require('child_process');
+var watchify = require('watchify');
 
 var args = minimist(process.argv.slice(2));
 
 /* -----------------------------
-   GIT HELPERS
------------------------------- */
-
-function getCurrentBranch() {
-    try {
-        return execSync('git rev-parse --abbrev-ref HEAD')
-            .toString()
-            .trim();
-    } catch (e) {
-        return null; // detached HEAD case (CI)
-    }
-}
-
-function checkoutCommit(commit) {
-    if (commit) {
-        fancy_log("Checking out commit:", commit);
-        execSync(`git checkout ${commit}`, { stdio: 'inherit' });
-    }
-}
-
-function restoreBranch(branch) {
-    if (branch) {
-        fancy_log("Restoring branch:", branch);
-        execSync(`git checkout ${branch}`, { stdio: 'inherit' });
-    }
-}
-
-/* -----------------------------
-   BUILD HELPERS
+   HELPERS
 ------------------------------ */
 
 function ensureDir(dir) {
@@ -49,128 +21,200 @@ function ensureDir(dir) {
     }
 }
 
-function createBundler(watch, entryFile) {
-    let b = browserify({
-        basedir: '.',
-        debug: true,
-        entries: [entryFile || 'src/main.ts'],
-        cache: {},
-        packageCache: {}
-    }).plugin(tsify);
-
-    if (watch) {
-        b = watchify(b);
-        b.on('update', () => bundle(b, 'dist'));
-        b.on('log', fancy_log);
-    }
-
-    return b;
-}
-
-function bundle(bundler, outDir) {
-    return bundler
-        .bundle()
-        .on('error', fancy_log)
-        .pipe(source('bundle.js'))
-        .pipe(gulp.dest(outDir));
+function cleanDir(dir) {
+    fs.rmSync(dir, { recursive: true, force: true });
 }
 
 /* -----------------------------
-   HTML COPY LOGIC
+   SNAPSHOT EXTRACTION
 ------------------------------ */
 
-function copyHtml(targetDir, benchmark) {
-    ensureDir(targetDir);
+function extractSnapshot(commit, outDir) {
+    ensureDir(outDir);
 
-    // benchmark1 = static design doc
-    if (benchmark === "benchmark1") {
-        const srcHtml = path.join(__dirname, 'src', 'benchmark1', 'index.html');
+    fancy_log("Extracting snapshot:", commit);
 
-        fs.copyFileSync(
-            srcHtml,
-            path.join(targetDir, 'index.html')
-        );
+    execSync(`git archive ${commit} | tar -xf - -C "${outDir.replace(/\\/g, '/')}"`);
+}
 
-        fancy_log("benchmark1 copied (static)");
+/* -----------------------------
+   SAFE ASSET COPY
+------------------------------ */
+
+function copyAssets(src, dest, isSnapshot) {
+
+    const assetsPath = isSnapshot
+        ? path.join(src, "dist", "assets")
+        : path.join(__dirname, "dist", "assets");
+
+    const targetPath = path.join(dest, "assets");
+
+    if (path.resolve(assetsPath) === path.resolve(targetPath)) {
+        fancy_log("Skipping asset copy (source === destination)");
         return;
     }
 
-    // all others
-    const srcHtml = path.join(__dirname, 'src', 'index.html');
+    if (!fs.existsSync(assetsPath)) {
+        fancy_log("No assets found at:", assetsPath);
+        return;
+    }
 
-    fs.copyFileSync(
-        srcHtml,
-        path.join(targetDir, 'index.html')
-    );
+    fs.cpSync(assetsPath, targetPath, { recursive: true });
 }
 
 /* -----------------------------
-   MAIN BUILD TASK
+   BUNDLER
 ------------------------------ */
 
-gulp.task('build', function (done) {
+function bundle(entryDir, outDir) {
+
+    const entry = path.join(entryDir, 'src/main.ts');
+
+    if (!fs.existsSync(entry)) {
+        throw new Error("Missing entry: " + entry);
+    }
+
+    return browserify({
+        basedir: entryDir,
+        entries: [entry],
+        debug: true
+    })
+    .plugin(tsify)
+    .bundle()
+    .on('error', fancy_log)
+    .pipe(source('bundle.js'))
+    .pipe(gulp.dest(outDir));
+}
+
+/* -----------------------------
+   BUILD TASK
+------------------------------ */
+
+gulp.task('build', async function () {
 
     const benchmark = args.benchmark;
     const commit = args.commit;
 
-    const outDir = benchmark
+    const isSnapshot = !!(benchmark && commit);
+
+    const outDir = isSnapshot
         ? path.join(__dirname, 'dist', benchmark)
         : path.join(__dirname, 'dist');
 
-    let originalBranch = null;
+    ensureDir(outDir);
 
-    try {
+    /* =========================================================
+       BENCHMARK 1 → STATIC HTML ONLY (NO BUNDLE)
+    ========================================================= */
+    if (benchmark === "benchmark1") {
 
-        // Get current branch
-        originalBranch = getCurrentBranch();
+        const html = path.join(__dirname, 'src', 'benchmark1', 'index.html');
 
-        // CASE 1: static benchmark
-        if (benchmark === "benchmark1") {
-            copyHtml(outDir, benchmark);
-            fancy_log("benchmark1 built (no bundle)");
-            done();
-            return;
+        if (!fs.existsSync(html)) {
+            throw new Error("Missing benchmark1 HTML");
         }
 
-        // CASE 2: snapshot builds (benchmark2+ / main app)
-        if (commit) {
-            checkoutCommit(commit);
-        }
+        fs.copyFileSync(html, path.join(outDir, 'index.html'));
 
-        ensureDir(outDir);
-
-        copyHtml(outDir, benchmark);
-
-        const bundler = createBundler(false);
-        bundle(bundler, outDir);
-
-        fancy_log("Build complete →", outDir);
-
-    } catch (err) {
-        fancy_log("Build failed:", err);
-        throw err;
-
-    } finally {
-        // Restore original branch
-        if (originalBranch) {
-            restoreBranch(originalBranch);
-        }
+        fancy_log("benchmark1 built (NO BUNDLE)");
+        return;
     }
 
-    done();
+    /* =========================================================
+       NORMAL BUILD (FULL APP)
+    ========================================================= */
+    if (!isSnapshot) {
+
+        await new Promise((resolve, reject) => {
+            browserify({
+                basedir: '.',
+                entries: ['src/main.ts'],
+                debug: true
+            })
+            .plugin(tsify)
+            .bundle()
+            .on('error', reject)
+            .pipe(source('bundle.js'))
+            .pipe(gulp.dest(outDir))
+            .on('finish', resolve);
+        });
+
+        copyAssets('.', outDir, false);
+
+        fancy_log("Normal build → dist/");
+        return;
+    }
+
+    /* =========================================================
+       SNAPSHOT BUILD (benchmark2+)
+    ========================================================= */
+
+    const tmp = path.join(__dirname, '.tmp_snapshot');
+
+    cleanDir(tmp);
+    ensureDir(tmp);
+
+    extractSnapshot(commit, tmp);
+
+    const entry = path.join(tmp, 'src/main.ts');
+    if (!fs.existsSync(entry)) {
+        throw new Error("Snapshot missing src/main.ts");
+    }
+
+    const html = path.join(tmp, 'src/index.html');
+    if (!fs.existsSync(html)) {
+        throw new Error("Missing HTML in snapshot");
+    }
+
+    fs.copyFileSync(html, path.join(outDir, 'index.html'));
+
+    copyAssets(tmp, outDir, true);
+
+    await new Promise((resolve, reject) => {
+        browserify({
+            basedir: tmp,
+            entries: [entry],
+            debug: true
+        })
+        .plugin(tsify)
+        .bundle()
+        .on('error', reject)
+        .pipe(source('bundle.js'))
+        .pipe(gulp.dest(outDir))
+        .on('finish', resolve);
+    });
+
+    cleanDir(tmp);
+
+    fancy_log(`Snapshot built → ${benchmark} @ ${commit}`);
 });
 
 /* -----------------------------
-   DEV TASK
+   DEV TASK (WATCH MODE)
 ------------------------------ */
 
 gulp.task('dev', function () {
-    const bundler = createBundler(true);
-    return bundle(bundler, 'dist');
+
+    let bundler = browserify({
+        basedir: '.',
+        entries: ['src/main.ts'],
+        debug: true,
+        cache: {},
+        packageCache: {}
+    }).plugin(tsify);
+
+    bundler = watchify(bundler);
+
+    function rebundle() {
+        return bundler
+            .bundle()
+            .on('error', fancy_log)
+            .pipe(source('bundle.js'))
+            .pipe(gulp.dest('dist'));
+    }
+
+    bundler.on('update', rebundle);
+    bundler.on('log', fancy_log);
+
+    return rebundle();
 });
-
-/* -----------------------------
-   DEFAULT
------------------------------- */
-
-gulp.task('default', gulp.series('build'));
