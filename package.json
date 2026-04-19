@@ -6,8 +6,10 @@
   "scripts": {
     "test": "jest --verbose=false --noStackTrace --passWithNoTests",
     "build": "gulp build",
-    "dev": "gulp build && live-server dist",
-    "watch": "gulp dev",
+    "build:benchmark1": "gulp build --benchmark=benchmark1 --commit=benchmark1",
+    "build:benchmark2": "gulp build --benchmark=benchmark2 --commit=benchmark2",
+    "build:benchmark3": "gulp build --benchmark=benchmark3 --commit=benchmark3",
+    "dev": "concurrently --kill-others \"gulp dev\" \"live-server dist\"",
     "serve": "live-server dist"
   },
   "author": "Richard McKenna, Joe Weaver, Zachary Grandison, Peter Walsh, Andrew Ojeda",
@@ -20,6 +22,7 @@
     "@types/jest": "^27.5.1",
     "@types/seed-random": "^2.2.1",
     "browserify": "^16.5.1",
+    "concurrently": "^9.2.1",
     "fancy-log": "^1.3.3",
     "gulp": "^4.0.2",
     "gulp-typescript": "^6.0.0-alpha.1",
