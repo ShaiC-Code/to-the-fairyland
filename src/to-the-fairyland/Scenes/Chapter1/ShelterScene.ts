@@ -1,34 +1,34 @@
 import { TiledObject, TiledTilemapData } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData";
 import ForestScene  from "./ForestScene";
 import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
-import MappedAdventureScene, { WeatherType } from "../MappedAdventureScene";
+import { AssetBundle, WeatherType } from "../MappedAdventureScene";
+import MappedAdventureChapter1Scene from "./MappedAdventureChapter1Scene";
 import { GameEventType } from "../../../Wolfie2D/Events/GameEventType";
 import { getBedDialogue, getPotDialogue } from "../../GameSystems/InteractionSystem/InteractionDatabase";
 
-
-
-export default class ShelterScene extends MappedAdventureScene {
+export default class ShelterScene extends MappedAdventureChapter1Scene {
     protected readonly tilemap = {
         key: "shelter",
         path: "/assets/tilemaps/Chapter1/Shelter.json"
     };
 
-    protected readonly bedImage = {
-        key: "bed",
-        path: "/assets/sprites/Bed.png"
-    };
-
-    protected readonly potImage = {
-        key: "pot",
-        path: "/assets/sprites/Pot.png"
+    protected static readonly assetBundle: AssetBundle = {
+        tilemaps: {
+            shelter: { key: "shelter", path: "/assets/tilemaps/Chapter1/Shelter.json" }
+        },
+        spritesheets: {},
+        sprites: {
+            bedSprite: { key: "bed", path: "/assets/sprites/Bed.png" },
+            potSprite: { key: "pot", path: "/assets/sprites/Pot.png" }
+        },
+        sounds: {}
     };
 
     // Shelter.json currently uses "Shelter" as its main walkable/render layer.
     protected readonly movementLayerName = "Ground";
 
-    protected override loadExtraAssets(): void {
-        this.load.image(this.bedImage.key, this.bedImage.path);
-        this.load.image(this.potImage.key, this.potImage.path);
+    protected combinedAssetBundles(): AssetBundle {
+        return this.mergeAssetBundles(super.combinedAssetBundles(), ShelterScene.assetBundle);
     }
 
     public override startScene(): void {
@@ -48,12 +48,12 @@ export default class ShelterScene extends MappedAdventureScene {
         const potObjects = interactLayer?.objects.filter(obj => obj.name === "Pot") ?? [];
 
         for (const obj of bedObjects) {
-            const bed = this.add.sprite(this.bedImage.key, "Interactables");
+            const bed = this.add.sprite(this.assets.sprites.bedSprite.key, "Interactables");
             bed.position.set(obj.x + obj.width / 2, obj.y + obj.height / 2);
         }
 
         for (const obj of potObjects) {
-            const pot = this.add.sprite(this.potImage.key, "Interactables");
+            const pot = this.add.sprite(this.assets.sprites.potSprite.key, "Interactables");
             pot.position.set(obj.x + obj.width / 2, obj.y + obj.height - pot.size.y / 2);
         }
     }
@@ -88,7 +88,7 @@ export default class ShelterScene extends MappedAdventureScene {
                     fadeInMs: 300
                 }
             );
-            this.emitter.fireEvent(GameEventType.PLAY_SOUND, {key: this.woodenDoorSFX.key, loop: false, holdReference: false});
+            this.emitter.fireEvent(GameEventType.PLAY_SOUND, {key: this.assets.sounds.woodenDoorSFX.key, loop: false, holdReference: false});
         }
     }
 

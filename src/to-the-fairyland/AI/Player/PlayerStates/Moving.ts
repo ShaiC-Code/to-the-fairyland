@@ -6,6 +6,7 @@ import { PlayerStateType } from "./PlayerBehaviorState";
 import PlayerState from "./PlayerBehaviorState";
 
 export default class Moving extends PlayerState {
+
     private currentFootstepSFXKey: string | null = null;
 
     private syncFootstepSFX(): void {
@@ -14,24 +15,24 @@ export default class Moving extends PlayerState {
 
         let nextFootstepSFXKey: string | null = null;
         if (groundType === "wood") {
-            nextFootstepSFXKey = currentScene.getAssetKey("walkingWoodSFX");
+            nextFootstepSFXKey = this.owner.sceneAssets.sounds.walkingWoodSFX.key;
         } else if (groundType === "snow") {
-            nextFootstepSFXKey = currentScene.getAssetKey("walkingSnowSFX");
+            nextFootstepSFXKey = this.owner.sceneAssets.sounds.walkingSnowSFX.key;
         } else if (groundType === "bush") {
-            nextFootstepSFXKey = currentScene.getAssetKey("walkingSnowBushSFX");
+            nextFootstepSFXKey = this.owner.sceneAssets.sounds.walkingSnowBushSFX.key;
         }
 
         if (this.currentFootstepSFXKey === nextFootstepSFXKey) {
             return;
         }
 
-        if (this.currentFootstepSFXKey !== null) {
+        if (this.currentFootstepSFXKey) {
             this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: this.currentFootstepSFXKey });
         }
 
         this.currentFootstepSFXKey = nextFootstepSFXKey;
 
-        if (this.currentFootstepSFXKey !== null) {
+        if (this.currentFootstepSFXKey) {
             this.emitter.fireEvent(GameEventType.PLAY_SOUND, {
                 key: this.currentFootstepSFXKey,
                 loop: true,
