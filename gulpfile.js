@@ -104,7 +104,7 @@ gulp.task('build', async function () {
     ensureDir(outDir);
 
     /* =========================================================
-       BENCHMARK 1 → STATIC HTML ONLY (NO BUNDLE)
+        BENCHMARK 1 → STATIC HTML ONLY (NO BUNDLE)
     ========================================================= */
     if (benchmark === "benchmark1") {
 
@@ -121,7 +121,7 @@ gulp.task('build', async function () {
     }
 
     /* =========================================================
-       NORMAL BUILD (FULL APP)
+        NORMAL BUILD (FULL APP)
     ========================================================= */
     if (!isSnapshot) {
 
@@ -138,6 +138,11 @@ gulp.task('build', async function () {
             .pipe(gulp.dest(outDir))
             .on('finish', resolve);
         });
+
+        fs.copyFileSync(
+            path.join(__dirname, 'src/index.html'),
+            path.join(outDir, 'index.html')
+        );
 
         copyAssets('.', outDir, false);
 

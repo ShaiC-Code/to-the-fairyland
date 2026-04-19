@@ -16,9 +16,9 @@ jobs:
           fetch-tags: true
       - run: npm ci
       - run: npm run build
-      - run: gulp build --benchmark=benchmark1 --commit=benchmark1
-      - run: gulp build --benchmark=benchmark2 --commit=benchmark2
-      - run: gulp build --benchmark=benchmark3 --commit=benchmark3
+      - run: npm run build:benchmark1
+      - run: npm run build:benchmark2
+      - run: npm run build:benchmark3
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
