@@ -9,7 +9,7 @@
     "build:benchmark1": "gulp build --benchmark=benchmark1 --commit=benchmark1",
     "build:benchmark2": "gulp build --benchmark=benchmark2 --commit=benchmark2",
     "build:benchmark3": "gulp build --benchmark=benchmark3 --commit=benchmark3",
-    "dev": "concurrently --kill-others \"gulp dev\" \"live-server dist\"",
+    "dev": "concurrently --kill-others \"gulp dev\" \"live-server dist --ignore=bundle.js\"",
     "serve": "live-server dist"
   },
   "author": "Richard McKenna, Joe Weaver, Zachary Grandison, Peter Walsh, Andrew Ojeda",
