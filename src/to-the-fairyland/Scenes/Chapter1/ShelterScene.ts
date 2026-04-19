@@ -1,13 +1,12 @@
 import { TiledObject, TiledTilemapData } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData";
 import ForestScene  from "./ForestScene";
 import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
-import MappedAdventureScene, { WeatherType } from "../MappedAdventureScene";
+import { WeatherType } from "../MappedAdventureScene";
+import MappedAdventureChapter1Scene from "./MappedAdventureChapter1Scene";
 import { GameEventType } from "../../../Wolfie2D/Events/GameEventType";
 import { getBedDialogue, getPotDialogue } from "../../GameSystems/InteractionSystem/InteractionDatabase";
 
-
-
-export default class ShelterScene extends MappedAdventureScene {
+export default class ShelterScene extends MappedAdventureChapter1Scene {
     protected readonly tilemap = {
         key: "shelter",
         path: "/assets/tilemaps/Chapter1/Shelter.json"

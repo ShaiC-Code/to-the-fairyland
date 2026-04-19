@@ -21,18 +21,12 @@ import DialogueScreen from "../UI/DialogueScreen";
 import { PlayerControlMode, PlayerInput } from "../AI/Player/PlayerController";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 import { AudioChannelType } from "../../Wolfie2D/Sound/AudioManager";
-import StoryManager from "../GameSystems/StorySystem/StoryManager";
-import { DialogueChoiceAction, DialogueChoiceActions, DialogueChoiceOption, DialogueInteraction, DialogueReadAction, DialogueReadActions, getInteractionData } from "../GameSystems/InteractionSystem/InteractionDatabase";
+import { DialogueChoiceAction, DialogueChoiceOption, DialogueInteraction, DialogueReadAction, getInteractionData } from "../GameSystems/InteractionSystem/InteractionDatabase";
 import PlayerStateManager from "../GameSystems/PlayerSystem/PlayerStateManager";
 import GameSessionManager from "../GameSystems/GameSessionSystem/GameSessionManager";
 import { TimeOfDay } from "../GameSystems/WorldSystem/WorldState";
 import InventoryItem from "../GameSystems/ItemSystem/InventoryItem";
-import FrozenBerries from "../GameSystems/ItemSystem/Items/FrozenBerries";
-import CookedBerries from "../GameSystems/ItemSystem/Items/CookedBerries";
-import WorldMap from "../GameSystems/ItemSystem/Items/WorldMap";
 import { UIScreenActionBindings } from "../UI/UIScreen";
-import EndOfDemoScene from "./Chapter2/EndOfDemoScene";
-
 
 type AssetRef = Readonly<{
     key: string;
@@ -57,15 +51,20 @@ type SnowPreset = Readonly<{
     settings: SnowflakeSettings;
 }>;
 
+export interface ChapterSceneDefinition {
+    dialogueReadActionHandlers: Readonly<Partial<Record<DialogueReadAction, () => void>>>;
+    dialogueChoiceActionHandlers: Readonly<Partial<Record<DialogueChoiceAction, () => void>>>;
+}
 
 export default abstract class MappedAdventureScene extends Scene {
+    protected abstract readonly chapterDefinition: ChapterSceneDefinition;
     private static weatherAmbienceLoopsStarted = false;
 
-    // The tilemap to load for the scene, pass from sub scenes
-    protected abstract readonly tilemap: AssetRef;
     protected readonly gameSessionManager = GameSessionManager.getInstance();
     protected readonly playerStateManager = PlayerStateManager.getInstance();
 
+    // The tilemap to load for the scene, pass from sub scenes
+    protected abstract readonly tilemap: AssetRef;
 
     // The player to load for the scenes
     protected readonly playerSheet: AssetRef = {
@@ -161,27 +160,12 @@ export default abstract class MappedAdventureScene extends Scene {
     protected worldPaused: boolean = false;
     protected entrances: TiledObject[] = [];
     protected transitioning = false;
-    protected readonly storyManager = StoryManager.getInstance();
 
     protected dialogueScreen!: DialogueScreen;
     protected activeDialogue: DialogueInteraction | null = null;
     protected currentDialogueLine = 0;
     protected dialogueChoiceActive = false;
     protected dialogueChoiceResolved = false;
-
-    protected readonly dialogueReadActionHandlers: Readonly<Record<DialogueReadAction, () => void>> = {
-        [DialogueReadActions.GOTO_CHAPTER2]: () => this.gotoChapter2(),
-    };
-
-    protected readonly dialogueChoiceActionHandlers: Readonly<Record<DialogueChoiceAction, () => void>> = {
-        [DialogueChoiceActions.COLLECT_FROZEN_BERRIES]: () => this.giveFrozenBerries(),
-        [DialogueChoiceActions.COOK_FROZEN_BERRIES]: () => this.giveCookedBerries(),
-        [DialogueChoiceActions.SLEEP]: () => {
-            this.storyManager.chapter1.markSlept();
-            this.setTimeOfDay(this.gameSessionManager.getWorldState().timeOfDay);
-        },
-        [DialogueChoiceActions.PICKUP_MAP]: () => this.pickupMap()
-    };
 
     private timeOverlay: Graphic | null = null;
     private snowflakes: Sprite[] = [];
@@ -1096,56 +1080,15 @@ export default abstract class MappedAdventureScene extends Scene {
     }
 
     protected handleDialogueReadAction(option: DialogueInteraction): void {
-        if (!option.readAction) {
-            return;
-        }
-
-        this.dialogueReadActionHandlers[option.readAction]();
+        if (!option.readAction) return;
+        const handler = this.chapterDefinition.dialogueReadActionHandlers[option.readAction];
+        handler?.();
     }
 
     protected handleDialogueChoiceAction(option: DialogueChoiceOption): void {
-        if (!option.choiceAction) {
-            return;
-        }
-
-        this.dialogueChoiceActionHandlers[option.choiceAction]();
-    }
-
-    protected giveFrozenBerries(): void {
-        const alreadyHasBerries = this.playerStateManager.getPlayerState().inventory
-        .find(
-            item => item instanceof FrozenBerries
-        ) !== null;
-    
-        if (alreadyHasBerries) {
-            return;
-        }
-    
-        const berries = new FrozenBerries(1);
-        const addedItem = this.playerStateManager.getPlayerState().inventory.add(berries);
-    
-        if (addedItem !== null) {
-            this.storyManager.chapter1.markFoodFound();
-        }
-    }
-
-    protected giveCookedBerries(): void {
-        const frozenBerries = this.playerStateManager.getPlayerState().inventory
-        .find(
-            item => item instanceof FrozenBerries
-        ) as FrozenBerries | null;
-    
-        if (!frozenBerries) {
-            return;
-        }
-
-        const removedItem = this.playerStateManager.getPlayerState().inventory.remove(frozenBerries.id);
-        const berries = new CookedBerries(1);
-        const addedItem = this.playerStateManager.getPlayerState().inventory.add(berries);
-    
-        if (addedItem !== null) {
-            this.storyManager.chapter1.markFoodCooked();
-        }
+        if (!option.choiceAction) return;
+        const handler = this.chapterDefinition.dialogueChoiceActionHandlers[option.choiceAction];
+        handler?.();
     }
 
     protected consumeInventoryItem(item: InventoryItem): void {
@@ -1153,38 +1096,5 @@ export default abstract class MappedAdventureScene extends Scene {
         item.consume({
             showDialogue: interaction => this.startDialogue(interaction)
         });
-    }
-    
-    protected pickupMap(): void {
-        const inventory = this.playerStateManager.getPlayerState().inventory;
-    
-        const alreadyHasMap = inventory.find(
-            item => item instanceof WorldMap
-        ) !== null;
-    
-        if (alreadyHasMap) {
-            return;
-        }
-    
-        const map = new WorldMap();
-        const addedItem = inventory.add(map);
-    
-        if (addedItem !== null) {
-            this.storyManager.chapter1.markMapPickedUp();
-            this.onMapPickedUp();
-        }
-    }
-
-    protected gotoChapter2(): void {
-        this.sceneManager.changeToScene(
-            EndOfDemoScene,
-            undefined,
-            undefined,
-            {
-                useFadeTransition: true,
-                fadeOutMs: 2000,
-                fadeInMs: 2000
-            }
-        );
     }
 }

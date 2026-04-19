@@ -1,13 +1,13 @@
 import { TiledObject, TiledTilemapData } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData";
 import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 import ShelterScene from "./ShelterScene";
-import MappedAdventureScene, { WeatherType } from "../MappedAdventureScene";
+import { WeatherType } from "../MappedAdventureScene";
+import MappedAdventureChapter1Scene from "./MappedAdventureChapter1Scene";
 import { GameEventType } from "../../../Wolfie2D/Events/GameEventType";
 import { Chapter1MainQuestStep } from "../../GameSystems/StorySystem/StoryState";
 import Sprite from "../../../Wolfie2D/Nodes/Sprites/Sprite";
 
-
-export default class ForestScene extends MappedAdventureScene {
+export default class ForestScene extends MappedAdventureChapter1Scene {
 
     private mapItemSprite: Sprite | null = null;
     private mapItemObject: TiledObject | null = null;
