@@ -4,8 +4,8 @@ import { DialogueChoiceActions, DialogueReadActions } from "../../GameSystems/In
 import FrozenBerries from "../../GameSystems/ItemSystem/Items/FrozenBerries";
 import CookedBerries from "../../GameSystems/ItemSystem/Items/CookedBerries";
 import WorldMap from "../../GameSystems/ItemSystem/Items/WorldMap";
-import EndOfDemoScene from "../Chapter2/EndOfDemoScene";
 import { GameEventType } from "../../../Wolfie2D/Events/GameEventType";
+import VillageScene from "../Chapter2/VillageScene";
 
 export default abstract class MappedAdventureChapter1Scene extends MappedAdventureScene {
     protected readonly storyManager = StoryManager.getInstance();
@@ -102,13 +102,14 @@ export default abstract class MappedAdventureChapter1Scene extends MappedAdventu
 
     protected gotoChapter2(): void {
         this.sceneManager.changeToScene(
-            EndOfDemoScene,
-            undefined,
+            VillageScene,
+            { spawnName: "RoadStart" },
             undefined,
             {
+                showLoadingOverlay: true,
                 useFadeTransition: true,
-                fadeOutMs: 2000,
-                fadeInMs: 2000
+                fadeOutMs: 500,
+                fadeInMs: 500
             }
         );
     }
