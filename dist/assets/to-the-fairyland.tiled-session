@@ -1,32 +1,32 @@
 {
     "activeFile": "tilemaps/Chapter2/Village.json",
     "expandedProjectPaths": [
-        "tilemaps/Chapter2",
-        "tilemaps/Chapter6",
-        "tilemaps/Chapter1",
-        "tilemaps",
         "spritesheets",
+        "tilemaps/Chapter1",
+        "tilemaps/Chapter5",
+        "tilemaps",
+        "tilemaps/Chapter6",
         ".",
-        "tilemaps/Chapter5"
+        "tilemaps/Chapter2"
     ],
     "fileStates": {
         "tilemaps/Chapter1/Chapter1.json": {
-            "scale": 0.5,
-            "selectedLayer": 9,
+            "scale": 0.75,
+            "selectedLayer": 6,
             "viewCenter": {
-                "x": 1923,
-                "y": 1639
+                "x": 1792.6666666666665,
+                "y": 1824
             }
         },
         "tilemaps/Chapter1/Chapter1.json#Chapter1_Tilemap1": {
             "scaleInDock": 1
         },
         "tilemaps/Chapter1/Shelter.json": {
-            "scale": 2,
+            "scale": 1,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 1450.75,
-                "y": 1738.75
+                "x": 1952.5,
+                "y": 1920
             }
         },
         "tilemaps/Chapter1/Shelter.json#Shelter": {
@@ -38,14 +38,14 @@
                 5
             ],
             "scale": 0.75,
-            "selectedLayer": 2,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 981.9999999999999,
-                "y": 983.3333333333334
+                "x": 879.3333333333334,
+                "y": 434
             }
         },
         "tilemaps/Chapter2/Village.json#Village": {
-            "scaleInDock": 0.75
+            "scaleInDock": 1
         },
         "tilemaps/Chapter5/UndergroundTunnel.json": {
             "scale": 0.125,
@@ -77,19 +77,17 @@
     "map.tileWidth": 64,
     "map.width": 60,
     "openFiles": [
-        "tilemaps/Chapter1/Chapter1.json",
         "tilemaps/Chapter1/Shelter.json",
-        "tilemaps/Chapter6/DesertLand.json",
-        "tilemaps/Chapter5/UndergroundTunnel.json",
+        "tilemaps/Chapter1/Chapter1.json",
         "tilemaps/Chapter2/Village.json"
     ],
     "project": "to-the-fairyland.tiled-project",
     "recentFiles": [
-        "tilemaps/Chapter6/DesertLand.json",
-        "tilemaps/Chapter5/UndergroundTunnel.json",
-        "tilemaps/Chapter1/Chapter1.json",
         "tilemaps/Chapter1/Shelter.json",
-        "tilemaps/Chapter2/Village.json"
+        "tilemaps/Chapter1/Chapter1.json",
+        "tilemaps/Chapter2/Village.json",
+        "tilemaps/Chapter6/DesertLand.json",
+        "tilemaps/Chapter5/UndergroundTunnel.json"
     ],
     "resizeMap.removeObjects": false,
     "tileset.embedInMap": true,
