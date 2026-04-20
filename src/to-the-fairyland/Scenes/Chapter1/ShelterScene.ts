@@ -1,10 +1,11 @@
 import { TiledObject, TiledTilemapData } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData";
 import ForestScene  from "./ForestScene";
 import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
-import { AssetBundle, WeatherType } from "../MappedAdventureScene";
+import { AssetBundle } from "../MappedAdventureScene";
 import MappedAdventureChapter1Scene from "./MappedAdventureChapter1Scene";
 import { GameEventType } from "../../../Wolfie2D/Events/GameEventType";
 import { getBedDialogue, getPotDialogue } from "../../GameSystems/InteractionSystem/InteractionDatabase";
+import { WeatherType } from "../../GameSystems/WorldSystem/WorldState";
 
 export default class ShelterScene extends MappedAdventureChapter1Scene {
     protected readonly tilemap = {
@@ -33,7 +34,7 @@ export default class ShelterScene extends MappedAdventureChapter1Scene {
 
     public override startScene(): void {
         super.startScene();
-        this.setWeather(WeatherType.SNOW, 1);
+        this.weatherController.setWeather(WeatherType.SNOW, 1);
     }
 
     protected override configureLayers(): void {

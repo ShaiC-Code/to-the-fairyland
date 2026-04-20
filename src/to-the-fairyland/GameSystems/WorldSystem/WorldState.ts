@@ -5,6 +5,12 @@ export enum TimeOfDay {
     NIGHT
 }
 
+export enum WeatherType {
+    NONE,
+    SNOW,
+    SNOWSTORM
+}
+
 /**
  * Shared world-level state that should persist across scene changes.
  * This is separate from story progression and player stats.
