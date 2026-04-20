@@ -16,13 +16,14 @@
         "tilemaps/Chapter1/Chapter1.json": {
             "expandedObjectLayers": [
                 14,
+                6,
                 13
             ],
             "scale": 0.75,
-            "selectedLayer": 7,
+            "selectedLayer": 9,
             "viewCenter": {
-                "x": 2560.6666666666665,
-                "y": 1287.3333333333333
+                "x": 1559.3333333333333,
+                "y": 1819.333333333333
             }
         },
         "tilemaps/Chapter1/Chapter1.json#Chapter1_Tilemap1": {
@@ -49,13 +50,15 @@
             "expandedObjectLayers": [
                 5,
                 4,
+                8,
+                3,
                 2
             ],
             "scale": 0.5,
-            "selectedLayer": 2,
+            "selectedLayer": 5,
             "viewCenter": {
-                "x": 1009,
-                "y": 1083
+                "x": 1071,
+                "y": 1059
             }
         },
         "tilemaps/Chapter2/Road.json#Chapter2_Village_Tiles": {
@@ -70,8 +73,8 @@
             "scale": 0.5,
             "selectedLayer": 5,
             "viewCenter": {
-                "x": 1117,
-                "y": 953
+                "x": 1079,
+                "y": 943
             }
         },
         "tilemaps/Chapter2/Village.json#Village": {

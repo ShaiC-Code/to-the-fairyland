@@ -1,6 +1,6 @@
 import MappedAdventureScene, { AssetBundle, ChapterSceneDefinition } from "../MappedAdventureScene";
 import StoryManager from "../../GameSystems/StorySystem/StoryManager";
-import { DialogueChoiceActions, DialogueReadActions } from "../../GameSystems/InteractionSystem/InteractionDatabase";
+import { DialogueChoiceActions, DialogueCompleteActions } from "../../GameSystems/InteractionSystem/InteractionDatabase";
 import FrozenBerries from "../../GameSystems/ItemSystem/Items/FrozenBerries";
 import CookedBerries from "../../GameSystems/ItemSystem/Items/CookedBerries";
 import WorldMap from "../../GameSystems/ItemSystem/Items/WorldMap";
@@ -36,8 +36,8 @@ export default abstract class MappedAdventureChapter1Scene extends MappedAdventu
     }
 
     protected readonly chapterDefinition: ChapterSceneDefinition = {
-        dialogueReadActionHandlers: {
-            [DialogueReadActions.GOTO_CHAPTER2]: () => this.gotoChapter2()
+        dialogueCompleteActionHandlers: {
+            [DialogueCompleteActions.GOTO_CHAPTER2]: () => this.gotoChapter2()
         },
         dialogueChoiceActionHandlers: {
             [DialogueChoiceActions.COLLECT_FROZEN_BERRIES]: () => this.giveFrozenBerries(),
@@ -49,6 +49,7 @@ export default abstract class MappedAdventureChapter1Scene extends MappedAdventu
             [DialogueChoiceActions.PICKUP_MAP]: () => this.pickupMap()
         }
     };
+    
 
     protected giveFrozenBerries(): void {
         const inventory = this.playerStateManager.getPlayerState().inventory;

@@ -1,6 +1,6 @@
 {
-    "name": "NPC1",
-    "spriteSheetImage": "NPC1.png",
+    "name": "Lucy",
+    "spriteSheetImage": "Lucy.png",
     "spriteWidth": 64,
     "spriteHeight": 128,
     "columns": 1,

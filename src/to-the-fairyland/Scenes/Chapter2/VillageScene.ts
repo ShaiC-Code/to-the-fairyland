@@ -1,11 +1,20 @@
+import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 import { TiledObject, TiledTilemapData } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData";
 import NPCActor from "../../Actors/NPCActor";
 import IdleBehavior from "../../AI/NPC/NPCBehavior/IdleBehavior";
+import { getNpcInteraction } from "../../GameSystems/InteractionSystem/InteractionDatabase";
 import { AssetBundle } from "../MappedAdventureScene";
 import MappedAdventureChapter2Scene from "./MappedAdventureChapter2Scene";
 import RoadScene from "./RoadScene";
 
+type NpcRuntime = {
+    name: string;
+    actor: NPCActor;
+};
+
 export default class VillageScene extends MappedAdventureChapter2Scene {
+    private npcs: NpcRuntime[] = [];
+
     protected readonly tilemap = {
         key: "village",
         path: "/assets/tilemaps/Chapter2/Village.json"
@@ -16,11 +25,11 @@ export default class VillageScene extends MappedAdventureChapter2Scene {
             village: { key: "village", path: "/assets/tilemaps/Chapter2/Village.json" }
         },
         spritesheets: {
-            NPC1: { key: "npc1", path: "/assets/spritesheets/NPC1.json" },
-            NPC2: { key: "npc2", path: "/assets/spritesheets/NPC2.json" },
-            NPC3: { key: "npc3", path: "/assets/spritesheets/NPC3.json" },
-            NPC4: { key: "npc4", path: "/assets/spritesheets/NPC4.json" },
-            NPC5: { key: "npc5", path: "/assets/spritesheets/NPC5.json" },
+            K: { key: "K", path: "/assets/spritesheets/K.json" },
+            J: { key: "J", path: "/assets/spritesheets/J.json" },
+            Argus: { key: "Argus", path: "/assets/spritesheets/Argus.json" },
+            Vila: { key: "Vila", path: "/assets/spritesheets/Vila.json" },
+            Lucy: { key: "Lucy", path: "/assets/spritesheets/Lucy.json" }
         },
         sprites: {},
         sounds: {}
@@ -31,6 +40,8 @@ export default class VillageScene extends MappedAdventureChapter2Scene {
     }
 
     protected override spawnMapObjects(tilemapData: TiledTilemapData): void {
+        this.npcs = [];
+
         const npcLayer = tilemapData.layers.find(layer => layer.name === "NPCs");
         const npcPoints = npcLayer?.objects ?? [];
 
@@ -52,13 +63,43 @@ export default class VillageScene extends MappedAdventureChapter2Scene {
         const tile = this.getObjectTile(obj);
         const tileCenter = this.ground.getTileCenter(tile.x, tile.y);
 
-        // Align the sprite so its feet rest on the marker tile.
         npc.position.set(tileCenter.x, tileCenter.y - npc.size.y / 2 + 25);
         npc.setSortTile(tile);
         npc.setSortOrder(0);
 
         npc.animation.play("IDLE_DOWN", true);
         npc.addAI(IdleBehavior, {});
+
+        this.npcs.push({
+            name: obj.name,
+            actor: npc
+        });
+    }
+
+    protected override tryStartSceneInteractionAtTile(tile: Vec2): boolean {
+        const npc = this.findNpcAtTile(tile);
+        if (!npc) {
+            return false;
+        }
+
+        const interaction = getNpcInteraction(npc.name, {});
+        if (!interaction) {
+            return false;
+        }
+
+        this.startDialogue(interaction);
+        return true;
+    }
+
+    private findNpcAtTile(tile: Vec2): NpcRuntime | undefined {
+        return this.npcs.find(npc => {
+            const npcTile = npc.actor.getSortTile();
+            return npcTile !== null && npcTile.x === tile.x && npcTile.y === tile.y;
+        });
+    }
+
+    protected override handleInteraction(obj: TiledObject): void {
+        this.tryStartInteractionDialogue(obj);
     }
 
     protected override handleAutoTransition(obj: TiledObject): void {
@@ -75,7 +116,4 @@ export default class VillageScene extends MappedAdventureChapter2Scene {
             );
         }
     }
-
-    
-
 }

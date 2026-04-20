@@ -236,7 +236,7 @@
                 {
                  "height":0,
                  "id":1,
-                 "name":"NPC1",
+                 "name":"K",
                  "opacity":1,
                  "point":true,
                  "rotation":0,
@@ -249,7 +249,7 @@
                 {
                  "height":0,
                  "id":2,
-                 "name":"NPC2",
+                 "name":"Argus",
                  "opacity":1,
                  "point":true,
                  "rotation":0,
@@ -262,7 +262,7 @@
                 {
                  "height":0,
                  "id":5,
-                 "name":"NPC4",
+                 "name":"Vila",
                  "opacity":1,
                  "point":true,
                  "rotation":0,
@@ -275,7 +275,7 @@
                 {
                  "height":0,
                  "id":6,
-                 "name":"NPC5",
+                 "name":"Lucy",
                  "opacity":1,
                  "point":true,
                  "rotation":0,
@@ -288,7 +288,7 @@
                 {
                  "height":0,
                  "id":11,
-                 "name":"NPC3",
+                 "name":"J",
                  "opacity":1,
                  "point":true,
                  "rotation":0,
