@@ -17,7 +17,6 @@ import GameSessionManager from "../GameSystems/GameSessionSystem/GameSessionMana
 import { PlayerInput } from "../AI/Player/PlayerController";
 import { UIScreenActionBindings } from "../UI/UIScreen";
 
-
 type AssetRef = Readonly<{
     key: string;
     path: string;

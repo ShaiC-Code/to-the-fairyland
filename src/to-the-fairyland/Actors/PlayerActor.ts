@@ -1,14 +1,14 @@
 import Spritesheet from "../../Wolfie2D/DataTypes/Spritesheet";
 import AnimatedSprite from "../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
-import { BattlerEvent, ItemEvent } from "../Events";
+import { BattlerEvent } from "../Events";
 import BasicBattler from "../GameSystems/BattleSystem/BasicBattler";
 import Battler from "../GameSystems/BattleSystem/Battler";
 import Inventory from "../GameSystems/ItemSystem/Inventory";
-import SMItem from "../GameSystems/ItemSystem/Item";
 import BasicTargetable from "../GameSystems/Targeting/BasicTargetable";
 import { TargetableEntity } from "../GameSystems/Targeting/TargetableEntity";
 import { TargetingEntity } from "../GameSystems/Targeting/TargetingEntity";
 import Vec2 from "../../Wolfie2D/DataTypes/Vec2";
+import { AssetBundle } from "../Scenes/MappedAdventureScene";
 
 
 export default class PlayerActor extends AnimatedSprite implements Battler {
@@ -17,7 +17,12 @@ export default class PlayerActor extends AnimatedSprite implements Battler {
     protected battler: Battler;
     protected targetable: TargetableEntity;
 
-    protected heldItem: SMItem;
+    private assetBundle: AssetBundle = {
+        tilemaps: {},
+        spritesheets: {},
+        sprites: {},
+        sounds: {}
+    };
 
     public spriteOffset = new Vec2(0, 20);
 
@@ -25,14 +30,18 @@ export default class PlayerActor extends AnimatedSprite implements Battler {
         return new Vec2(feetX, feetY - this.size.y / 2).add(this.spriteOffset);
     }
 
-
     constructor(sheet: Spritesheet) {
         super(sheet);
         this.battler = new BasicBattler(this);
         this.targetable = new BasicTargetable(this);
+    }
+    
+    get sceneAssets() {
+        return this.assetBundle;
+    }
 
-        this.receiver.subscribe(ItemEvent.LASERGUN_FIRED)
-        this.receiver.subscribe(BattlerEvent.BATTLER_KILLED)
+    set sceneAssets(value: AssetBundle) {
+        this.assetBundle = value;
     }
 
     get battlerActive(): boolean {

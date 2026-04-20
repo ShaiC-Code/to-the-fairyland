@@ -1,31 +1,34 @@
 import { TiledObject, TiledTilemapData } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData";
 import NPCActor from "../../Actors/NPCActor";
 import IdleBehavior from "../../AI/NPC/NPCBehavior/IdleBehavior";
-import MappedAdventureScene from "../MappedAdventureScene";
+import { AssetBundle } from "../MappedAdventureScene";
+import MappedAdventureChapter2Scene from "./MappedAdventureChapter2Scene";
 
-type NpcSheetRef = Readonly<{
-    key: string;
-    path: string;
-}>;
-
-export default class VillageScene extends MappedAdventureScene {
+export default class VillageScene extends MappedAdventureChapter2Scene {
     protected readonly tilemap = {
         key: "village",
         path: "/assets/tilemaps/Chapter2/Village.json"
     };
-
-    private readonly npcSheets: Readonly<Record<string, NpcSheetRef>> = {
-        NPC1: { key: "npc1", path: "/assets/spritesheets/NPC1.json" },
-        NPC2: { key: "npc2", path: "/assets/spritesheets/NPC2.json" },
-        NPC3: { key: "npc3", path: "/assets/spritesheets/NPC3.json" },
-        NPC4: { key: "npc4", path: "/assets/spritesheets/NPC4.json" },
-        NPC5: { key: "npc5", path: "/assets/spritesheets/NPC5.json" },
-        NPC6: { key: "npc6", path: "/assets/spritesheets/NPC6.json" },
-        NPC7: { key: "npc7", path: "/assets/spritesheets/NPC7.json" }
+        
+    protected static readonly assetBundle: AssetBundle = {
+        tilemaps: {
+            village: { key: "village", path: "/assets/tilemaps/Chapter2/Village.json" }
+        },
+        spritesheets: {
+            NPC1: { key: "npc1", path: "/assets/spritesheets/NPC1.json" },
+            NPC2: { key: "npc2", path: "/assets/spritesheets/NPC2.json" },
+            NPC3: { key: "npc3", path: "/assets/spritesheets/NPC3.json" },
+            NPC4: { key: "npc4", path: "/assets/spritesheets/NPC4.json" },
+            NPC5: { key: "npc5", path: "/assets/spritesheets/NPC5.json" },
+            NPC6: { key: "npc6", path: "/assets/spritesheets/NPC6.json" },
+            NPC7: { key: "npc7", path: "/assets/spritesheets/NPC7.json" }
+        },
+        sprites: {},
+        sounds: {}
     };
 
-    protected override loadExtraAssets(): void {
-        this.loadMissingSpritesheets(Object.values(this.npcSheets));
+    protected combinedAssetBundles(): AssetBundle {
+        return this.mergeAssetBundles(super.combinedAssetBundles(), VillageScene.assetBundle);
     }
 
     protected override spawnMapObjects(tilemapData: TiledTilemapData): void {
@@ -33,12 +36,12 @@ export default class VillageScene extends MappedAdventureScene {
         const npcPoints = npcLayer?.objects ?? [];
 
         for (const obj of npcPoints) {
-            this.spawnNpc(obj);
+            this.spawnNPC(obj);
         }
     }
 
-    private spawnNpc(obj: TiledObject): void {
-        const sheet = this.npcSheets[obj.name];
+    private spawnNPC(obj: TiledObject): void {
+        const sheet = this.assets.spritesheets[obj.name];
 
         if (!sheet) {
             console.warn(`VillageScene: no NPC spritesheet configured for "${obj.name}"`);

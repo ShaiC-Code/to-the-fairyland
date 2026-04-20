@@ -21,22 +21,16 @@ import DialogueScreen from "../UI/DialogueScreen";
 import { PlayerControlMode, PlayerInput } from "../AI/Player/PlayerController";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 import { AudioChannelType } from "../../Wolfie2D/Sound/AudioManager";
-import StoryManager from "../GameSystems/StorySystem/StoryManager";
-import { DialogueChoiceAction, DialogueChoiceActions, DialogueChoiceOption, DialogueInteraction, DialogueReadAction, DialogueReadActions, getInteractionData } from "../GameSystems/InteractionSystem/InteractionDatabase";
+import { DialogueChoiceAction, DialogueChoiceOption, DialogueInteraction, DialogueReadAction, getInteractionData } from "../GameSystems/InteractionSystem/InteractionDatabase";
 import PlayerStateManager from "../GameSystems/PlayerSystem/PlayerStateManager";
 import GameSessionManager from "../GameSystems/GameSessionSystem/GameSessionManager";
 import { TimeOfDay } from "../GameSystems/WorldSystem/WorldState";
 import InventoryItem from "../GameSystems/ItemSystem/InventoryItem";
-import FrozenBerries from "../GameSystems/ItemSystem/Items/FrozenBerries";
-import CookedBerries from "../GameSystems/ItemSystem/Items/CookedBerries";
-import WorldMap from "../GameSystems/ItemSystem/Items/WorldMap";
 import { UIScreenActionBindings } from "../UI/UIScreen";
-import EndOfDemoScene from "./Chapter2/EndOfDemoScene";
 
-
-type AssetRef = Readonly<{
-    key: string;
-    path: string;
+export type AssetRef = Readonly<{
+    readonly key: string;
+    readonly path: string;
 }>;
 
 type SceneEntranceData = {
@@ -57,89 +51,59 @@ type SnowPreset = Readonly<{
     settings: SnowflakeSettings;
 }>;
 
+export interface ChapterSceneDefinition {
+    dialogueReadActionHandlers: Readonly<Partial<Record<DialogueReadAction, () => void>>>;
+    dialogueChoiceActionHandlers: Readonly<Partial<Record<DialogueChoiceAction, () => void>>>;
+}
+
+export type AssetManifest = Record<string, AssetRef>;
+
+export type AssetBundle = {
+    tilemaps: AssetManifest;
+    spritesheets: AssetManifest;
+    sprites: AssetManifest;
+    sounds: AssetManifest;
+    [category: string]: AssetManifest | undefined;
+};
+
 
 export default abstract class MappedAdventureScene extends Scene {
+    protected abstract readonly chapterDefinition: ChapterSceneDefinition;
     private static weatherAmbienceLoopsStarted = false;
 
-    // The tilemap to load for the scene, pass from sub scenes
-    protected abstract readonly tilemap: AssetRef;
     protected readonly gameSessionManager = GameSessionManager.getInstance();
     protected readonly playerStateManager = PlayerStateManager.getInstance();
 
+    // The tilemap to load for the scene, pass from sub scenes
+    protected abstract readonly tilemap: AssetRef;
 
-    // The player to load for the scenes
-    protected readonly playerSheet: AssetRef = {
-        key: "fate",
-        path: "/assets/spritesheets/Fate.json"
+    protected static readonly assetBundle: AssetBundle = {
+        tilemaps: {},
+        spritesheets: {
+            playerSheet: { key: "fate", path: "/assets/spritesheets/Fate.json" }
+        },
+        sprites: {
+            snowflake1Sprite: { key: "snowflake1", path: "/assets/sprites/particles/Snowflake1.png" },
+            snowflake2Sprite: { key: "snowflake2", path: "/assets/sprites/particles/Snowflake2.png" },
+            snowflake3Sprite: { key: "snowflake3", path: "/assets/sprites/particles/Snowflake3.png" }
+        },
+        sounds: {
+            uiHover: { key: "ui-hover", path: "/assets/sounds/ui-hover.ogg" },
+            uiClick: { key: "ui-click", path: "/assets/sounds/ui-click.ogg" },
+            menuOpen: { key: "menu-open", path: "/assets/sounds/menu-open.ogg" },
+            menuClose: { key: "menu-close", path: "/assets/sounds/menu-close.ogg" },
+            woodenDoorSFX: { key: "door-wooden", path: "/assets/sounds/door-wooden.ogg" },
+            weatherSnowInsideSFX: { key: "weather-snow-inside", path: "/assets/sounds/weather-snow-inside.ogg" },
+            weatherSnowOutsideSFX: { key: "weather-snow-outside", path: "/assets/sounds/weather-snow-outside.ogg" }
+        }
     };
 
-    // Sound effects
-    protected readonly uiHover: AssetRef = {
-        key: "ui-hover",
-        path: "/assets/sounds/ui-hover.ogg"
-    };
-
-    protected readonly uiClick: AssetRef = {
-        key: "ui-click",
-        path: "/assets/sounds/ui-click.ogg"
-    };
-
-    protected readonly menuOpen: AssetRef = {
-        key: "menu-open",
-        path: "/assets/sounds/menu-open.ogg"
-    };
-
-    protected readonly menuClose: AssetRef = {
-        key: "menu-close",
-        path: "/assets/sounds/menu-close.ogg"
-    };
-
-    protected readonly woodenDoorSFX: AssetRef = {
-        key: "door-wooden",
-        path: "/assets/sounds/door-wooden.ogg"
-    };
-
-    protected readonly walkingWoodSFX: AssetRef = {
-        key: "walking-wood",
-        path: "/assets/sounds/walking-wood.ogg"
-    };
-
-    protected readonly walkingSnowSFX: AssetRef = {
-        key: "walking-snow",
-        path: "/assets/sounds/walking-snow.ogg"
-    };
-
-    protected readonly walkingSnowBushSFX: AssetRef = {
-        key: "walking-snow-bush",
-        path: "/assets/sounds/walking-snow-bush.ogg"
-    };
-
-    protected readonly weatherSnowInsideSFX: AssetRef = {
-        key: "weather-snow-inside",
-        path: "/assets/sounds/weather-snow-inside.ogg"
-    };
-
-    protected readonly weatherSnowOutsideSFX: AssetRef = {
-        key: "weather-snow-outside",
-        path: "/assets/sounds/weather-snow-outside.ogg"
-    };
-
-    protected readonly persistentSpritesheets: ReadonlyArray<AssetRef> = [
-        this.playerSheet
-    ];
-
-    protected readonly persistentAudioAssets: ReadonlyArray<AssetRef> = [
-        this.uiHover,
-        this.uiClick,
-        this.menuOpen,
-        this.menuClose,
-        this.woodenDoorSFX,
-        this.walkingWoodSFX,
-        this.walkingSnowSFX,
-        this.walkingSnowBushSFX,
-        this.weatherSnowInsideSFX,
-        this.weatherSnowOutsideSFX
-    ];
+    protected assets: AssetBundle = {
+        tilemaps: {},
+        spritesheets: {},
+        sprites: {},
+        sounds: {}
+    }; 
 
     protected readonly groundLayerName = "Ground";
     protected readonly collisionLayerName = "CollisionLayer";
@@ -161,27 +125,12 @@ export default abstract class MappedAdventureScene extends Scene {
     protected worldPaused: boolean = false;
     protected entrances: TiledObject[] = [];
     protected transitioning = false;
-    protected readonly storyManager = StoryManager.getInstance();
 
     protected dialogueScreen!: DialogueScreen;
     protected activeDialogue: DialogueInteraction | null = null;
     protected currentDialogueLine = 0;
     protected dialogueChoiceActive = false;
     protected dialogueChoiceResolved = false;
-
-    protected readonly dialogueReadActionHandlers: Readonly<Record<DialogueReadAction, () => void>> = {
-        [DialogueReadActions.GOTO_CHAPTER2]: () => this.gotoChapter2(),
-    };
-
-    protected readonly dialogueChoiceActionHandlers: Readonly<Record<DialogueChoiceAction, () => void>> = {
-        [DialogueChoiceActions.COLLECT_FROZEN_BERRIES]: () => this.giveFrozenBerries(),
-        [DialogueChoiceActions.COOK_FROZEN_BERRIES]: () => this.giveCookedBerries(),
-        [DialogueChoiceActions.SLEEP]: () => {
-            this.storyManager.chapter1.markSlept();
-            this.setTimeOfDay(this.gameSessionManager.getWorldState().timeOfDay);
-        },
-        [DialogueChoiceActions.PICKUP_MAP]: () => this.pickupMap()
-    };
 
     private timeOverlay: Graphic | null = null;
     private snowflakes: Sprite[] = [];
@@ -195,20 +144,16 @@ export default abstract class MappedAdventureScene extends Scene {
     private readonly weatherAmbienceInitialFadeSeconds = 1.0;
     
     private readonly weatherLayerName = "weather";
-    private readonly snowflakeKeys = ["snowflake1", "snowflake2", "snowflake3"];
     
-
     // lets the scene receive data, ex: {spawnName: "Door1"}
     public override initScene(init: SceneEntranceData = {}): void {
         this.spawnName = init?.spawnName;
+        this.assets = this.combinedAssetBundles();
     }
 
     public override loadScene(): void {
-        this.load.tilemap(this.tilemap.key, this.tilemap.path);
-        this.loadMissingSpritesheets(this.persistentSpritesheets);
-        this.loadMissingAudio(this.persistentAudioAssets);
-
-        this.loadExtraAssets();
+        // Load only base assets here
+        this.loadAssets(this.assets);
         
         this.add.registerCustomUIElement(CustomUIElementType.HOVER_BUTTON, (options?: Record<string, any>) => {
             return new HoverButton(options!.position, options!.text);
@@ -217,23 +162,64 @@ export default abstract class MappedAdventureScene extends Scene {
         this.add.registerCustomCanvasNode(CustomUIElementType.UI_IMAGE, (options?: Record<string, any>) => {
             return new UIImage(options!.imageKey);
         });
-
-        this.load.image("snowflake1", "/assets/sprites/particles/Snowflake1.png");
-        this.load.image("snowflake2", "/assets/sprites/particles/Snowflake2.png");
-        this.load.image("snowflake3", "/assets/sprites/particles/Snowflake3.png");
     }
 
     public unloadScene(): void {
-        this.keepSpritesheets(this.persistentSpritesheets);
-        this.keepAudioAssets(this.persistentAudioAssets);
-
-        // Stop sfx when changing scenes
-        this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: this.walkingWoodSFX.key});
-        this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: this.walkingSnowSFX.key});
-        this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: this.walkingSnowBushSFX.key});
+        this.keepAssets(MappedAdventureScene.assetBundle);
         this.muteWeatherAmbience();
     }
 
+    protected mergeAssetBundles(parent: AssetBundle, child: AssetBundle): AssetBundle {
+        return {
+            tilemaps: { ...(parent.tilemaps ?? {}), ...(child.tilemaps ?? {}) },
+            spritesheets: { ...(parent.spritesheets ?? {}), ...(child.spritesheets ?? {}) },
+            sprites: { ...(parent.sprites ?? {}), ...(child.sprites ?? {}) },
+            sounds: { ...(parent.sounds ?? {}), ...(child.sounds ?? {}) }
+        };
+    }
+    
+    protected combinedAssetBundles(): AssetBundle {
+        return MappedAdventureScene.assetBundle;
+    }
+
+    protected assetBundleToKeyArrays(bundle: AssetBundle): {
+        tilemaps: ReadonlyArray<AssetRef>;
+        spritesheets: ReadonlyArray<AssetRef>;
+        sprites: ReadonlyArray<AssetRef>;
+        sounds: ReadonlyArray<AssetRef>
+    } {
+        const tilemaps = Object.values(bundle.tilemaps ?? {});
+        const spritesheets = Object.values(bundle.spritesheets ?? {});
+        const sprites = Object.values(bundle.sprites ?? {});
+        const sounds = Object.values(bundle.sounds ?? {});
+        return {tilemaps, spritesheets, sprites, sounds};
+    }
+    
+    protected loadAssets(assets: AssetBundle): void {
+        const { tilemaps, spritesheets, sprites, sounds } = this.assetBundleToKeyArrays(assets);
+
+        tilemaps
+            .filter(tilemap => !this.resourceManager.getTilemap(tilemap.key))
+            .forEach(tilemap => this.load.tilemap(tilemap.key, tilemap.path));
+        spritesheets
+            .filter(spritesheet => !this.resourceManager.getSpritesheet(spritesheet.key))
+            .forEach(spritesheet => this.load.spritesheet(spritesheet.key, spritesheet.path));
+        sprites
+            .filter(sprite => !this.resourceManager.getImage(sprite.key))
+            .forEach(sprite => this.load.image(sprite.key, sprite.path));
+        sounds
+            .filter(sound => !this.resourceManager.getAudio(sound.key))
+            .forEach(sound => this.load.audio(sound.key, sound.path));
+    }
+
+    protected keepAssets(assets: AssetBundle): void {
+        const { tilemaps, spritesheets, sprites, sounds } = this.assetBundleToKeyArrays(assets);
+
+        tilemaps.forEach(tilemap => {this.load.keepTilemap(tilemap.key)});
+        spritesheets.forEach(spritesheet => {this.load.keepSpritesheet(spritesheet.key)});
+        sprites.forEach(sprite => {this.load.keepImage(sprite.key)});
+        sounds.forEach(sound => {this.load.keepAudio(sound.key)});
+    }
 
     public override startScene(): void {
         this.gameSessionManager.requireCurrentSession();
@@ -267,7 +253,8 @@ export default abstract class MappedAdventureScene extends Scene {
             throw new Error(`SpawnPoint layer is missing or empty in map "${this.tilemap.key}"`);
         }
 
-        this.player = this.add.animatedSprite(PlayerActor, this.playerSheet.key, this.actorLayerName);
+        this.player = this.add.animatedSprite(PlayerActor, this.assets.spritesheets.playerSheet.key, this.actorLayerName);
+        this.player.sceneAssets = this.assets;
 
         const playerState = this.playerStateManager.getPlayerState();
         this.player.maxHealth = playerState.maxHealth;
@@ -297,10 +284,10 @@ export default abstract class MappedAdventureScene extends Scene {
             () => this.viewport.getHalfSize(),
             () => this.sceneManager.changeToScene(MainMenu),
             {
-                onEnterSFXKey: this.uiHover.key,
-                onClickSFXKey: this.uiClick.key,
-                onShowSFXKey: this.menuOpen.key,
-                onHideSFXKey: this.menuClose.key,
+                onEnterSFXKey: this.assets.sounds.uiHover.key,
+                onClickSFXKey: this.assets.sounds.uiClick.key,
+                onShowSFXKey: this.assets.sounds.menuOpen.key,
+                onHideSFXKey: this.assets.sounds.menuClose.key,
                 uiActions
             }
         );
@@ -312,10 +299,10 @@ export default abstract class MappedAdventureScene extends Scene {
             playerState.inventory,
             (item: InventoryItem) => this.consumeInventoryItem(item),
             {
-                onEnterSFXKey: this.uiHover.key,
-                onClickSFXKey: this.uiClick.key,
-                onShowSFXKey: this.menuOpen.key,
-                onHideSFXKey: this.menuClose.key,
+                onEnterSFXKey: this.assets.sounds.uiHover.key,
+                onClickSFXKey: this.assets.sounds.uiClick.key,
+                onShowSFXKey: this.assets.sounds.menuOpen.key,
+                onHideSFXKey: this.assets.sounds.menuClose.key,
                 uiActions
             }
         );
@@ -327,8 +314,8 @@ export default abstract class MappedAdventureScene extends Scene {
             () => this.viewport.getHalfSize(),
             undefined,
             {
-                onEnterSFXKey: this.uiHover.key,
-                onClickSFXKey: this.uiClick.key,
+                onEnterSFXKey: this.assets.sounds.uiHover.key,
+                onClickSFXKey: this.assets.sounds.uiClick.key,
                 uiActions
             }
         );
@@ -441,36 +428,6 @@ export default abstract class MappedAdventureScene extends Scene {
         return this.worldPaused;
     }
 
-    protected loadMissingSpritesheets(assets: ReadonlyArray<AssetRef>): void {
-        for (const asset of assets) {
-            if (!this.resourceManager.getSpritesheet(asset.key)) {
-                this.load.spritesheet(asset.key, asset.path);
-            }
-        }
-    }
-
-    protected loadMissingAudio(assets: ReadonlyArray<AssetRef>): void {
-        for (const asset of assets) {
-            if (!this.resourceManager.getAudio(asset.key)) {
-                this.load.audio(asset.key, asset.path);
-            }
-        }
-    }
-
-    protected keepSpritesheets(assets: ReadonlyArray<AssetRef>): void {
-        for (const asset of assets) {
-            this.load.keepSpritesheet(asset.key);
-        }
-    }
-
-    protected keepAudioAssets(assets: ReadonlyArray<AssetRef>): void {
-        for (const asset of assets) {
-            this.load.keepAudio(asset.key);
-        }
-    }
-    
-    protected loadExtraAssets(): void {}
-
     protected configureLayers(): void {}
 
     protected spawnMapObjects(_tilemapData: TiledTilemapData): void {}
@@ -511,7 +468,7 @@ export default abstract class MappedAdventureScene extends Scene {
 
         // Start weather ambience stems once and keep them running across mapped scenes.
         this.emitter.fireEvent(GameEventType.PLAY_SFX, {
-            key: this.weatherSnowInsideSFX.key,
+            key: this.assets.sounds.weatherSnowInsideSFX.key,
             loop: true,
             holdReference: true,
             channel: AudioChannelType.CUSTOM_1,
@@ -519,7 +476,7 @@ export default abstract class MappedAdventureScene extends Scene {
         });
 
         this.emitter.fireEvent(GameEventType.PLAY_SFX, {
-            key: this.weatherSnowOutsideSFX.key,
+            key: this.assets.sounds.weatherSnowOutsideSFX.key,
             loop: true,
             holdReference: true,
             channel: AudioChannelType.CUSTOM_2,
@@ -754,7 +711,12 @@ export default abstract class MappedAdventureScene extends Scene {
         this.ensureWeatherLayer();
     
         while (this.snowflakes.length < preset.poolSize) {
-            const key = this.snowflakeKeys[this.snowflakes.length % this.snowflakeKeys.length];
+            const snowflakeKeys = [
+                this.assets.sprites.snowflake1Sprite.key,
+                this.assets.sprites.snowflake2Sprite.key,
+                this.assets.sprites.snowflake3Sprite.key
+            ];
+            const key = snowflakeKeys[this.snowflakes.length % snowflakeKeys.length];
             const flake = this.add.sprite(key, this.weatherLayerName);
     
             flake.visible = false;
@@ -1051,7 +1013,7 @@ export default abstract class MappedAdventureScene extends Scene {
     }
 
     public playUIClickSFX(): void {
-        this.emitter.fireEvent(GameEventType.PLAY_SFX, {key: this.uiClick.key, loop: false, holdReference: false});
+        this.emitter.fireEvent(GameEventType.PLAY_SFX, {key: this.assets.sounds.uiClick.key, loop: false, holdReference: false});
     }
 
     public playDialogueSFX(): void {
@@ -1077,75 +1039,16 @@ export default abstract class MappedAdventureScene extends Scene {
         return this.tilemap.key === "chapter1" ? "snow" : this.tilemap.key === "shelter" ? "wood" : null;
     }
 
-    // TEMPORARY function to get asset keys from the scene
-    public getAssetKey(assetName: string): string {
-        switch (assetName) {
-            case "tilemap":
-                return this.tilemap.key;
-            case "woodenDoorSFX":
-                return this.woodenDoorSFX.key;
-            case "walkingWoodSFX":
-                return this.walkingWoodSFX.key;
-            case "walkingSnowSFX":
-                return this.walkingSnowSFX.key;
-            case "walkingSnowBushSFX":
-                return this.walkingSnowBushSFX.key;
-            default:
-                return "invalid asset name";
-        }
-    }
-
     protected handleDialogueReadAction(option: DialogueInteraction): void {
-        if (!option.readAction) {
-            return;
-        }
-
-        this.dialogueReadActionHandlers[option.readAction]();
+        if (!option.readAction) return;
+        const handler = this.chapterDefinition.dialogueReadActionHandlers[option.readAction];
+        handler?.();
     }
 
     protected handleDialogueChoiceAction(option: DialogueChoiceOption): void {
-        if (!option.choiceAction) {
-            return;
-        }
-
-        this.dialogueChoiceActionHandlers[option.choiceAction]();
-    }
-
-    protected giveFrozenBerries(): void {
-        const alreadyHasBerries = this.playerStateManager.getPlayerState().inventory
-        .find(
-            item => item instanceof FrozenBerries
-        ) !== null;
-    
-        if (alreadyHasBerries) {
-            return;
-        }
-    
-        const berries = new FrozenBerries(1);
-        const addedItem = this.playerStateManager.getPlayerState().inventory.add(berries);
-    
-        if (addedItem !== null) {
-            this.storyManager.chapter1.markFoodFound();
-        }
-    }
-
-    protected giveCookedBerries(): void {
-        const frozenBerries = this.playerStateManager.getPlayerState().inventory
-        .find(
-            item => item instanceof FrozenBerries
-        ) as FrozenBerries | null;
-    
-        if (!frozenBerries) {
-            return;
-        }
-
-        const removedItem = this.playerStateManager.getPlayerState().inventory.remove(frozenBerries.id);
-        const berries = new CookedBerries(1);
-        const addedItem = this.playerStateManager.getPlayerState().inventory.add(berries);
-    
-        if (addedItem !== null) {
-            this.storyManager.chapter1.markFoodCooked();
-        }
+        if (!option.choiceAction) return;
+        const handler = this.chapterDefinition.dialogueChoiceActionHandlers[option.choiceAction];
+        handler?.();
     }
 
     protected consumeInventoryItem(item: InventoryItem): void {
@@ -1153,38 +1056,5 @@ export default abstract class MappedAdventureScene extends Scene {
         item.consume({
             showDialogue: interaction => this.startDialogue(interaction)
         });
-    }
-    
-    protected pickupMap(): void {
-        const inventory = this.playerStateManager.getPlayerState().inventory;
-    
-        const alreadyHasMap = inventory.find(
-            item => item instanceof WorldMap
-        ) !== null;
-    
-        if (alreadyHasMap) {
-            return;
-        }
-    
-        const map = new WorldMap();
-        const addedItem = inventory.add(map);
-    
-        if (addedItem !== null) {
-            this.storyManager.chapter1.markMapPickedUp();
-            this.onMapPickedUp();
-        }
-    }
-
-    protected gotoChapter2(): void {
-        this.sceneManager.changeToScene(
-            EndOfDemoScene,
-            undefined,
-            undefined,
-            {
-                useFadeTransition: true,
-                fadeOutMs: 2000,
-                fadeInMs: 2000
-            }
-        );
     }
 }
