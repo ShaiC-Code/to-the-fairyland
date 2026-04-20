@@ -1,51 +1,82 @@
 {
     "activeFile": "tilemaps/Chapter2/Village.json",
     "expandedProjectPaths": [
-        "spritesheets",
-        "tilemaps/Chapter1",
-        "tilemaps/Chapter5",
-        "tilemaps",
-        "tilemaps/Chapter6",
         ".",
-        "tilemaps/Chapter2"
+        "tilemaps/Chapter2",
+        "spritesheets",
+        "tilemaps/Chapter5",
+        "tilemaps/Chapter1",
+        "tilemaps",
+        "tilemaps/Chapter6"
     ],
     "fileStates": {
+        "": {
+            "scaleInDock": 0.33
+        },
         "tilemaps/Chapter1/Chapter1.json": {
+            "expandedObjectLayers": [
+                14,
+                13
+            ],
             "scale": 0.75,
-            "selectedLayer": 6,
+            "selectedLayer": 7,
             "viewCenter": {
-                "x": 1792.6666666666665,
-                "y": 1824
+                "x": 2560.6666666666665,
+                "y": 1287.3333333333333
             }
         },
         "tilemaps/Chapter1/Chapter1.json#Chapter1_Tilemap1": {
-            "scaleInDock": 1
+            "scaleInDock": 0.125,
+            "scaleInEditor": 0.5
         },
         "tilemaps/Chapter1/Shelter.json": {
+            "expandedObjectLayers": [
+                6,
+                3
+            ],
             "scale": 1,
-            "selectedLayer": 2,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 1952.5,
-                "y": 1920
+                "x": 1514.5,
+                "y": 1777.5
             }
         },
         "tilemaps/Chapter1/Shelter.json#Shelter": {
-            "scaleInDock": 1
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "tilemaps/Chapter2/Road.json": {
+            "expandedObjectLayers": [
+                5,
+                4,
+                2
+            ],
+            "scale": 0.5,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 1009,
+                "y": 1083
+            }
+        },
+        "tilemaps/Chapter2/Road.json#Chapter2_Village_Tiles": {
+            "scaleInDock": 0.33
         },
         "tilemaps/Chapter2/Village.json": {
             "expandedObjectLayers": [
-                4,
-                5
+                5,
+                7,
+                4
             ],
-            "scale": 0.75,
-            "selectedLayer": 1,
+            "scale": 0.5,
+            "selectedLayer": 5,
             "viewCenter": {
-                "x": 879.3333333333334,
-                "y": 434
+                "x": 1117,
+                "y": 953
             }
         },
         "tilemaps/Chapter2/Village.json#Village": {
-            "scaleInDock": 1
+            "scaleInDock": 0.33,
+            "scaleInEditor": 1
         },
         "tilemaps/Chapter5/UndergroundTunnel.json": {
             "scale": 0.125,
@@ -70,7 +101,8 @@
             "scaleInDock": 1
         }
     },
-    "last.imagePath": "D:/GameDev/CSE380/Project/to-the-fairyland/dist/assets/tilemaps/Chapter2",
+    "last.externalTilesetPath": "D:/GameDev/CSE380/Project/to-the-fairyland/dist/assets/tilemaps/Chapter1",
+    "last.imagePath": "D:/GameDev/CSE380/Project/to-the-fairyland/dist/assets/tilemaps/Chapter1",
     "map.height": 60,
     "map.lastUsedFormat": "json",
     "map.tileHeight": 64,
@@ -91,6 +123,7 @@
     ],
     "resizeMap.removeObjects": false,
     "tileset.embedInMap": true,
+    "tileset.lastUsedFilter": "All Files (*)",
     "tileset.tileSize": {
         "height": 64,
         "width": 64
