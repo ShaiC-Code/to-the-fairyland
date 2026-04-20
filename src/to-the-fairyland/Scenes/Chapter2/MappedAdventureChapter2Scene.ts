@@ -4,8 +4,6 @@ import { DialogueChoiceActions, DialogueReadActions } from "../../GameSystems/In
 import EndOfDemoScene from "./EndOfDemoScene";
 
 export default abstract class MappedAdventureChapter2Scene extends MappedAdventureScene {
-    protected readonly storyManager = StoryManager.getInstance();
-
     protected static readonly assetBundle: AssetBundle = {
         tilemaps: {},
         spritesheets: {},
@@ -17,19 +15,21 @@ export default abstract class MappedAdventureChapter2Scene extends MappedAdventu
         }
     };
 
-    public override unloadScene(): void {
-        super.unloadScene();
-        this.keepAssets(MappedAdventureChapter2Scene.assetBundle);
-    }
+    protected readonly chapterDefinition: ChapterSceneDefinition = {
+        dialogueReadActionHandlers: {},
+        dialogueChoiceActionHandlers: {}
+    };
+
+    protected readonly storyManager = StoryManager.getInstance();
 
     protected combinedAssetBundles(): AssetBundle {
         return this.mergeAssetBundles(super.combinedAssetBundles(), MappedAdventureChapter2Scene.assetBundle);
     }
 
-    protected readonly chapterDefinition: ChapterSceneDefinition = {
-        dialogueReadActionHandlers: {},
-        dialogueChoiceActionHandlers: {}
-    };
+    public override unloadScene(): void {
+        super.unloadScene();
+        this.keepAssets(MappedAdventureChapter2Scene.assetBundle);
+    }
 
     protected gotoChapter3(): void {
         this.sceneManager.changeToScene(

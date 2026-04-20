@@ -8,8 +8,6 @@ import { GameEventType } from "../../../Wolfie2D/Events/GameEventType";
 import VillageScene from "../Chapter2/VillageScene";
 
 export default abstract class MappedAdventureChapter1Scene extends MappedAdventureScene {
-    protected readonly storyManager = StoryManager.getInstance();
-
     protected static readonly assetBundle: AssetBundle = {
         tilemaps: {},
         spritesheets: {},
@@ -20,20 +18,6 @@ export default abstract class MappedAdventureChapter1Scene extends MappedAdventu
             walkingSnowBushSFX: { key: "walking-snow-bush", path: "/assets/sounds/walking-snow-bush.ogg" }
         }
     };
-
-    public override unloadScene(): void {
-        super.unloadScene();
-        this.keepAssets(MappedAdventureChapter1Scene.assetBundle);
-
-        // Stop sfx when changing scenes
-        this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: this.assets.sounds.walkingWoodSFX.key});
-        this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: this.assets.sounds.walkingSnowSFX.key});
-        this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: this.assets.sounds.walkingSnowBushSFX.key});
-    }
-
-    protected combinedAssetBundles(): AssetBundle {
-        return this.mergeAssetBundles(super.combinedAssetBundles(), MappedAdventureChapter1Scene.assetBundle);
-    }
 
     protected readonly chapterDefinition: ChapterSceneDefinition = {
         dialogueReadActionHandlers: {
@@ -49,6 +33,24 @@ export default abstract class MappedAdventureChapter1Scene extends MappedAdventu
             [DialogueChoiceActions.PICKUP_MAP]: () => this.pickupMap()
         }
     };
+
+    protected readonly storyManager = StoryManager.getInstance();
+
+    protected combinedAssetBundles(): AssetBundle {
+        return this.mergeAssetBundles(super.combinedAssetBundles(), MappedAdventureChapter1Scene.assetBundle);
+    }
+
+    public override unloadScene(): void {
+        super.unloadScene();
+        this.keepAssets(MappedAdventureChapter1Scene.assetBundle);
+
+        // Stop sfx when changing scenes
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: this.assets.sounds.walkingWoodSFX.key});
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: this.assets.sounds.walkingSnowSFX.key});
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: this.assets.sounds.walkingSnowBushSFX.key});
+    }
+
+    protected onMapPickedUp(): void {}
 
     protected giveFrozenBerries(): void {
         const inventory = this.playerStateManager.getPlayerState().inventory;

@@ -68,7 +68,7 @@ export default class SplashScreenScene extends Scene {
         this.splashScreen.show();
     }
 
-    public updateScene(): void {
-        this.splashScreen.update();
+    public updateScene(deltaT: number): void {
+        this.splashScreen.update(deltaT);
     }
 }

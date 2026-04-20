@@ -8,9 +8,6 @@ import { Chapter1MainQuestStep } from "../../GameSystems/StorySystem/StoryState"
 import Sprite from "../../../Wolfie2D/Nodes/Sprites/Sprite";
 
 export default class ForestScene extends MappedAdventureChapter1Scene {
-    private mapItemSprite: Sprite | null = null;
-    private mapItemObject: TiledObject | null = null;
-
     protected readonly tilemap = {
         key: "chapter1",
         path: "/assets/tilemaps/Chapter1/Chapter1.json"
@@ -28,6 +25,9 @@ export default class ForestScene extends MappedAdventureChapter1Scene {
         },
         sounds: {}
     };
+    
+    private mapItemSprite: Sprite | null = null;
+    private mapItemObject: TiledObject | null = null;
 
     protected combinedAssetBundles(): AssetBundle {
         return this.mergeAssetBundles(super.combinedAssetBundles(), ForestScene.assetBundle);

@@ -68,11 +68,6 @@ export type AssetBundle = {
 
 
 export default abstract class MappedAdventureScene extends Scene {
-    protected abstract readonly chapterDefinition: ChapterSceneDefinition;
-    private static weatherAmbienceLoopsStarted = false;
-
-    protected readonly gameSessionManager = GameSessionManager.getInstance();
-    protected readonly playerStateManager = PlayerStateManager.getInstance();
 
     // The tilemap to load for the scene, pass from sub scenes
     protected abstract readonly tilemap: AssetRef;
@@ -104,6 +99,12 @@ export default abstract class MappedAdventureScene extends Scene {
         sprites: {},
         sounds: {}
     }; 
+    
+    protected abstract readonly chapterDefinition: ChapterSceneDefinition;
+    private static weatherAmbienceLoopsStarted = false;
+
+    protected readonly gameSessionManager = GameSessionManager.getInstance();
+    protected readonly playerStateManager = PlayerStateManager.getInstance();
 
     protected readonly groundLayerName = "Ground";
     protected readonly collisionLayerName = "CollisionLayer";
@@ -325,7 +326,7 @@ export default abstract class MappedAdventureScene extends Scene {
         this.startWeatherAmbienceLoops();
     }
 
-    public override updateScene(_deltaT: number): void {
+    public override updateScene(deltaT: number): void {
         // Handle pause/resume
         if(!this.dialogueScreen.getIsOpen() && Input.isKeyJustPressed("escape")) {
             if(this.pauseScreen.getIsOpen()) {
@@ -347,24 +348,20 @@ export default abstract class MappedAdventureScene extends Scene {
         const pauseOpen = this.pauseScreen.getIsOpen();
         const inventoryOpen = this.inventoryScreen.getIsOpen();
         const dialogueOpen = this.dialogueScreen.getIsOpen();
+        const menuOpen = pauseOpen || inventoryOpen || dialogueOpen;
 
-        const shouldPauseWorld = this.pauseScreen.getIsOpen() || this.inventoryScreen.getIsOpen();
+        const shouldPauseWorld = pauseOpen || inventoryOpen;
         this.setWorldPaused(shouldPauseWorld);
 
-        if (pauseOpen) {
-            this.pauseScreen.update();
-        }
-
-        if (inventoryOpen) {
-            this.inventoryScreen.update();
-        }
+        this.pauseScreen.update(deltaT);
+        this.inventoryScreen.update(deltaT);
 
         if (!pauseOpen && !inventoryOpen && dialogueOpen) {
-            this.updateDialogue();
+            this.updateDialogue(deltaT);
         }
 
         // Run gameplay interactions only while the world is not simulation-paused.
-        if(!pauseOpen && !inventoryOpen && !dialogueOpen) {
+        if(!menuOpen) {
             const ai = this.player.ai as PlayerAI;
             const controller = ai.controller;
 
@@ -378,7 +375,6 @@ export default abstract class MappedAdventureScene extends Scene {
                 }
             }
             
-
             if (!ai.moving && controller.interacting) {
                 const currentHit = this.findInteractableAtTile(ai.currentTile);
                 // Checks current tile first
@@ -399,7 +395,7 @@ export default abstract class MappedAdventureScene extends Scene {
         }
 
         if (this.weatherActive && this.weatherAlpha < 1) {
-            this.weatherAlpha = Math.min(this.weatherAlpha + _deltaT * this.weatherFadeInSpeed, 1);
+            this.weatherAlpha = Math.min(this.weatherAlpha + deltaT * this.weatherFadeInSpeed, 1);
             for (const flake of this.snowflakes) {
                 flake.alpha = this.weatherAlpha;
             }
@@ -435,8 +431,6 @@ export default abstract class MappedAdventureScene extends Scene {
     protected handleInteraction(_obj: TiledObject): void {}
 
     protected handleAutoTransition(_obj: TiledObject): void {}
-
-    protected onMapPickedUp(): void {}
 
     /**
      * Override in child scenes if weather ambience should default indoors.
@@ -955,13 +949,13 @@ export default abstract class MappedAdventureScene extends Scene {
         this.dialogueScreen.showChoices();
     }
     
-    protected updateDialogue(): void {
+    protected updateDialogue(deltaT: number): void {
         if (!this.activeDialogue) {
             return;
         }
 
         if (this.dialogueChoiceActive) {
-            this.dialogueScreen.update();
+            this.dialogueScreen.update(deltaT);
             return;
         }
     
