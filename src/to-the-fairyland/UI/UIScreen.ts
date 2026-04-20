@@ -104,6 +104,13 @@ export default class UIScreen implements Updateable {
     public getUIElement(key: string): CanvasNode | undefined {
         return this.elements.get(key);
     }
+
+    public update(deltaT: number): void {
+        if (!this.isOpen) {
+            return;
+        }
+        this.updateNavigation();
+    }
     
     public show(): void {
         if (this.isOpen) return;
@@ -132,13 +139,6 @@ export default class UIScreen implements Updateable {
             this.layer.setHidden(true);
         }
         this.isOpen = false;
-    }
-
-    public update(deltaT: number): void {
-        if (!this.isOpen) {
-            return;
-        }
-        this.updateNavigation();
     }
 
     protected addRect(key: string, position: Vec2, size: Vec2, color: Color): void {

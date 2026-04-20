@@ -12,17 +12,16 @@ import { AssetBundle } from "../Scenes/MappedAdventureScene";
 
 
 export default class PlayerActor extends AnimatedSprite implements Battler {
-
-    /** Give the player a battler compoonent */
-    protected battler: Battler;
-    protected targetable: TargetableEntity;
-
     private assetBundle: AssetBundle = {
         tilemaps: {},
         spritesheets: {},
         sprites: {},
         sounds: {}
     };
+
+    /** Give the player a battler compoonent */
+    protected battler: Battler;
+    protected targetable: TargetableEntity;
 
     public spriteOffset = new Vec2(0, 20);
 
