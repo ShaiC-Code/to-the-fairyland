@@ -3,6 +3,7 @@ import NPCActor from "../../Actors/NPCActor";
 import IdleBehavior from "../../AI/NPC/NPCBehavior/IdleBehavior";
 import { AssetBundle } from "../MappedAdventureScene";
 import MappedAdventureChapter2Scene from "./MappedAdventureChapter2Scene";
+import RoadScene from "./RoadScene";
 
 export default class VillageScene extends MappedAdventureChapter2Scene {
     protected readonly tilemap = {
@@ -59,5 +60,22 @@ export default class VillageScene extends MappedAdventureChapter2Scene {
         npc.animation.play("IDLE_DOWN", true);
         npc.addAI(IdleBehavior, {});
     }
+
+    protected override handleAutoTransition(obj: TiledObject): void {
+        if (obj.name === "PathToAdventure") {
+            this.sceneManager.changeToScene(
+                RoadScene,
+                { spawnName: "RoadStart" },
+                undefined,
+                {
+                    useFadeTransition: true,
+                    fadeOutMs: 300,
+                    fadeInMs: 300
+                }
+            );
+        }
+    }
+
+    
 
 }
