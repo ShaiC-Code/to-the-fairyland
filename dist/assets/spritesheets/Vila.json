@@ -1,6 +1,6 @@
 {
-    "name": "NPC2",
-    "spriteSheetImage": "NPC2.png",
+    "name": "Vila",
+    "spriteSheetImage": "Vila.png",
     "spriteWidth": 64,
     "spriteHeight": 128,
     "columns": 1,
