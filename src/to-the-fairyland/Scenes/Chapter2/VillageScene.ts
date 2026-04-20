@@ -20,8 +20,6 @@ export default class VillageScene extends MappedAdventureChapter2Scene {
             NPC3: { key: "npc3", path: "/assets/spritesheets/NPC3.json" },
             NPC4: { key: "npc4", path: "/assets/spritesheets/NPC4.json" },
             NPC5: { key: "npc5", path: "/assets/spritesheets/NPC5.json" },
-            NPC6: { key: "npc6", path: "/assets/spritesheets/NPC6.json" },
-            NPC7: { key: "npc7", path: "/assets/spritesheets/NPC7.json" }
         },
         sprites: {},
         sounds: {}
