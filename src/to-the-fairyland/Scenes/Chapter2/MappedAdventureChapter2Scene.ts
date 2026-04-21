@@ -1,6 +1,5 @@
 import MappedAdventureScene, { AssetBundle, ChapterSceneDefinition } from "../MappedAdventureScene";
 import StoryManager from "../../GameSystems/StorySystem/StoryManager";
-import { DialogueChoiceActions, DialogueReadActions } from "../../GameSystems/InteractionSystem/InteractionDatabase";
 import EndOfDemoScene from "./EndOfDemoScene";
 
 export default abstract class MappedAdventureChapter2Scene extends MappedAdventureScene {

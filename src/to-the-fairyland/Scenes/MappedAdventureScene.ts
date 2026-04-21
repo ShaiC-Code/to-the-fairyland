@@ -38,7 +38,7 @@ type SceneEntranceData = {
 };
 
 export interface ChapterSceneDefinition {
-    dialogueReadActionHandlers: Readonly<Partial<Record<DialogueReadAction, () => void>>>;
+    dialogueCompleteActionHandlers: Readonly<Partial<Record<DialogueCompleteAction, () => void>>>;
     dialogueChoiceActionHandlers: Readonly<Partial<Record<DialogueChoiceAction, () => void>>>;
 }
 
@@ -376,17 +376,24 @@ export default abstract class MappedAdventureScene extends Scene {
             }
             
             if (!ai.moving && controller.interacting) {
+                const nextTile = ai.currentTile.clone().add(ai.facing);
+            
+                if (this.tryStartSceneInteractionAtTile(ai.currentTile)) {
+                    return;
+                }
+            
+                if (this.tryStartSceneInteractionAtTile(nextTile)) {
+                    return;
+                }
+            
                 const currentHit = this.findInteractableAtTile(ai.currentTile);
-                // Checks current tile first
                 if (currentHit) {
                     console.log("[Interacted with:", currentHit.name, "]");
                     this.handleInteraction(currentHit);
                     return;
                 }
-
-                const nextTile = ai.currentTile.clone().add(ai.facing);
+            
                 const nextHit = this.findInteractableAtTile(nextTile);
-                // Checks destination tile next
                 if (nextHit) {
                     console.log("[Interacted with:", nextHit.name, "]");
                     this.handleInteraction(nextHit);
@@ -411,6 +418,10 @@ export default abstract class MappedAdventureScene extends Scene {
         this.parallaxLayers.forEach((name: string) => {
             this.parallaxLayers.get(name).setPaused(paused);
         });
+    }
+
+    protected tryStartSceneInteractionAtTile(_tile: Vec2): boolean {
+        return false;
     }
 
     protected override isSimulationPaused(): boolean {
@@ -708,8 +719,8 @@ export default abstract class MappedAdventureScene extends Scene {
         this.dialogueChoiceResolved = false;
         this.dialogueScreen.hideChoices();
         this.dialogueScreen.setOnReadCallback(() => {
-            dialogue.onRead?.();
-            this.handleDialogueReadAction(dialogue);
+            dialogue.onComplete?.();
+            this.handleDialogueCompleteAction(dialogue);
         });
 
         this.dialogueScreen.showLine(
@@ -835,11 +846,11 @@ export default abstract class MappedAdventureScene extends Scene {
         return this.tilemap.key === "chapter1" ? "snow" : this.tilemap.key === "shelter" ? "wood" : null;
     }
 
-    protected handleDialogueReadAction(option: DialogueInteraction): void {
-        if (!option.readAction) return;
-        const handler = this.chapterDefinition.dialogueReadActionHandlers[option.readAction];
+    protected handleDialogueCompleteAction(option: DialogueInteraction): void {
+        if (!option.completeAction) return;
+        const handler = this.chapterDefinition.dialogueCompleteActionHandlers[option.completeAction];
         handler?.();
-    }
+    }    
 
     protected handleDialogueChoiceAction(option: DialogueChoiceOption): void {
         if (!option.choiceAction) return;
