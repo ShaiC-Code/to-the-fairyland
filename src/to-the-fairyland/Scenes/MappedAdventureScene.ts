@@ -711,7 +711,7 @@ export default abstract class MappedAdventureScene extends Scene {
         return true;
     }
 
-    protected startDialogue(dialogue: DialogueInteraction): void {
+    protected startDialogue(dialogue: DialogueInteraction, speakerName?: string): void {
         const ai = this.player.ai as PlayerAI;
         ai.controller.setControlMode(PlayerControlMode.DIALOGUE);
 
@@ -724,6 +724,8 @@ export default abstract class MappedAdventureScene extends Scene {
             dialogue.onComplete?.();
             this.handleDialogueCompleteAction(dialogue);
         });
+
+        this.dialogueScreen.setSpeakerName(speakerName);
 
         this.dialogueScreen.showLine(
             dialogue.lines[this.currentDialogueLine]
@@ -819,6 +821,7 @@ export default abstract class MappedAdventureScene extends Scene {
         }
         this.dialogueScreen.hideChoices();
         this.dialogueScreen.hide();
+        this.dialogueScreen.setSpeakerName(undefined);
     }
 
     public playUIClickSFX(): void {
