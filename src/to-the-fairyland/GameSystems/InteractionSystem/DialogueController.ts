@@ -111,7 +111,7 @@ export default class DialogueController implements Updateable {
         );
     }
 
-    public startDialogue(dialogue: DialogueInteraction): void {
+    public startDialogue(dialogue: DialogueInteraction, speakerName?: string): void {
         const ai = this.player.ai as PlayerAI;
         ai.controller.setControlMode(PlayerControlMode.DIALOGUE);
 
@@ -124,6 +124,8 @@ export default class DialogueController implements Updateable {
             dialogue.onComplete?.();
             this.handleDialogueCompleteAction(dialogue);
         });
+
+        this.dialogueScreen.setSpeakerName(speakerName);
 
         this.dialogueScreen.showLine(
             dialogue.lines[this.currentDialogueLine]
@@ -184,6 +186,7 @@ export default class DialogueController implements Updateable {
         }
         this.dialogueScreen.hideChoices();
         this.dialogueScreen.hide();
+        this.dialogueScreen.setSpeakerName(undefined);
     }
 
     public playDialogueSFX(): void {
