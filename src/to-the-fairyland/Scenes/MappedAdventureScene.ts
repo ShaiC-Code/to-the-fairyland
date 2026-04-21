@@ -18,7 +18,7 @@ import Graphic from "../../Wolfie2D/Nodes/Graphic";
 import DialogueScreen from "../UI/DialogueScreen";
 import { PlayerControlMode, PlayerInput } from "../AI/Player/PlayerController";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
-import { DialogueChoiceAction, DialogueChoiceOption, DialogueInteraction, DialogueReadAction, getInteractionData } from "../GameSystems/InteractionSystem/InteractionDatabase";
+import { DialogueChoiceAction, DialogueChoiceOption, DialogueInteraction, DialogueCompleteAction, getInteractionData } from "../GameSystems/InteractionSystem/InteractionDatabase";
 import PlayerStateManager from "../GameSystems/PlayerSystem/PlayerStateManager";
 import GameSessionManager from "../GameSystems/GameSessionSystem/GameSessionManager";
 import { TimeOfDay } from "../GameSystems/WorldSystem/WorldState";
@@ -38,7 +38,7 @@ type SceneEntranceData = {
 };
 
 export interface ChapterSceneDefinition {
-    dialogueReadActionHandlers: Readonly<Partial<Record<DialogueReadAction, () => void>>>;
+    dialogueCompleteActionHandlers: Readonly<Partial<Record<DialogueCompleteAction, () => void>>>;
     dialogueChoiceActionHandlers: Readonly<Partial<Record<DialogueChoiceAction, () => void>>>;
 }
 
@@ -707,9 +707,9 @@ export default abstract class MappedAdventureScene extends Scene {
         this.dialogueChoiceActive = false;
         this.dialogueChoiceResolved = false;
         this.dialogueScreen.hideChoices();
-        this.dialogueScreen.setOnReadCallback(() => {
-            dialogue.onRead?.();
-            this.handleDialogueReadAction(dialogue);
+        this.dialogueScreen.setOnCompleteCallback(() => {
+            dialogue.onComplete?.();
+            this.handleDialogueCompleteAction(dialogue);
         });
 
         this.dialogueScreen.showLine(
@@ -802,7 +802,7 @@ export default abstract class MappedAdventureScene extends Scene {
         this.dialogueChoiceActive = false;
         this.dialogueChoiceResolved = false;
         if (!callbackHandledByReadCompletion) {
-            this.dialogueScreen.clearOnReadCallback();
+            this.dialogueScreen.clearOnCompleteCallback();
         }
         this.dialogueScreen.hideChoices();
         this.dialogueScreen.hide();
@@ -835,9 +835,9 @@ export default abstract class MappedAdventureScene extends Scene {
         return this.tilemap.key === "chapter1" ? "snow" : this.tilemap.key === "shelter" ? "wood" : null;
     }
 
-    protected handleDialogueReadAction(option: DialogueInteraction): void {
-        if (!option.readAction) return;
-        const handler = this.chapterDefinition.dialogueReadActionHandlers[option.readAction];
+    protected handleDialogueCompleteAction(option: DialogueInteraction): void {
+        if (!option.completeAction) return;
+        const handler = this.chapterDefinition.dialogueCompleteActionHandlers[option.completeAction];
         handler?.();
     }
 

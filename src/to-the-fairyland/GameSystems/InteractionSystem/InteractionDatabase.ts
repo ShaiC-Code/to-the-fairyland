@@ -3,11 +3,11 @@ import { Chapter1MainQuestStep } from "../StorySystem/StoryState";
 export type InteractionType = "dialogue";
 export type InteractionData = DialogueInteraction;
 
-export const DialogueReadActions = {
+export const DialogueCompleteActions = {
     GOTO_CHAPTER2: "gotoChapter2"
 } as const;
 
-export type DialogueReadAction = typeof DialogueReadActions[keyof typeof DialogueReadActions];
+export type DialogueCompleteAction = typeof DialogueCompleteActions[keyof typeof DialogueCompleteActions];
 
 export const DialogueChoiceActions = {
     COLLECT_FROZEN_BERRIES: "collectFrozenBerries",
@@ -38,14 +38,14 @@ interface DialogueInteractionBase {
 
 export interface DialogueInteractionWithChoice extends DialogueInteractionBase {
     choice: DialogueChoicePrompt;
-    readAction?: never;
-    onRead?: never;
+    completeAction?: never;
+    onComplete?: never;
 }
 
 export interface DialogueInteractionWithoutChoice extends DialogueInteractionBase {
     choice?: never;
-    readAction?: DialogueReadAction;
-    onRead?: () => void;
+    completeAction?: DialogueCompleteAction;
+    onComplete?: () => void;
 }
 
 export type DialogueInteraction = DialogueInteractionWithChoice | DialogueInteractionWithoutChoice;
@@ -190,7 +190,7 @@ export function getBedDialogue(step: Chapter1MainQuestStep): DialogueInteraction
                 "...",
                 "No time for rest."
             ],
-            { readAction: DialogueReadActions.GOTO_CHAPTER2 }
+            { completeAction: DialogueCompleteActions.GOTO_CHAPTER2 }
         );
 
     default:

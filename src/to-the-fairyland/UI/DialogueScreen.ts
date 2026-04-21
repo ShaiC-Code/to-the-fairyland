@@ -17,7 +17,7 @@ export default class DialogueChoiceBoxScreen extends UIScreen {
     private choiceButtonKeys: string[] = [];
     private selectedChoiceIndex = 0;
     private choicesVisible = false;
-    private onReadCallback: (() => void) | null = null;
+    private onCompleteCallback: (() => void) | null = null;
 
     private readonly dialogueFontSize = 24;
     private readonly dialoguePaddingY = 20;
@@ -173,19 +173,19 @@ export default class DialogueChoiceBoxScreen extends UIScreen {
         this.layoutChoiceButtons();
     }
 
-    public setOnReadCallback(callback?: () => void): void {
-        this.onReadCallback = callback ?? null;
+    public setOnCompleteCallback(callback?: () => void): void {
+        this.onCompleteCallback = callback ?? null;
     }
 
     public completeRead(): void {
-        const callback = this.onReadCallback;
-        this.clearOnReadCallback();
+        const callback = this.onCompleteCallback;
+        this.clearOnCompleteCallback();
 
         callback?.();
     }
 
-    public clearOnReadCallback(): void {
-        this.onReadCallback = null;
+    public clearOnCompleteCallback(): void {
+        this.onCompleteCallback = null;
     }
 
     public areChoicesVisible(): boolean {
