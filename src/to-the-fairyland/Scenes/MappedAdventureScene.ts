@@ -25,6 +25,8 @@ import { TimeOfDay } from "../GameSystems/WorldSystem/WorldState";
 import InventoryItem from "../GameSystems/ItemSystem/InventoryItem";
 import { UIScreenActionBindings } from "../UI/UIScreen";
 import WeatherController from "../GameSystems/WorldSystem/WeatherController";
+import SpotlightOverlay from "../UI/CustomUIElements/SpotlightOverlay";
+import SpotlightEffectOverlay from "../Overlays/SpotlightEffectOverlay";
 
 export type AssetRef = Readonly<{
     readonly key: string;
@@ -117,6 +119,7 @@ export default abstract class MappedAdventureScene extends Scene {
     protected dialogueChoiceResolved = false;
 
     private timeOverlay: Graphic | null = null;
+    private timeSpotlightOverlay: SpotlightEffectOverlay | null = null;
 
     protected weatherController!: WeatherController;
     
@@ -137,6 +140,11 @@ export default abstract class MappedAdventureScene extends Scene {
         this.add.registerCustomCanvasNode(CustomUIElementType.UI_IMAGE, (options?: Record<string, any>) => {
             return new UIImage(options!.imageKey);
         });
+
+        this.add.registerCustomCanvasNode(CustomUIElementType.SPOTLIGHT_OVERLAY, (options?: Record<string, any>) => {
+            return new SpotlightOverlay(options!.position, options!.size, options!.radius, options!.innerRadiusRatio, options!.overlayColor);
+        });
+
     }
 
     public unloadScene(): void {
@@ -266,6 +274,7 @@ export default abstract class MappedAdventureScene extends Scene {
                 uiActions
             }
         );
+
         this.inventoryScreen = new InventoryScreen(
             "inventoryOverlay",
             this,
@@ -292,6 +301,19 @@ export default abstract class MappedAdventureScene extends Scene {
                 onEnterSFXKey: this.assets.sounds.uiHover.key,
                 onClickSFXKey: this.assets.sounds.uiClick.key,
                 uiActions
+            }
+        );
+        
+        this.timeSpotlightOverlay = new SpotlightEffectOverlay(
+            "timeSpotlightOverlay",
+            this,
+            () => this.viewport.getCenter(),
+            () => this.viewport.getHalfSize(),
+            new Color(0, 0, 0, 0.3),
+            undefined,
+            {
+                radius: Math.min(this.viewport.getHalfSize().x, this.viewport.getHalfSize().y) * 0.6,
+                innerRadiusRatio: 0.7
             }
         );
 
@@ -527,6 +549,10 @@ export default abstract class MappedAdventureScene extends Scene {
             if (this.timeOverlay) {
                 this.timeOverlay.visible = false;
             }
+
+            if (this.timeSpotlightOverlay) {
+                this.timeSpotlightOverlay.hide();
+            }
             return;
         }
         if (!this.timeOverlay) {
@@ -538,7 +564,15 @@ export default abstract class MappedAdventureScene extends Scene {
             });
         }
         this.timeOverlay.color = color;
-        this.timeOverlay.visible = true;
+
+        // Add spotlight overlay for DUSK
+        if (time === TimeOfDay.DUSK) {
+            this.timeOverlay.visible = true;
+            this.timeSpotlightOverlay?.show();
+        } else {
+            this.timeOverlay.visible = false;
+            this.timeSpotlightOverlay?.hide();
+        }
     }  
 
     private getColorForTime(time: TimeOfDay): Color | null {
