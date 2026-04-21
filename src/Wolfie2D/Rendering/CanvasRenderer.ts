@@ -188,7 +188,9 @@ export default class CanvasRenderer extends RenderingManager {
         }
         this.ctx.globalAlpha = node.alpha;
         
-        if(node instanceof AnimatedSprite){
+        if (node.hasCustomShader) {
+            this.renderCustom(node);
+        } else if(node instanceof AnimatedSprite){
             this.renderAnimatedSprite(<AnimatedSprite>node);
         } else if(node instanceof Sprite){
             this.renderSprite(<Sprite>node);
@@ -275,6 +277,14 @@ export default class CanvasRenderer extends RenderingManager {
             this.uiElementRenderer.renderSlider(uiElement);
         } else if(uiElement instanceof TextInput){
             this.uiElementRenderer.renderTextInput(uiElement);
+        }
+    }
+
+    protected renderCustom(node: CanvasNode): void {
+        if(typeof (node as any).renderCustom === "function"){
+            this.ctx.save();
+            (node as any).renderCustom(this.ctx);
+            this.ctx.restore();
         }
     }
 
