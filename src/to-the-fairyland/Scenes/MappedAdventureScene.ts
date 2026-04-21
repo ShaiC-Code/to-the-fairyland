@@ -377,17 +377,24 @@ export default abstract class MappedAdventureScene extends Scene {
             }
             
             if (!ai.moving && controller.interacting) {
+                const nextTile = ai.currentTile.clone().add(ai.facing);
+            
+                if (this.tryStartSceneInteractionAtTile(ai.currentTile)) {
+                    return;
+                }
+            
+                if (this.tryStartSceneInteractionAtTile(nextTile)) {
+                    return;
+                }
+            
                 const currentHit = this.findInteractableAtTile(ai.currentTile);
-                // Checks current tile first
                 if (currentHit) {
                     console.log("[Interacted with:", currentHit.name, "]");
                     this.handleInteraction(currentHit);
                     return;
                 }
-
-                const nextTile = ai.currentTile.clone().add(ai.facing);
+            
                 const nextHit = this.findInteractableAtTile(nextTile);
-                // Checks destination tile next
                 if (nextHit) {
                     console.log("[Interacted with:", nextHit.name, "]");
                     this.handleInteraction(nextHit);
@@ -413,6 +420,10 @@ export default abstract class MappedAdventureScene extends Scene {
         this.parallaxLayers.forEach((name: string) => {
             this.parallaxLayers.get(name).setPaused(paused);
         });
+    }
+
+    protected tryStartSceneInteractionAtTile(_tile: Vec2): boolean {
+        return false;
     }
 
     protected override isSimulationPaused(): boolean {
@@ -841,7 +852,7 @@ export default abstract class MappedAdventureScene extends Scene {
         if (!option.completeAction) return;
         const handler = this.chapterDefinition.dialogueCompleteActionHandlers[option.completeAction];
         handler?.();
-    }
+    }    
 
     protected handleDialogueChoiceAction(option: DialogueChoiceOption): void {
         if (!option.choiceAction) return;

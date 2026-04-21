@@ -1,6 +1,6 @@
 {
-    "name": "NPC5",
-    "spriteSheetImage": "NPC5.png",
+    "name": "Argus",
+    "spriteSheetImage": "Argus.png",
     "spriteWidth": 64,
     "spriteHeight": 128,
     "columns": 1,

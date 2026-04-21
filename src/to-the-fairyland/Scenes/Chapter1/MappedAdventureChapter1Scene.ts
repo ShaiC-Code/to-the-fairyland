@@ -33,6 +33,7 @@ export default abstract class MappedAdventureChapter1Scene extends MappedAdventu
             [DialogueChoiceActions.PICKUP_MAP]: () => this.pickupMap()
         }
     };
+    
 
     protected readonly storyManager = StoryManager.getInstance();
 
