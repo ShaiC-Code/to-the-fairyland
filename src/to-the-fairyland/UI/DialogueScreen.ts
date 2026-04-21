@@ -11,12 +11,13 @@ type DialogueChoice = {
 };
 
 export default class DialogueChoiceBoxScreen extends UIScreen {
+    private textBox!: TextBox;
     private defaultRevealSpeed = 105;
     private choices: DialogueChoice[] = [];
     private choiceButtonKeys: string[] = [];
     private selectedChoiceIndex = 0;
     private choicesVisible = false;
-    private onReadCallback: (() => void) | null = null;
+    private onCompleteCallback: (() => void) | null = null;
 
     private readonly dialogueFontSize = 24;
     private readonly dialoguePaddingY = 20;
@@ -49,6 +50,7 @@ export default class DialogueChoiceBoxScreen extends UIScreen {
             valign: "top",
             maxLines: 3
         });
+        this.textBox = this.getUIElement("dialogueText") as TextBox;
 
         this.configureChoiceSafeZone(boxSize);
 
@@ -56,13 +58,11 @@ export default class DialogueChoiceBoxScreen extends UIScreen {
     }
 
     private configureChoiceSafeZone(boxSize: Vec2): void {
-        const textBox = this.getTextBox();
+        this.textBox.padding.set(20, this.dialoguePaddingY);
 
-        textBox.padding.set(20, this.dialoguePaddingY);
-
-        const availableTextHeight = boxSize.y - textBox.padding.y * 2 - this.choiceSafeZoneHeight;
+        const availableTextHeight = boxSize.y - this.textBox.padding.y * 2 - this.choiceSafeZoneHeight;
         const maxLines = Math.max(1, Math.floor(availableTextHeight / this.dialogueFontSize));
-        textBox.maxLines = maxLines;
+        this.textBox.maxLines = maxLines;
     }
 
     private ensureChoiceButtons(requiredCount: number): void {
@@ -90,12 +90,11 @@ export default class DialogueChoiceBoxScreen extends UIScreen {
     }
 
     private layoutChoiceButtons(): void {
-        const textBox = this.getTextBox();
         const viewportHalfSize = this.getViewportHalfSize();
 
         const buttonSize = this.choiceButtonSize.clone();
         const buttonGap = 24;
-        const bottomY = textBox.position.y + textBox.size.y / 2;
+        const bottomY = this.textBox.position.y + this.textBox.size.y / 2;
         const buttonY = bottomY - this.choiceSafeZoneBottomPadding - buttonSize.y / 2;
         const totalWidth = this.choices.length * buttonSize.x + (this.choices.length - 1) * buttonGap;
         const startX = viewportHalfSize.x - totalWidth / 2 + buttonSize.x / 2;
@@ -174,42 +173,37 @@ export default class DialogueChoiceBoxScreen extends UIScreen {
         this.layoutChoiceButtons();
     }
 
-    public setOnReadCallback(callback?: () => void): void {
-        this.onReadCallback = callback ?? null;
+    public setOnCompleteCallback(callback?: () => void): void {
+        this.onCompleteCallback = callback ?? null;
     }
 
     public completeRead(): void {
-        const callback = this.onReadCallback;
-        this.clearOnReadCallback();
+        const callback = this.onCompleteCallback;
+        this.clearOnCompleteCallback();
 
         callback?.();
     }
 
-    public clearOnReadCallback(): void {
-        this.onReadCallback = null;
+    public clearOnCompleteCallback(): void {
+        this.onCompleteCallback = null;
     }
 
     public areChoicesVisible(): boolean {
         return this.choicesVisible;
     }
 
-    public getTextBox(): TextBox {
-        return this.getUIElement("dialogueText") as TextBox;
-    }
-
     public showLine(line: string, charsPerSecond: number = this.defaultRevealSpeed): void {
-        const textBox = this.getTextBox();
-        textBox.setText(line);
-        textBox.startTypewriter(charsPerSecond);
+        this.textBox.setText(line);
+        this.textBox.startTypewriter(charsPerSecond);
         this.show();
     }
 
     public revealCurrentLine(): void {
-        this.getTextBox().stopTypewriter(true);
+        this.textBox.stopTypewriter(true);
     }
 
     public isTyping(): boolean {
-        return this.getTextBox().typingActive;
+        return this.textBox.typingActive;
     }
 
 }

@@ -15,19 +15,18 @@ import UIImage from "../UI/CustomUIElements/UIImage";
 import { GraphicType } from "../../Wolfie2D/Nodes/Graphics/GraphicTypes";
 import Color from "../../Wolfie2D/Utils/Color";
 import Graphic from "../../Wolfie2D/Nodes/Graphic";
-import Sprite from "../../Wolfie2D/Nodes/Sprites/Sprite";
-import SnowflakeBehavior, { SnowflakeSettings } from "../AI/SnowflakeBehavior";
 import DialogueScreen from "../UI/DialogueScreen";
 import { PlayerControlMode, PlayerInput } from "../AI/Player/PlayerController";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
-import { AudioChannelType } from "../../Wolfie2D/Sound/AudioManager";
-import { DialogueChoiceAction, DialogueChoiceOption, DialogueCompleteAction, DialogueInteraction, getInteractionData } from "../GameSystems/InteractionSystem/InteractionDatabase";
-
+import { DialogueChoiceAction, DialogueChoiceOption, DialogueInteraction, DialogueCompleteAction, getInteractionData } from "../GameSystems/InteractionSystem/InteractionDatabase";
 import PlayerStateManager from "../GameSystems/PlayerSystem/PlayerStateManager";
 import GameSessionManager from "../GameSystems/GameSessionSystem/GameSessionManager";
 import { TimeOfDay } from "../GameSystems/WorldSystem/WorldState";
 import InventoryItem from "../GameSystems/ItemSystem/InventoryItem";
 import { UIScreenActionBindings } from "../UI/UIScreen";
+import WeatherController from "../GameSystems/WorldSystem/WeatherController";
+import SpotlightOverlay from "../UI/CustomUIElements/SpotlightOverlay";
+import SpotlightEffectOverlay from "../Overlays/SpotlightEffectOverlay";
 
 export type AssetRef = Readonly<{
     readonly key: string;
@@ -37,20 +36,6 @@ export type AssetRef = Readonly<{
 type SceneEntranceData = {
     spawnName?: string;
 };
-
-export enum WeatherType {
-    NONE,
-    SNOW,
-    SNOWSTORM
-}
-
-type SnowPreset = Readonly<{
-    poolSize: number;
-    fadeInSpeed: number;
-    scaleMin: number;
-    scaleMax: number;
-    settings: SnowflakeSettings;
-}>;
 
 export interface ChapterSceneDefinition {
     dialogueCompleteActionHandlers: Readonly<Partial<Record<DialogueCompleteAction, () => void>>>;
@@ -69,11 +54,6 @@ export type AssetBundle = {
 
 
 export default abstract class MappedAdventureScene extends Scene {
-    protected abstract readonly chapterDefinition: ChapterSceneDefinition;
-    private static weatherAmbienceLoopsStarted = false;
-
-    protected readonly gameSessionManager = GameSessionManager.getInstance();
-    protected readonly playerStateManager = PlayerStateManager.getInstance();
 
     // The tilemap to load for the scene, pass from sub scenes
     protected abstract readonly tilemap: AssetRef;
@@ -105,6 +85,11 @@ export default abstract class MappedAdventureScene extends Scene {
         sprites: {},
         sounds: {}
     }; 
+    
+    protected abstract readonly chapterDefinition: ChapterSceneDefinition;
+
+    protected readonly gameSessionManager = GameSessionManager.getInstance();
+    protected readonly playerStateManager = PlayerStateManager.getInstance();
 
     protected readonly groundLayerName = "Ground";
     protected readonly collisionLayerName = "CollisionLayer";
@@ -134,17 +119,9 @@ export default abstract class MappedAdventureScene extends Scene {
     protected dialogueChoiceResolved = false;
 
     private timeOverlay: Graphic | null = null;
-    private snowflakes: Sprite[] = [];
-    private weatherActive = false;
-    private weatherAlpha = 0;
-    private weatherFadeInSpeed = 0.5;
-    private weatherLayerCreated = false;
-    private weatherLayerDepth = 50;
-    private weatherAmbienceMode: "inside" | "outside" | null = null;
-    private readonly weatherAmbienceFadeSeconds = 0.5;
-    private readonly weatherAmbienceInitialFadeSeconds = 1.0;
-    
-    private readonly weatherLayerName = "weather";
+    private timeSpotlightOverlay: SpotlightEffectOverlay | null = null;
+
+    protected weatherController!: WeatherController;
     
     // lets the scene receive data, ex: {spawnName: "Door1"}
     public override initScene(init: SceneEntranceData = {}): void {
@@ -163,11 +140,16 @@ export default abstract class MappedAdventureScene extends Scene {
         this.add.registerCustomCanvasNode(CustomUIElementType.UI_IMAGE, (options?: Record<string, any>) => {
             return new UIImage(options!.imageKey);
         });
+
+        this.add.registerCustomCanvasNode(CustomUIElementType.SPOTLIGHT_OVERLAY, (options?: Record<string, any>) => {
+            return new SpotlightOverlay(options!.position, options!.size, options!.radius, options!.innerRadiusRatio, options!.overlayColor);
+        });
+
     }
 
     public unloadScene(): void {
         this.keepAssets(MappedAdventureScene.assetBundle);
-        this.muteWeatherAmbience();
+        this.weatherController.muteWeatherAmbience();
     }
 
     protected mergeAssetBundles(parent: AssetBundle, child: AssetBundle): AssetBundle {
@@ -292,6 +274,7 @@ export default abstract class MappedAdventureScene extends Scene {
                 uiActions
             }
         );
+
         this.inventoryScreen = new InventoryScreen(
             "inventoryOverlay",
             this,
@@ -320,13 +303,31 @@ export default abstract class MappedAdventureScene extends Scene {
                 uiActions
             }
         );
+        
+        this.timeSpotlightOverlay = new SpotlightEffectOverlay(
+            "timeSpotlightOverlay",
+            this,
+            () => this.viewport.getCenter(),
+            () => this.viewport.getHalfSize(),
+            new Color(0, 0, 0, 0.3),
+            this.player,
+            undefined,
+            {
+                radius: Math.min(this.viewport.getHalfSize().x, this.viewport.getHalfSize().y) * 0.6,
+                innerRadiusRatio: 0.7
+            }
+        );
 
         const worldState = this.gameSessionManager.getWorldState();
         this.setTimeOfDay(worldState.timeOfDay);
-        this.startWeatherAmbienceLoops();
+        
+        this.weatherController = new WeatherController(this, this.viewport);
+        this.weatherController.sceneAssets = this.assets;
+        this.weatherController.setWeatherAmbienceIndoors(this.isWeatherAmbienceIndoors());
+        this.weatherController.startWeatherAmbienceLoops();
     }
 
-    public override updateScene(_deltaT: number): void {
+    public override updateScene(deltaT: number): void {
         // Handle pause/resume
         if(!this.dialogueScreen.getIsOpen() && Input.isKeyJustPressed("escape")) {
             if(this.pauseScreen.getIsOpen()) {
@@ -348,24 +349,20 @@ export default abstract class MappedAdventureScene extends Scene {
         const pauseOpen = this.pauseScreen.getIsOpen();
         const inventoryOpen = this.inventoryScreen.getIsOpen();
         const dialogueOpen = this.dialogueScreen.getIsOpen();
+        const menuOpen = pauseOpen || inventoryOpen || dialogueOpen;
 
-        const shouldPauseWorld = this.pauseScreen.getIsOpen() || this.inventoryScreen.getIsOpen();
+        const shouldPauseWorld = pauseOpen || inventoryOpen;
         this.setWorldPaused(shouldPauseWorld);
 
-        if (pauseOpen) {
-            this.pauseScreen.update();
-        }
-
-        if (inventoryOpen) {
-            this.inventoryScreen.update();
-        }
+        this.pauseScreen.update(deltaT);
+        this.inventoryScreen.update(deltaT);
 
         if (!pauseOpen && !inventoryOpen && dialogueOpen) {
-            this.updateDialogue();
+            this.updateDialogue(deltaT);
         }
 
         // Run gameplay interactions only while the world is not simulation-paused.
-        if(!pauseOpen && !inventoryOpen && !dialogueOpen) {
+        if(!menuOpen) {
             const ai = this.player.ai as PlayerAI;
             const controller = ai.controller;
 
@@ -379,7 +376,6 @@ export default abstract class MappedAdventureScene extends Scene {
                 }
             }
             
-
             if (!ai.moving && controller.interacting) {
                 const nextTile = ai.currentTile.clone().add(ai.facing);
             
@@ -406,14 +402,8 @@ export default abstract class MappedAdventureScene extends Scene {
             }
         }
 
-        if (this.weatherActive && this.weatherAlpha < 1) {
-            this.weatherAlpha = Math.min(this.weatherAlpha + _deltaT * this.weatherFadeInSpeed, 1);
-            for (const flake of this.snowflakes) {
-                flake.alpha = this.weatherAlpha;
-            }
-        }
-
-        this.syncWeatherAmbience();
+        this.timeSpotlightOverlay?.update(deltaT);
+        this.weatherController.update(deltaT);
     }
 
     protected setWorldPaused(paused: boolean): void {
@@ -448,97 +438,12 @@ export default abstract class MappedAdventureScene extends Scene {
 
     protected handleAutoTransition(_obj: TiledObject): void {}
 
-    protected onMapPickedUp(): void {}
-
     /**
      * Override in child scenes if weather ambience should default indoors.
      * This can later be made dynamic (e.g. based on player tile inside a room volume).
      */
     protected isWeatherAmbienceIndoors(): boolean {
         return false;
-    }
-
-    protected syncWeatherAmbience(): void {
-        if (!this.weatherActive) {
-            this.muteWeatherAmbience(this.weatherAmbienceFadeSeconds);
-            return;
-        }
-
-        const fadeSeconds = this.weatherAmbienceMode === null
-            ? this.weatherAmbienceInitialFadeSeconds
-            : this.weatherAmbienceFadeSeconds;
-
-        this.setWeatherAmbience(this.isWeatherAmbienceIndoors(), fadeSeconds);
-    }
-
-    protected startWeatherAmbienceLoops(): void {
-        if (MappedAdventureScene.weatherAmbienceLoopsStarted) {
-            return;
-        }
-
-        MappedAdventureScene.weatherAmbienceLoopsStarted = true;
-
-        // Start weather ambience stems once and keep them running across mapped scenes.
-        this.emitter.fireEvent(GameEventType.PLAY_SFX, {
-            key: this.assets.sounds.weatherSnowInsideSFX.key,
-            loop: true,
-            holdReference: true,
-            channel: AudioChannelType.CUSTOM_1,
-            fadeInSeconds: this.weatherAmbienceInitialFadeSeconds
-        });
-
-        this.emitter.fireEvent(GameEventType.PLAY_SFX, {
-            key: this.assets.sounds.weatherSnowOutsideSFX.key,
-            loop: true,
-            holdReference: true,
-            channel: AudioChannelType.CUSTOM_2,
-            fadeInSeconds: this.weatherAmbienceInitialFadeSeconds
-        });
-    }
-
-    /**
-     * Crossfades between indoor and outdoor weather ambience channels.
-     * Uses channel-level fades so both weather stems stay phase-synced.
-     */
-    protected setWeatherAmbience(indoor: boolean, fadeSeconds: number = 0.35): void {
-        const nextMode: "inside" | "outside" = indoor ? "inside" : "outside";
-        if (this.weatherAmbienceMode === nextMode) {
-            return;
-        }
-
-        this.weatherAmbienceMode = nextMode;
-
-        const indoorEvent = {
-            channel: AudioChannelType.CUSTOM_1,
-            fadeSeconds
-        };
-        const outdoorEvent = {
-            channel: AudioChannelType.CUSTOM_2,
-            fadeSeconds
-        };
-
-        if (indoor) {
-            this.emitter.fireEvent(GameEventType.UNMUTE_CHANNEL, indoorEvent);
-            this.emitter.fireEvent(GameEventType.MUTE_CHANNEL, outdoorEvent);
-        } else {
-            this.emitter.fireEvent(GameEventType.MUTE_CHANNEL, indoorEvent);
-            this.emitter.fireEvent(GameEventType.UNMUTE_CHANNEL, outdoorEvent);
-        }
-    }
-
-    /**
-     * Mutes both weather ambience channels and clears the current ambience state.
-     */
-    protected muteWeatherAmbience(fadeSeconds: number = 0): void {
-        this.weatherAmbienceMode = null;
-        this.emitter.fireEvent(GameEventType.MUTE_CHANNEL, {
-            channel: AudioChannelType.CUSTOM_1,
-            fadeSeconds
-        });
-        this.emitter.fireEvent(GameEventType.MUTE_CHANNEL, {
-            channel: AudioChannelType.CUSTOM_2,
-            fadeSeconds
-        });
     }
 
     /**
@@ -657,6 +562,10 @@ export default abstract class MappedAdventureScene extends Scene {
             if (this.timeOverlay) {
                 this.timeOverlay.visible = false;
             }
+
+            if (this.timeSpotlightOverlay) {
+                this.timeSpotlightOverlay.hide();
+            }
             return;
         }
         if (!this.timeOverlay) {
@@ -668,128 +577,16 @@ export default abstract class MappedAdventureScene extends Scene {
             });
         }
         this.timeOverlay.color = color;
-        this.timeOverlay.visible = true;
-    }
 
-    protected setWeather(weather: WeatherType, layerDepth: number = this.weatherLayerDepth): void {
-        if (weather === WeatherType.NONE) {
-            for (const flake of this.snowflakes) {
-                flake.visible = false;
-            }
-            this.weatherActive = false;
-            this.muteWeatherAmbience(this.weatherAmbienceFadeSeconds);
-            return;
+        // Add spotlight overlay for DUSK
+        if (time === TimeOfDay.DUSK) {
+            this.timeOverlay.visible = true;
+            this.timeSpotlightOverlay?.show();
+        } else {
+            this.timeOverlay.visible = false;
+            this.timeSpotlightOverlay?.hide();
         }
-    
-        const preset = this.getSnowPreset(weather);
-        this.weatherLayerDepth = layerDepth;
-        this.weatherFadeInSpeed = preset.fadeInSpeed;
-    
-        this.ensureWeatherLayer();
-        this.getLayer(this.weatherLayerName).setDepth(this.weatherLayerDepth);
-        this.ensureSnowPool(preset);
-    
-        this.weatherAlpha = 0;
-    
-        for (let i = 0; i < this.snowflakes.length; i++) {
-            const flake = this.snowflakes[i];
-    
-            if (i < preset.poolSize) {
-                const scale = preset.scaleMin + Math.random() * (preset.scaleMax - preset.scaleMin);
-    
-                flake.visible = true;
-                flake.alpha = 0;
-                flake.scale.set(scale, scale);
-    
-                (flake.ai as SnowflakeBehavior).activate({ settings: preset.settings });
-                (flake.ai as SnowflakeBehavior).scatterOnScreen();
-            } else {
-                flake.visible = false;
-            }
-        }
-    
-        this.weatherActive = true;
-        this.syncWeatherAmbience();
-    }
-    
-    private ensureWeatherLayer(): void {
-        if (!this.weatherLayerCreated) {
-            this.addLayer(this.weatherLayerName, this.weatherLayerDepth);
-            this.weatherLayerCreated = true;
-        }
-    }
-    
-    private ensureSnowPool(preset: SnowPreset): void {
-        this.ensureWeatherLayer();
-    
-        while (this.snowflakes.length < preset.poolSize) {
-            const snowflakeKeys = [
-                this.assets.sprites.snowflake1Sprite.key,
-                this.assets.sprites.snowflake2Sprite.key,
-                this.assets.sprites.snowflake3Sprite.key
-            ];
-            const key = snowflakeKeys[this.snowflakes.length % snowflakeKeys.length];
-            const flake = this.add.sprite(key, this.weatherLayerName);
-    
-            flake.visible = false;
-            flake.addAI(SnowflakeBehavior, {
-                viewport: this.viewport,
-                settings: preset.settings
-            });
-    
-            this.snowflakes.push(flake);
-        }
-    }
-    
-    private getSnowPreset(weather: WeatherType): SnowPreset {
-        switch (weather) {
-            case WeatherType.SNOW:
-                return {
-                    poolSize: 80,
-                    fadeInSpeed: 0.35,
-                    scaleMin: 0.28,
-                    scaleMax: 0.5,
-                    settings: {
-                        spawnPadding: 96,
-                        recyclePadding: 128,
-                        inflowEpsilon: 5,
-                        baseSpeedMin: 25,
-                        baseSpeedMax: 55,
-                        angleMinDegrees: 5,
-                        angleMaxDegrees: 12,
-                        wobbleAmplitudeMin: 3,
-                        wobbleAmplitudeMax: 10,
-                        wobbleFrequencyMin: 0.4,
-                        wobbleFrequencyMax: 1.1
-                    }
-                };
-    
-            case WeatherType.SNOWSTORM:
-                return {
-                    poolSize: 340,
-                    fadeInSpeed: 0.75,
-                    scaleMin: 0.48,
-                    scaleMax: 1.00,
-                    settings: {
-                        spawnPadding: 128,
-                        recyclePadding: 160,
-                        inflowEpsilon: 5,
-                        baseSpeedMin: 130,
-                        baseSpeedMax: 400,
-                        angleMinDegrees: 28,
-                        angleMaxDegrees: 62,
-                        wobbleAmplitudeMin: 14,
-                        wobbleAmplitudeMax: 56,
-                        wobbleFrequencyMin: 0.9,
-                        wobbleFrequencyMax: 2.1
-                    }
-                };
-    
-            default:
-                throw new Error(`Weather preset not defined for weather type "${weather}"`);
-        }
-    }
-    
+    }  
 
     private getColorForTime(time: TimeOfDay): Color | null {
         switch (time) {
@@ -923,7 +720,7 @@ export default abstract class MappedAdventureScene extends Scene {
         this.dialogueChoiceActive = false;
         this.dialogueChoiceResolved = false;
         this.dialogueScreen.hideChoices();
-        this.dialogueScreen.setOnReadCallback(() => {
+        this.dialogueScreen.setOnCompleteCallback(() => {
             dialogue.onComplete?.();
             this.handleDialogueCompleteAction(dialogue);
         });
@@ -967,13 +764,13 @@ export default abstract class MappedAdventureScene extends Scene {
         this.dialogueScreen.showChoices();
     }
     
-    protected updateDialogue(): void {
+    protected updateDialogue(deltaT: number): void {
         if (!this.activeDialogue) {
             return;
         }
 
         if (this.dialogueChoiceActive) {
-            this.dialogueScreen.update();
+            this.dialogueScreen.update(deltaT);
             return;
         }
     
@@ -1018,7 +815,7 @@ export default abstract class MappedAdventureScene extends Scene {
         this.dialogueChoiceActive = false;
         this.dialogueChoiceResolved = false;
         if (!callbackHandledByReadCompletion) {
-            this.dialogueScreen.clearOnReadCallback();
+            this.dialogueScreen.clearOnCompleteCallback();
         }
         this.dialogueScreen.hideChoices();
         this.dialogueScreen.hide();

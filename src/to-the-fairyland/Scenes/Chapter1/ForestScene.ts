@@ -1,16 +1,14 @@
 import { TiledObject, TiledTilemapData } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData";
 import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 import ShelterScene from "./ShelterScene";
-import { AssetBundle, WeatherType } from "../MappedAdventureScene";
+import { AssetBundle } from "../MappedAdventureScene";
 import MappedAdventureChapter1Scene from "./MappedAdventureChapter1Scene";
 import { GameEventType } from "../../../Wolfie2D/Events/GameEventType";
 import { Chapter1MainQuestStep } from "../../GameSystems/StorySystem/StoryState";
 import Sprite from "../../../Wolfie2D/Nodes/Sprites/Sprite";
+import { WeatherType } from "../../GameSystems/WorldSystem/WorldState";
 
 export default class ForestScene extends MappedAdventureChapter1Scene {
-    private mapItemSprite: Sprite | null = null;
-    private mapItemObject: TiledObject | null = null;
-
     protected readonly tilemap = {
         key: "chapter1",
         path: "/assets/tilemaps/Chapter1/Chapter1.json"
@@ -28,6 +26,9 @@ export default class ForestScene extends MappedAdventureChapter1Scene {
         },
         sounds: {}
     };
+    
+    private mapItemSprite: Sprite | null = null;
+    private mapItemObject: TiledObject | null = null;
 
     protected combinedAssetBundles(): AssetBundle {
         return this.mergeAssetBundles(super.combinedAssetBundles(), ForestScene.assetBundle);
@@ -35,7 +36,7 @@ export default class ForestScene extends MappedAdventureChapter1Scene {
 
     public override startScene(): void {
         super.startScene();
-        this.setWeather(WeatherType.SNOWSTORM, 50);
+        this.weatherController.setWeather(WeatherType.SNOWSTORM, 50);
     }
 
     protected override configureLayers(): void {

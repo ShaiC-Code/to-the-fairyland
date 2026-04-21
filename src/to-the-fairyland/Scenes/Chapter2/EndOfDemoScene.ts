@@ -34,12 +34,12 @@ export default class EndOfDemoScene extends Scene {
         this.previewTimer.start();
     }
 
-    public updateScene(_deltaT: number): void {
+    public updateScene(deltaT: number): void {
         if (this.transitioned) {
             return;
         }
 
-        this.endOfDemoScreen.update();
+        this.endOfDemoScreen.update(deltaT);
     }
 
     private proceedToMainMenu(): void {

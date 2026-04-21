@@ -13,6 +13,7 @@ import Button from "../../Wolfie2D/Nodes/UIElements/Button";
 import Receiver from "../../Wolfie2D/Events/Receiver";
 import Emitter from "../../Wolfie2D/Events/Emitter";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
+import Updateable from "../../Wolfie2D/DataTypes/Interfaces/Updateable";
 
 export type UIScreenActionBindings = {
     navigatePrevious: () => boolean;
@@ -29,7 +30,7 @@ export type UIScreenOptions = {
     uiActions?: Partial<UIScreenActionBindings>;
 };
 
-export default class UIScreen {
+export default class UIScreen implements Updateable {
     protected scene: Scene;
     protected getViewportCenter: () => Vec2;
     protected getViewportHalfSize: () => Vec2;
@@ -103,6 +104,13 @@ export default class UIScreen {
     public getUIElement(key: string): CanvasNode | undefined {
         return this.elements.get(key);
     }
+
+    public update(deltaT: number): void {
+        if (!this.isOpen) {
+            return;
+        }
+        this.updateNavigation();
+    }
     
     public show(): void {
         if (this.isOpen) return;
@@ -131,14 +139,6 @@ export default class UIScreen {
             this.layer.setHidden(true);
         }
         this.isOpen = false;
-    }
-
-    public update(): void {
-        if (!this.isOpen) {
-            return;
-        }
-
-        this.updateNavigation();
     }
 
     protected addRect(key: string, position: Vec2, size: Vec2, color: Color): void {

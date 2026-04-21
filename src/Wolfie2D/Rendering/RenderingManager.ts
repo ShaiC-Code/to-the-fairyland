@@ -82,4 +82,6 @@ export default abstract class RenderingManager {
      * @param uiElement The UIElement to render
      */
     protected abstract renderUIElement(uiElement: UIElement): void;
+
+    protected abstract renderCustom(node: CanvasNode): void;
 }

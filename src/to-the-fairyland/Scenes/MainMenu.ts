@@ -125,16 +125,16 @@ export default class MainMenu extends Scene {
 
     }
 
-    public updateScene(){
+    public updateScene(deltaT: number){
         while(this.receiver.hasNextEvent()){
             this.handleEvent(this.receiver.getNextEvent());
         }
 
-        this.mainMenu.update();
-        this.levelMenu.update();
-        this.controlsMenu.update();
-        this.helpMenu.update();
-        this.testMenu.update();
+        this.mainMenu.update(deltaT);
+        this.levelMenu.update(deltaT);
+        this.controlsMenu.update(deltaT);
+        this.helpMenu.update(deltaT);
+        this.testMenu.update(deltaT);
     }
 
     public handleEvent(event: GameEvent): void {
