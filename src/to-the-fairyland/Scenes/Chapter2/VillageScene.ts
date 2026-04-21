@@ -87,7 +87,7 @@ export default class VillageScene extends MappedAdventureChapter2Scene {
             return false;
         }
 
-        this.dialogueController.startDialogue(interaction);
+        this.dialogueController.startDialogue(interaction, npc.name);
         return true;
     }
 

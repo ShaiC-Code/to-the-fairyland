@@ -4,6 +4,8 @@ import TextBox from "../../Wolfie2D/Nodes/UIElements/TextBox";
 import Button from "../../Wolfie2D/Nodes/UIElements/Button";
 import Color from "../../Wolfie2D/Utils/Color";
 import UIScreen, { UIScreenOptions } from "./UIScreen";
+import Label from "../../Wolfie2D/Nodes/UIElements/Label";
+
 
 type DialogueChoice = {
     label: string;
@@ -12,6 +14,7 @@ type DialogueChoice = {
 
 export default class DialogueChoiceBoxScreen extends UIScreen {
     private textBox!: TextBox;
+    private nameBox!: Label;
     private defaultRevealSpeed = 105;
     private choices: DialogueChoice[] = [];
     private choiceButtonKeys: string[] = [];
@@ -19,8 +22,10 @@ export default class DialogueChoiceBoxScreen extends UIScreen {
     private choicesVisible = false;
     private onCompleteCallback: (() => void) | null = null;
 
+    private readonly nameFontSize = 24;
     private readonly dialogueFontSize = 24;
     private readonly dialoguePaddingY = 20;
+    private readonly nameBoxSize = new Vec2(140, 48);
     private readonly choiceButtonSize = new Vec2(180, 48);
     private readonly choiceSafeZoneTopPadding = 6;
     private readonly choiceSafeZoneBottomPadding = 20;
@@ -44,6 +49,24 @@ export default class DialogueChoiceBoxScreen extends UIScreen {
 
         const boxSize = new Vec2(viewportSize.x - 80, 200);
         const boxPos = new Vec2(viewportHalfSize.x, viewportSize.y - boxSize.y / 2 - 40);
+        const nameBoxGap = 0;
+
+        const nameBoxPos = new Vec2(
+            boxPos.x - boxSize.x / 2 + this.nameBoxSize.x / 2,
+            boxPos.y - boxSize.y / 2 - this.nameBoxSize.y / 2 - nameBoxGap
+        );
+        
+        this.addLabel("speakerNameText", nameBoxPos, this.nameBoxSize, "", this.nameFontSize, {
+            halign: "center",
+            valign: "center"
+        });
+        this.nameBox = this.getUIElement("speakerNameText") as Label;
+        this.nameBox.backgroundColor = Color.BLACK;
+        this.nameBox.borderColor = Color.WHITE;
+        this.nameBox.borderWidth = 8;
+        this.nameBox.borderRadius = 0;
+        this.nameBox.textColor = Color.WHITE;
+        this.nameBox.visible = false;      
 
         this.addTextBox("dialogueText", boxPos, boxSize, "", this.dialogueFontSize, {
             halign: "left",
@@ -205,5 +228,16 @@ export default class DialogueChoiceBoxScreen extends UIScreen {
     public isTyping(): boolean {
         return this.textBox.typingActive;
     }
+
+    public setSpeakerName(name?: string): void {
+        if (!name) {
+            this.nameBox.visible = false;
+            return;
+        }
+    
+        this.nameBox.setText(name);
+        this.nameBox.visible = true;
+    }
+    
 
 }

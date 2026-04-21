@@ -1,13 +1,13 @@
 {
     "activeFile": "tilemaps/Chapter2/Village.json",
     "expandedProjectPaths": [
-        ".",
-        "tilemaps/Chapter2",
-        "spritesheets",
         "tilemaps/Chapter5",
+        ".",
+        "spritesheets",
         "tilemaps/Chapter1",
         "tilemaps",
-        "tilemaps/Chapter6"
+        "tilemaps/Chapter6",
+        "tilemaps/Chapter2"
     ],
     "fileStates": {
         "": {
@@ -65,16 +65,11 @@
             "scaleInDock": 0.33
         },
         "tilemaps/Chapter2/Village.json": {
-            "expandedObjectLayers": [
-                5,
-                7,
-                4
-            ],
             "scale": 0.5,
             "selectedLayer": 5,
             "viewCenter": {
-                "x": 1079,
-                "y": 943
+                "x": 1101,
+                "y": 1113
             }
         },
         "tilemaps/Chapter2/Village.json#Village": {
@@ -112,14 +107,16 @@
     "map.tileWidth": 64,
     "map.width": 60,
     "openFiles": [
-        "tilemaps/Chapter1/Shelter.json",
         "tilemaps/Chapter1/Chapter1.json",
-        "tilemaps/Chapter2/Village.json"
+        "tilemaps/Chapter1/Shelter.json",
+        "tilemaps/Chapter2/Village.json",
+        "tilemaps/Chapter2/Road.json"
     ],
     "project": "to-the-fairyland.tiled-project",
     "recentFiles": [
-        "tilemaps/Chapter1/Shelter.json",
         "tilemaps/Chapter1/Chapter1.json",
+        "tilemaps/Chapter1/Shelter.json",
+        "tilemaps/Chapter2/Road.json",
         "tilemaps/Chapter2/Village.json",
         "tilemaps/Chapter6/DesertLand.json",
         "tilemaps/Chapter5/UndergroundTunnel.json"
