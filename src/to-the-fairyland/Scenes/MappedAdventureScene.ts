@@ -310,6 +310,7 @@ export default abstract class MappedAdventureScene extends Scene {
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize(),
             new Color(0, 0, 0, 0.3),
+            this.player,
             undefined,
             {
                 radius: Math.min(this.viewport.getHalfSize().x, this.viewport.getHalfSize().y) * 0.6,
@@ -394,6 +395,7 @@ export default abstract class MappedAdventureScene extends Scene {
             }
         }
 
+        this.timeSpotlightOverlay?.update(deltaT);
         this.weatherController.update(deltaT);
     }
 

@@ -15,7 +15,7 @@ export default class OverlayLayer implements Updateable {
     protected getViewportCenter: () => Vec2;
     protected getViewportHalfSize: () => Vec2;
 
-    protected static defaultDepth: number = 9999;
+    protected static readonly defaultDepth: number = 9999;
 
     protected layerName: string;
     protected layer: Layer;
