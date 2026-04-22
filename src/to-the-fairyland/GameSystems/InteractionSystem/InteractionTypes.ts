@@ -18,6 +18,7 @@ export type DialogueCompleteAction =
 export const DialogueChoiceActions = {
     COLLECT_FROZEN_BERRIES: "collectFrozenBerries",
     COOK_FROZEN_BERRIES: "cookFrozenBerries",
+    TAKE_FRESH_PRETTY_TOOTH: "takeFreshPrettyTooth",
     SLEEP: "sleep",
     PICKUP_MAP: "pickupMap"
 } as const;

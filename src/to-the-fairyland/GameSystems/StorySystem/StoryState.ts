@@ -18,11 +18,17 @@ export interface Chapter1StoryState {
 
 
 export enum Chapter2MainQuestStep {
-    ARRIVE_AT_VILLAGE = "ARRIVE_AT_VILLAGE",
+    COLLECT_VILLAGE_ITEMS = "COLLECT_VILLAGE_ITEMS",
+    READY_TO_LEAVE_VILLAGE = "READY_TO_LEAVE_VILLAGE"
+
 }
 
 export interface Chapter2StoryState {
     mainQuestStep: Chapter2MainQuestStep;
+    villageItems: {
+        gotVilaTooth: boolean;
+        gotJItem: boolean;
+    };
 }
 
 export interface StoryState {
@@ -44,7 +50,11 @@ export function createChapter1CompletedState(): Chapter1StoryState {
 
 export function createInitialChapter2State(): Chapter2StoryState {
     return {
-        mainQuestStep: Chapter2MainQuestStep.ARRIVE_AT_VILLAGE
+        mainQuestStep: Chapter2MainQuestStep.COLLECT_VILLAGE_ITEMS,
+        villageItems: {
+            gotVilaTooth: false,
+            gotJItem: false
+        }
     };
 }
 

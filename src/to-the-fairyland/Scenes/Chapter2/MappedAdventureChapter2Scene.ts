@@ -1,7 +1,9 @@
 import MappedAdventureScene, { AssetBundle, ChapterSceneDefinition } from "../MappedAdventureScene";
 import StoryManager from "../../GameSystems/StorySystem/StoryManager";
-import { DialogueChoiceActions, DialogueCompleteActions } from "../../GameSystems/InteractionSystem/InteractionDatabase";
+import { DialogueChoiceActions } from "../../GameSystems/InteractionSystem/InteractionDatabase";
 import EndOfDemoScene from "./EndOfDemoScene";
+import FreshPrettyTooth from "../../GameSystems/ItemSystem/Items/FreshPrettyTooth";
+
 
 export default abstract class MappedAdventureChapter2Scene extends MappedAdventureScene {
     protected static readonly assetBundle: AssetBundle = {
@@ -17,7 +19,9 @@ export default abstract class MappedAdventureChapter2Scene extends MappedAdventu
 
     protected readonly chapterDefinition: ChapterSceneDefinition = {
         dialogueCompleteActionHandlers: {},
-        dialogueChoiceActionHandlers: {}
+        dialogueChoiceActionHandlers: {
+            [DialogueChoiceActions.TAKE_FRESH_PRETTY_TOOTH]: () => this.giveFreshPrettyTooth()
+        }
     };
 
     protected readonly storyManager = StoryManager.getInstance();
@@ -43,4 +47,16 @@ export default abstract class MappedAdventureChapter2Scene extends MappedAdventu
             }
         );
     }
+
+    protected giveFreshPrettyTooth(): void {
+        const inventory = this.playerStateManager.getPlayerState().inventory;
+        const alreadyHasTooth = inventory.find(item => item instanceof FreshPrettyTooth) !== null;
+    
+        if (!alreadyHasTooth) {
+            inventory.add(new FreshPrettyTooth());
+        }
+    
+        this.storyManager.chapter2.markVilaToothReceived();
+    }
+    
 }

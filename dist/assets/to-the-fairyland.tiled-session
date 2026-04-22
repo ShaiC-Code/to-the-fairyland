@@ -15,15 +15,15 @@
         },
         "tilemaps/Chapter1/Chapter1.json": {
             "expandedObjectLayers": [
-                14,
                 6,
+                14,
                 13
             ],
             "scale": 0.75,
             "selectedLayer": 9,
             "viewCenter": {
-                "x": 1559.3333333333333,
-                "y": 1819.333333333333
+                "x": 1835.3333333333333,
+                "y": 1824
             }
         },
         "tilemaps/Chapter1/Chapter1.json#Chapter1_Tilemap1": {
@@ -38,8 +38,8 @@
             "scale": 1,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 1514.5,
-                "y": 1777.5
+                "x": 1920.5,
+                "y": 1920
             }
         },
         "tilemaps/Chapter1/Shelter.json#Shelter": {
@@ -48,17 +48,17 @@
         },
         "tilemaps/Chapter2/Road.json": {
             "expandedObjectLayers": [
-                5,
+                3,
+                2,
                 4,
                 8,
-                3,
-                2
+                5
             ],
             "scale": 0.5,
             "selectedLayer": 5,
             "viewCenter": {
-                "x": 1071,
-                "y": 1059
+                "x": 1023,
+                "y": 1152
             }
         },
         "tilemaps/Chapter2/Road.json#Chapter2_Village_Tiles": {
@@ -68,8 +68,8 @@
             "scale": 0.5,
             "selectedLayer": 5,
             "viewCenter": {
-                "x": 1101,
-                "y": 1113
+                "x": 1023,
+                "y": 1056
             }
         },
         "tilemaps/Chapter2/Village.json#Village": {

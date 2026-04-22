@@ -114,6 +114,8 @@ export default abstract class MappedAdventureScene extends Scene {
 
     protected dialogueScreen!: DialogueScreen;
     protected activeDialogue: DialogueInteraction | null = null;
+    protected activeDialogueSpeakerName: string | undefined;
+
     protected currentDialogueLine = 0;
     protected dialogueChoiceActive = false;
     protected dialogueChoiceResolved = false;
@@ -715,6 +717,7 @@ export default abstract class MappedAdventureScene extends Scene {
         const ai = this.player.ai as PlayerAI;
         ai.controller.setControlMode(PlayerControlMode.DIALOGUE);
 
+        this.activeDialogueSpeakerName = speakerName;
         this.activeDialogue = dialogue;
         this.currentDialogueLine = 0;
         this.dialogueChoiceActive = false;
@@ -725,7 +728,7 @@ export default abstract class MappedAdventureScene extends Scene {
             this.handleDialogueCompleteAction(dialogue);
         });
 
-        this.dialogueScreen.setSpeakerName(speakerName);
+        this.dialogueScreen.setSpeakerName(this.activeDialogueSpeakerName);
 
         this.dialogueScreen.showLine(
             dialogue.lines[this.currentDialogueLine]
@@ -758,7 +761,7 @@ export default abstract class MappedAdventureScene extends Scene {
                     this.dialogueScreen.hideChoices();
                     option.onSelect?.();
                     this.handleDialogueChoiceAction(option);
-                    this.startDialogue(option.interaction);
+                    this.startDialogue(option.interaction, this.activeDialogueSpeakerName);
                 }
             }))
         );
@@ -813,6 +816,7 @@ export default abstract class MappedAdventureScene extends Scene {
         ai.controller.setControlMode(PlayerControlMode.GAMEPLAY);
 
         this.activeDialogue = null;
+        this.activeDialogueSpeakerName = undefined;
         this.currentDialogueLine = 0;
         this.dialogueChoiceActive = false;
         this.dialogueChoiceResolved = false;
