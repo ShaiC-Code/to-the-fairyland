@@ -30,9 +30,6 @@ export function getTimeOfDayForStory(story: Readonly<StoryState>): TimeOfDay {
             }
 
             switch (story.chapter2.mainQuestStep) {
-                case Chapter2MainQuestStep.ARRIVE_AT_VILLAGE:
-                    return TimeOfDay.DAY;
-
                 default:
                     return TimeOfDay.DAY;
             }

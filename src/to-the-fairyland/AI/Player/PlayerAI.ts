@@ -101,6 +101,33 @@ export default class PlayerAI extends StateMachineAI implements AI {
             }
         }
     }
-
+    
+    public canEnterTile(tile: Vec2): boolean {
+        const dims = this.tilemap.getDimensions();
+    
+        if (tile.x < 0 || tile.y < 0 || tile.x >= dims.x || tile.y >= dims.y) {
+            return false;
+        }
+    
+        return !this.tilemap.isTileCollidable(tile.x, tile.y);
+    }
+    
+    public canMoveToTile(currentTile: Vec2, direction: Vec2): boolean {
+        const nextTile = currentTile.clone().add(direction);
+    
+        if (!this.canEnterTile(nextTile)) {
+            return false;
+        }
+    
+        if (direction.x !== 0 && direction.y !== 0) {
+            const horizontalTile = currentTile.clone().add(new Vec2(direction.x, 0));
+            const verticalTile = currentTile.clone().add(new Vec2(0, direction.y));
+    
+            return this.canEnterTile(horizontalTile) && this.canEnterTile(verticalTile);
+        }
+    
+        return true;
+    }
+    
 
 }

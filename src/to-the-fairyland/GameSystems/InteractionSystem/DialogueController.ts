@@ -28,6 +28,7 @@ export default class DialogueController implements Updateable {
     private confirm: () => boolean;
 
     private activeDialogue: DialogueInteraction | null = null;
+    private activeSpeakerName: string | undefined;
     private currentDialogueLine: number = 0;
     private dialogueChoiceActive: boolean = false;
     private dialogueChoiceResolved: boolean = false;
@@ -115,6 +116,8 @@ export default class DialogueController implements Updateable {
         const ai = this.player.ai as PlayerAI;
         ai.controller.setControlMode(PlayerControlMode.DIALOGUE);
 
+        this.activeSpeakerName = speakerName;
+
         this.activeDialogue = dialogue;
         this.currentDialogueLine = 0;
         this.dialogueChoiceActive = false;
@@ -125,7 +128,7 @@ export default class DialogueController implements Updateable {
             this.handleDialogueCompleteAction(dialogue);
         });
 
-        this.dialogueScreen.setSpeakerName(speakerName);
+        this.dialogueScreen.setSpeakerName(this.activeSpeakerName);
 
         this.dialogueScreen.showLine(
             dialogue.lines[this.currentDialogueLine]
@@ -159,7 +162,7 @@ export default class DialogueController implements Updateable {
                     this.dialogueScreen.hideChoices();
                     option.onSelect?.();
                     this.handleDialogueChoiceAction(option);
-                    this.startDialogue(option.interaction);
+                    this.startDialogue(option.interaction, this.activeSpeakerName);
                 }
             }))
         );
@@ -187,6 +190,7 @@ export default class DialogueController implements Updateable {
         this.dialogueScreen.hideChoices();
         this.dialogueScreen.hide();
         this.dialogueScreen.setSpeakerName(undefined);
+        this.activeSpeakerName = undefined;
     }
 
     public playDialogueSFX(): void {

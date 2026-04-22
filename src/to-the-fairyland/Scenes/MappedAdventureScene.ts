@@ -112,11 +112,6 @@ export default abstract class MappedAdventureScene extends Scene {
     protected entrances: TiledObject[] = [];
     protected transitioning = false;
 
-    protected activeDialogue: DialogueInteraction | null = null;
-    protected currentDialogueLine = 0;
-    protected dialogueChoiceActive = false;
-    protected dialogueChoiceResolved = false;
-
     private timeOverlay: Graphic | null = null;
     private timeSpotlightOverlay: SpotlightEffectOverlay | null = null;
     
@@ -703,8 +698,20 @@ export default abstract class MappedAdventureScene extends Scene {
             return false;
         }
     
-        this.dialogueController.startDialogue(interaction);
+        this.startDialogue(interaction);
         return true;
+    }
+
+    protected startDialogue(dialogue: DialogueInteraction, speakerName?: string): void {
+        this.dialogueController.startDialogue(dialogue, speakerName);
+    }
+
+    public playUIClickSFX(): void {
+        this.emitter.fireEvent(GameEventType.PLAY_SFX, {key: this.assets.sounds.uiClick.key, loop: false, holdReference: false});
+    }
+
+    public playDialogueSFX(): void {
+        return; // Placeholder for now, can be used for dialogue-specific sound effects in the future
     }
     
     // TEMPORARY function to determine ground type for sfx purposes, ideally this would be determined by properties on the tilemap
@@ -741,7 +748,7 @@ export default abstract class MappedAdventureScene extends Scene {
     protected consumeInventoryItem(item: InventoryItem): void {
         this.inventoryScreen.hide();
         item.consume({
-            showDialogue: interaction => this.dialogueController.startDialogue(interaction)
+            showDialogue: interaction => this.startDialogue(interaction)
         });
     }
 }
