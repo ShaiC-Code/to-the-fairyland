@@ -10,6 +10,10 @@ import Line from "../../Wolfie2D/Nodes/Graphics/Line";
 import CanvasNode from "../../Wolfie2D/Nodes/CanvasNode";
 import Updateable from "../../Wolfie2D/DataTypes/Interfaces/Updateable";
 
+export type OverlayLayerOptions = {
+    depth?: number;
+};
+
 export default class OverlayLayer implements Updateable {
     protected scene: Scene;
     protected getViewportCenter: () => Vec2;
@@ -22,12 +26,12 @@ export default class OverlayLayer implements Updateable {
     protected elements: Map<string, CanvasNode | undefined>;
     protected isVisible: boolean = false;
 
-    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, depth: number = OverlayLayer.defaultDepth) {
+    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, options?: OverlayLayerOptions) {
         this.scene = scene;
         this.getViewportCenter = getViewportCenter;
         this.getViewportHalfSize = getViewportHalfSize;
         this.layerName = layerName;
-        this.layer = this.scene.addParallaxLayer(layerName, Vec2.ZERO, depth);
+        this.layer = this.scene.addParallaxLayer(layerName, Vec2.ZERO, options?.depth ?? OverlayLayer.defaultDepth);
 
         this.elements = new Map();
     }

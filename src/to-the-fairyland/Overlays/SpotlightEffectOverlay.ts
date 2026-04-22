@@ -3,29 +3,22 @@ import Scene from "../../Wolfie2D/Scene/Scene";
 import Color from "../../Wolfie2D/Utils/Color";
 import PlayerActor from "../Actors/PlayerActor";
 import SpotlightOverlay from "../UI/CustomUIElements/SpotlightOverlay";
-import OverlayLayer from "./OverlayLayer";
-
-type SpotlightOverlayOptions = {
-    radius?: number;
-    innerRadiusRatio?: number;
-};
+import OverlayLayer, { OverlayLayerOptions } from "./OverlayLayer";
 
 export default class SpotlightEffectOverlay extends OverlayLayer {
     private readonly spolightOverlayKey = "spotlightOverlay";
-    private static readonly depth: number = 9999;
     private player: PlayerActor | null = null;
     private radius: number = 0;
     private innerRadiusRatio: number = 0;
     private overlayColor: Color;
 
-    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, overlayColor: Color, player?: PlayerActor, depth: number = SpotlightEffectOverlay.depth, options?: SpotlightOverlayOptions) {
-        super(layerName, scene, getViewportCenter, getViewportHalfSize, depth);
+    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, overlayColor: Color, player?: PlayerActor, radius?: number, innerRadiusRatio?: number, options?: OverlayLayerOptions) {
+        super(layerName, scene, getViewportCenter, getViewportHalfSize, options);
 
-        this.player = player ?? null;
-        options = options ?? {};
-        this.radius = options.radius ?? 0;
-        this.innerRadiusRatio = options.innerRadiusRatio ?? 0;
         this.overlayColor = overlayColor;
+        this.player = player ?? null;
+        this.radius = radius ?? 0;
+        this.innerRadiusRatio = innerRadiusRatio ?? 0;
         this.initializeOverlay();
     }
 

@@ -15,8 +15,7 @@ import UIImage from "../UI/CustomUIElements/UIImage";
 import { GraphicType } from "../../Wolfie2D/Nodes/Graphics/GraphicTypes";
 import Color from "../../Wolfie2D/Utils/Color";
 import Graphic from "../../Wolfie2D/Nodes/Graphic";
-import DialogueScreen from "../UI/DialogueScreen";
-import { PlayerControlMode, PlayerInput } from "../AI/Player/PlayerController";
+import { PlayerInput } from "../AI/Player/PlayerController";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 import { DialogueChoiceAction, DialogueChoiceOption, DialogueInteraction, DialogueCompleteAction, getInteractionData } from "../GameSystems/InteractionSystem/InteractionDatabase";
 import PlayerStateManager from "../GameSystems/PlayerSystem/PlayerStateManager";
@@ -27,6 +26,7 @@ import { UIScreenActionBindings } from "../UI/UIScreen";
 import WeatherController from "../GameSystems/WorldSystem/WeatherController";
 import SpotlightOverlay from "../UI/CustomUIElements/SpotlightOverlay";
 import SpotlightEffectOverlay from "../Overlays/SpotlightEffectOverlay";
+import DialogueController from "../GameSystems/InteractionSystem/DialogueController";
 
 export type AssetRef = Readonly<{
     readonly key: string;
@@ -69,10 +69,10 @@ export default abstract class MappedAdventureScene extends Scene {
             snowflake3Sprite: { key: "snowflake3", path: "/assets/sprites/particles/Snowflake3.png" }
         },
         sounds: {
-            uiHover: { key: "ui-hover", path: "/assets/sounds/ui-hover.ogg" },
-            uiClick: { key: "ui-click", path: "/assets/sounds/ui-click.ogg" },
-            menuOpen: { key: "menu-open", path: "/assets/sounds/menu-open.ogg" },
-            menuClose: { key: "menu-close", path: "/assets/sounds/menu-close.ogg" },
+            uiHoverSFX: { key: "ui-hover", path: "/assets/sounds/ui-hover.ogg" },
+            uiClickSFX: { key: "ui-click", path: "/assets/sounds/ui-click.ogg" },
+            menuOpenSFX: { key: "menu-open", path: "/assets/sounds/menu-open.ogg" },
+            menuCloseSFX: { key: "menu-close", path: "/assets/sounds/menu-close.ogg" },
             woodenDoorSFX: { key: "door-wooden", path: "/assets/sounds/door-wooden.ogg" },
             weatherSnowInsideSFX: { key: "weather-snow-inside", path: "/assets/sounds/weather-snow-inside.ogg" },
             weatherSnowOutsideSFX: { key: "weather-snow-outside", path: "/assets/sounds/weather-snow-outside.ogg" }
@@ -112,17 +112,10 @@ export default abstract class MappedAdventureScene extends Scene {
     protected entrances: TiledObject[] = [];
     protected transitioning = false;
 
-    protected dialogueScreen!: DialogueScreen;
-    protected activeDialogue: DialogueInteraction | null = null;
-    protected activeDialogueSpeakerName: string | undefined;
-
-    protected currentDialogueLine = 0;
-    protected dialogueChoiceActive = false;
-    protected dialogueChoiceResolved = false;
-
     private timeOverlay: Graphic | null = null;
     private timeSpotlightOverlay: SpotlightEffectOverlay | null = null;
-
+    
+    protected dialogueController!: DialogueController;
     protected weatherController!: WeatherController;
     
     // lets the scene receive data, ex: {spawnName: "Door1"}
@@ -269,10 +262,10 @@ export default abstract class MappedAdventureScene extends Scene {
             () => this.viewport.getHalfSize(),
             () => this.sceneManager.changeToScene(MainMenu),
             {
-                onEnterSFXKey: this.assets.sounds.uiHover.key,
-                onClickSFXKey: this.assets.sounds.uiClick.key,
-                onShowSFXKey: this.assets.sounds.menuOpen.key,
-                onHideSFXKey: this.assets.sounds.menuClose.key,
+                onEnterSFXKey: this.assets.sounds.uiHoverSFX.key,
+                onClickSFXKey: this.assets.sounds.uiClickSFX.key,
+                onShowSFXKey: this.assets.sounds.menuOpenSFX.key,
+                onHideSFXKey: this.assets.sounds.menuCloseSFX.key,
                 uiActions
             }
         );
@@ -285,23 +278,10 @@ export default abstract class MappedAdventureScene extends Scene {
             playerState.inventory,
             (item: InventoryItem) => this.consumeInventoryItem(item),
             {
-                onEnterSFXKey: this.assets.sounds.uiHover.key,
-                onClickSFXKey: this.assets.sounds.uiClick.key,
-                onShowSFXKey: this.assets.sounds.menuOpen.key,
-                onHideSFXKey: this.assets.sounds.menuClose.key,
-                uiActions
-            }
-        );
-        
-        this.dialogueScreen = new DialogueScreen(
-            "dialogueOverlay",
-            this,
-            () => this.viewport.getCenter(),
-            () => this.viewport.getHalfSize(),
-            undefined,
-            {
-                onEnterSFXKey: this.assets.sounds.uiHover.key,
-                onClickSFXKey: this.assets.sounds.uiClick.key,
+                onEnterSFXKey: this.assets.sounds.uiHoverSFX.key,
+                onClickSFXKey: this.assets.sounds.uiClickSFX.key,
+                onShowSFXKey: this.assets.sounds.menuOpenSFX.key,
+                onHideSFXKey: this.assets.sounds.menuCloseSFX.key,
                 uiActions
             }
         );
@@ -313,16 +293,31 @@ export default abstract class MappedAdventureScene extends Scene {
             () => this.viewport.getHalfSize(),
             new Color(0, 0, 0, 0.3),
             this.player,
-            undefined,
-            {
-                radius: Math.min(this.viewport.getHalfSize().x, this.viewport.getHalfSize().y) * 0.6,
-                innerRadiusRatio: 0.7
-            }
+            Math.min(this.viewport.getHalfSize().x, this.viewport.getHalfSize().y) * 0.6,
+            0.7
         );
 
         const worldState = this.gameSessionManager.getWorldState();
         this.setTimeOfDay(worldState.timeOfDay);
         
+        this.dialogueController = new DialogueController(
+            this,
+            this.viewport,
+            this.player,
+            (option: DialogueInteraction) => {
+                this.handleDialogueCompleteAction(option);
+            },
+            (option: DialogueChoiceOption) => {
+                this.handleDialogueChoiceAction(option);
+            },
+            {
+                onEnterSFXKey: this.assets.sounds.uiHoverSFX.key,
+                onClickSFXKey: this.assets.sounds.uiClickSFX.key,
+                uiActions
+            }
+        );
+        this.dialogueController.sceneAssets = this.assets;
+
         this.weatherController = new WeatherController(this, this.viewport);
         this.weatherController.sceneAssets = this.assets;
         this.weatherController.setWeatherAmbienceIndoors(this.isWeatherAmbienceIndoors());
@@ -330,38 +325,37 @@ export default abstract class MappedAdventureScene extends Scene {
     }
 
     public override updateScene(deltaT: number): void {
-        // Handle pause/resume
-        if(!this.dialogueScreen.getIsOpen() && Input.isKeyJustPressed("escape")) {
-            if(this.pauseScreen.getIsOpen()) {
-                this.pauseScreen.hide();
-            } else if(!this.inventoryScreen.getIsOpen()) {
-                this.pauseScreen.show();
-            }
-        }
-
-        // Handle inventory
-        if (!this.dialogueScreen.getIsOpen() && Input.isKeyJustPressed("c")) {
-            if(this.inventoryScreen.getIsOpen()) {
-                this.inventoryScreen.hide();
-            } else if(!this.pauseScreen.getIsOpen()) {
-                this.inventoryScreen.show();
-            }
-        }
-
         const pauseOpen = this.pauseScreen.getIsOpen();
         const inventoryOpen = this.inventoryScreen.getIsOpen();
-        const dialogueOpen = this.dialogueScreen.getIsOpen();
+        const dialogueOpen = this.dialogueController.isActive;
         const menuOpen = pauseOpen || inventoryOpen || dialogueOpen;
-
         const shouldPauseWorld = pauseOpen || inventoryOpen;
         this.setWorldPaused(shouldPauseWorld);
 
+        let menuSafetyFlag = false;
+        // Handle pause/resume
+        if(!menuSafetyFlag && !dialogueOpen && Input.isKeyJustPressed("escape")) {
+            if (pauseOpen) {
+                this.pauseScreen.hide();
+            } else if(!inventoryOpen) {
+                this.pauseScreen.show();
+            }
+            menuSafetyFlag = true;
+        }
+
+        // Handle inventory
+        if (!menuSafetyFlag && !dialogueOpen && Input.isKeyJustPressed("c")) {
+            if (inventoryOpen) {
+                this.inventoryScreen.hide();
+            } else if(!pauseOpen) {
+                this.inventoryScreen.show();
+            }
+            menuSafetyFlag = true;
+        }
+
         this.pauseScreen.update(deltaT);
         this.inventoryScreen.update(deltaT);
-
-        if (!pauseOpen && !inventoryOpen && dialogueOpen) {
-            this.updateDialogue(deltaT);
-        }
+        this.dialogueController.update(deltaT);
 
         // Run gameplay interactions only while the world is not simulation-paused.
         if(!menuOpen) {
@@ -403,7 +397,7 @@ export default abstract class MappedAdventureScene extends Scene {
                 }
             }
         }
-
+        
         this.timeSpotlightOverlay?.update(deltaT);
         this.weatherController.update(deltaT);
     }
@@ -485,7 +479,6 @@ export default abstract class MappedAdventureScene extends Scene {
         return spawnLayer.objects[0];
     }
 
-
     protected playIdleForFacing(facing: Vec2): void {
         if (facing.y < 0) {
             this.player.animation.play("IDLE_UP", true);
@@ -499,8 +492,6 @@ export default abstract class MappedAdventureScene extends Scene {
             this.player.animation.play("IDLE_DOWN", true);
         }
     }
-    
-
 
     /**
      * Returns the tile containing the center of the given Tiled object.
@@ -512,7 +503,6 @@ export default abstract class MappedAdventureScene extends Scene {
             obj.y + obj.height / 2
         );
     }
-
 
     /**
      * Returns the rectangle covered by a Tiled object in world coordinates.
@@ -630,7 +620,6 @@ export default abstract class MappedAdventureScene extends Scene {
         }
     }
 
-
     /**
      * Sets the viewport bounds from the map's bounds layer so the camera stays inside the playable area.
      * Falls back to the full ground tilemap size if no bounds layer exists or if it has no painted tiles.
@@ -714,118 +703,7 @@ export default abstract class MappedAdventureScene extends Scene {
     }
 
     protected startDialogue(dialogue: DialogueInteraction, speakerName?: string): void {
-        const ai = this.player.ai as PlayerAI;
-        ai.controller.setControlMode(PlayerControlMode.DIALOGUE);
-
-        this.activeDialogueSpeakerName = speakerName;
-        this.activeDialogue = dialogue;
-        this.currentDialogueLine = 0;
-        this.dialogueChoiceActive = false;
-        this.dialogueChoiceResolved = false;
-        this.dialogueScreen.hideChoices();
-        this.dialogueScreen.setOnCompleteCallback(() => {
-            dialogue.onComplete?.();
-            this.handleDialogueCompleteAction(dialogue);
-        });
-
-        this.dialogueScreen.setSpeakerName(this.activeDialogueSpeakerName);
-
-        this.dialogueScreen.showLine(
-            dialogue.lines[this.currentDialogueLine]
-        );
-    }
-
-    protected shouldShowDialogueChoice(): boolean {
-        if (!this.activeDialogue || this.dialogueChoiceResolved) {
-            return false;
-        }
-
-        const choice = this.activeDialogue.choice;
-        return !!choice && this.currentDialogueLine === choice.lineIndex;
-    }
-
-    protected showDialogueChoicePrompt(): void {
-        if (!this.activeDialogue?.choice) {
-            return;
-        }
-
-        const choice = this.activeDialogue.choice;
-        this.dialogueChoiceActive = true;
-
-        this.dialogueScreen.setChoices(
-            choice.options.map((option: DialogueChoiceOption) => ({
-                label: option.label,
-                onSelect: () => {
-                    this.dialogueChoiceActive = false;
-                    this.dialogueChoiceResolved = true;
-                    this.dialogueScreen.hideChoices();
-                    option.onSelect?.();
-                    this.handleDialogueChoiceAction(option);
-                    this.startDialogue(option.interaction, this.activeDialogueSpeakerName);
-                }
-            }))
-        );
-
-        this.dialogueScreen.showChoices();
-    }
-    
-    protected updateDialogue(deltaT: number): void {
-        if (!this.activeDialogue) {
-            return;
-        }
-
-        if (this.dialogueChoiceActive) {
-            this.dialogueScreen.update(deltaT);
-            return;
-        }
-    
-        if (!Input.isJustPressed(PlayerInput.INTERACT)) {
-            return;
-        }
-    
-        if (this.dialogueScreen.isTyping()) {
-            this.dialogueScreen.revealCurrentLine();
-            return;
-        }
-
-        if (this.shouldShowDialogueChoice()) {
-            this.showDialogueChoicePrompt();
-            return;
-        }
-    
-        this.currentDialogueLine += 1;
-    
-        if (this.currentDialogueLine >= this.activeDialogue.lines.length) {
-            this.dialogueScreen.completeRead();
-            this.endDialogue();
-            return;
-        }
-    
-        this.dialogueScreen.showLine(
-            this.activeDialogue.lines[this.currentDialogueLine]
-        );
-    }
-    
-    protected endDialogue(): void {
-        const dialogue = this.activeDialogue;
-        const callbackHandledByReadCompletion = !!dialogue
-            && !dialogue.choice
-            && this.currentDialogueLine >= dialogue.lines.length;
-
-        const ai = this.player.ai as PlayerAI;
-        ai.controller.setControlMode(PlayerControlMode.GAMEPLAY);
-
-        this.activeDialogue = null;
-        this.activeDialogueSpeakerName = undefined;
-        this.currentDialogueLine = 0;
-        this.dialogueChoiceActive = false;
-        this.dialogueChoiceResolved = false;
-        if (!callbackHandledByReadCompletion) {
-            this.dialogueScreen.clearOnCompleteCallback();
-        }
-        this.dialogueScreen.hideChoices();
-        this.dialogueScreen.hide();
-        this.dialogueScreen.setSpeakerName(undefined);
+        this.dialogueController.startDialogue(dialogue, speakerName);
     }
 
     public playUIClickSFX(): void {
