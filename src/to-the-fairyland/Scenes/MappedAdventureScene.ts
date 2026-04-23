@@ -296,7 +296,7 @@ export default abstract class MappedAdventureScene extends Scene {
             }
         );
 
-        this.cameraController = new CameraController(this, this.viewport, this.player, this.ground)
+        this.cameraController = new CameraController(this, this.viewport, this.player, this.ground, this.actorLayerName);
         
         this.dialogueController.sceneAssets = this.assets;
 
