@@ -8,7 +8,8 @@ export type InteractionData = DialogueInteraction;
 
 // These actions fire after a non-branching dialogue has fully finished.
 export const DialogueCompleteActions = {
-    GOTO_CHAPTER2: "gotoChapter2"
+    GOTO_CHAPTER2: "gotoChapter2",
+    GIVE_FLOWER_RING: "giveFlowerRing"
 } as const;
 
 export type DialogueCompleteAction =

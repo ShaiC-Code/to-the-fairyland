@@ -1,7 +1,12 @@
-import { Chapter2MainQuestStep, Chapter2StoryState, StoryState } from "../StoryState";
+import { Chapter2MainQuestStep, Chapter2StoryState, Chapter2VillageItem, StoryState } from "../StoryState";
 
 type GetStoryState = () => StoryState;
 type SyncWorldState = () => void;
+
+const REQUIRED_VILLAGE_ITEMS = [
+    Chapter2VillageItem.FRESH_PRETTY_TOOTH,
+    Chapter2VillageItem.FLOWER_RING
+] as const;
 
 export default class Chapter2StoryManager {
     public constructor(
@@ -23,33 +28,19 @@ export default class Chapter2StoryManager {
         return state;
     }
 
-    public markVilaToothReceived(): void {
+    public markVillageItemReceived(item: Chapter2VillageItem): void {
         const state = this.getState();
     
-        if (state.villageItems.gotVilaTooth) {
+        if (state.villageItems[item]) {
             return;
         }
     
-        state.villageItems.gotVilaTooth = true;
-        this.advanceIfVillageItemsComplete();
-    }
-    public markJItemReceived(): void {
-        const state = this.getState();
-    
-        if (state.villageItems.gotJItem) {
-            return;
-        }
-    
-        state.villageItems.gotJItem = true;
+        state.villageItems[item] = true;
         this.advanceIfVillageItemsComplete();
     }
 
-    public hasVilaTooth(): boolean {
-        return this.getState().villageItems.gotVilaTooth;
-    }
-    
-    public hasJItem(): boolean {
-        return this.getState().villageItems.gotJItem;
+    public hasVillageItem(item: Chapter2VillageItem): boolean {
+        return this.getState().villageItems[item];
     }
     
     public canLeaveVillage(): boolean {
@@ -61,8 +52,7 @@ export default class Chapter2StoryManager {
     
         if (
             state.mainQuestStep === Chapter2MainQuestStep.COLLECT_VILLAGE_ITEMS &&
-            state.villageItems.gotVilaTooth &&
-            state.villageItems.gotJItem
+            REQUIRED_VILLAGE_ITEMS.every(item => state.villageItems[item])
         ) {
             state.mainQuestStep = Chapter2MainQuestStep.READY_TO_LEAVE_VILLAGE;
             this.syncWorldState();
