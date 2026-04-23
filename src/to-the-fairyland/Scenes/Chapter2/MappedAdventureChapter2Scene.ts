@@ -1,8 +1,11 @@
 import MappedAdventureScene, { AssetBundle, ChapterSceneDefinition } from "../MappedAdventureScene";
 import StoryManager from "../../GameSystems/StorySystem/StoryManager";
-import { DialogueChoiceActions } from "../../GameSystems/InteractionSystem/InteractionDatabase";
+import { DialogueCompleteActions, DialogueChoiceActions } from "../../GameSystems/InteractionSystem/InteractionDatabase";
 import EndOfDemoScene from "./EndOfDemoScene";
 import FreshPrettyTooth from "../../GameSystems/ItemSystem/Items/FreshPrettyTooth";
+import FlowerRing from "../../GameSystems/ItemSystem/Items/FlowerRing";
+import { Chapter2VillageItem } from "../../GameSystems/StorySystem/StoryState";
+
 
 
 export default abstract class MappedAdventureChapter2Scene extends MappedAdventureScene {
@@ -18,11 +21,14 @@ export default abstract class MappedAdventureChapter2Scene extends MappedAdventu
     };
 
     protected readonly chapterDefinition: ChapterSceneDefinition = {
-        dialogueCompleteActionHandlers: {},
+        dialogueCompleteActionHandlers: {
+            [DialogueCompleteActions.GIVE_FLOWER_RING]: () => this.giveFlowerRing()
+        },
         dialogueChoiceActionHandlers: {
             [DialogueChoiceActions.TAKE_FRESH_PRETTY_TOOTH]: () => this.giveFreshPrettyTooth()
         }
     };
+    
 
     protected readonly storyManager = StoryManager.getInstance();
 
@@ -56,7 +62,18 @@ export default abstract class MappedAdventureChapter2Scene extends MappedAdventu
             inventory.add(new FreshPrettyTooth());
         }
     
-        this.storyManager.chapter2.markVilaToothReceived();
+        this.storyManager.chapter2.markVillageItemReceived(Chapter2VillageItem.FRESH_PRETTY_TOOTH);
+
     }
     
+    protected giveFlowerRing(): void {
+        const inventory = this.playerStateManager.getPlayerState().inventory;
+        const alreadyHasFlowerRing = inventory.find(item => item instanceof FlowerRing) !== null;
+    
+        if (!alreadyHasFlowerRing) {
+            inventory.add(new FlowerRing());
+        }
+    
+        this.storyManager.chapter2.markVillageItemReceived(Chapter2VillageItem.FLOWER_RING);
+    }
 }

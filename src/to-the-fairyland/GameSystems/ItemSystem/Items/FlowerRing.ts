@@ -1,20 +1,20 @@
 import InventoryItem, { InventoryItemConsumeContext } from "../InventoryItem";
 import { dialogue } from "../../InteractionSystem/InteractionDatabase";
 
-export default class FreshPrettyTooth extends InventoryItem {
+export default class FlowerRing extends InventoryItem {
     public constructor(){
         super();
     }
 
     public displayName(): string {
-        return "FRESH PRETTY TOOTH";
+        return "FLOWER RING";
     }
 
     public consume(context: InventoryItemConsumeContext): void {
         context.showDialogue(
             dialogue([
-                "A fresh pretty tooth.",
-                "It was a gift from Vila."
+                "A small ring woven from pale flowers.",
+                "J hoped it would bring you luck."
             ])
         );
     }

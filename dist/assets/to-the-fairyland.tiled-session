@@ -2,12 +2,12 @@
     "activeFile": "tilemaps/Chapter2/Village.json",
     "expandedProjectPaths": [
         "tilemaps/Chapter5",
-        ".",
-        "spritesheets",
-        "tilemaps/Chapter1",
         "tilemaps",
         "tilemaps/Chapter6",
-        "tilemaps/Chapter2"
+        ".",
+        "tilemaps/Chapter2",
+        "tilemaps/Chapter1",
+        "spritesheets"
     ],
     "fileStates": {
         "": {
@@ -65,11 +65,11 @@
             "scaleInDock": 0.33
         },
         "tilemaps/Chapter2/Village.json": {
-            "scale": 0.5,
-            "selectedLayer": 5,
+            "scale": 2,
+            "selectedLayer": 4,
             "viewCenter": {
-                "x": 1023,
-                "y": 1056
+                "x": 966.75,
+                "y": 94.25
             }
         },
         "tilemaps/Chapter2/Village.json#Village": {

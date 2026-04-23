@@ -3,9 +3,10 @@ import {
     dialogue,
     dialogueWithChoice,
     choiceOption,
-    DialogueChoiceActions
+    DialogueChoiceActions,
+    DialogueCompleteActions
 } from "./InteractionTypes";
-import { Chapter2MainQuestStep, Chapter2StoryState } from "../StorySystem/StoryState";
+import { Chapter2MainQuestStep, Chapter2StoryState, Chapter2VillageItem } from "../StorySystem/StoryState";
 
 export interface NpcInteractionContext {
     chapter2?: Readonly<Chapter2StoryState>;
@@ -46,7 +47,7 @@ function getVilaInteraction(context: NpcInteractionContext): DialogueInteraction
 
     switch (chapter2.mainQuestStep) {
     case Chapter2MainQuestStep.COLLECT_VILLAGE_ITEMS:
-        if (chapter2.villageItems.gotVilaTooth) {
+        if (chapter2.villageItems[Chapter2VillageItem.FRESH_PRETTY_TOOTH]) {
             return dialogue([
                 "You still have my little gift, don't you?",
                 "Good.",
@@ -110,12 +111,14 @@ function getLucyInteraction(context: NpcInteractionContext): DialogueInteraction
     switch (chapter2.mainQuestStep) {
     case Chapter2MainQuestStep.COLLECT_VILLAGE_ITEMS:
         return dialogue([
-            "...Lucy..."
+            "You are standing directly in my sightline.",
+            "Do you have any idea how difficult it is to enjoy a private pool when people keep wandering through the view?",
+            "Move along."
         ]);
 
     case Chapter2MainQuestStep.READY_TO_LEAVE_VILLAGE:
         return dialogue([
-            "...Lucy after village items..."
+            "Why are you still here?"
         ]);
 
     default:
@@ -157,13 +160,25 @@ function getJInteraction(context: NpcInteractionContext): DialogueInteraction {
 
     switch (chapter2.mainQuestStep) {
     case Chapter2MainQuestStep.COLLECT_VILLAGE_ITEMS:
+        if (chapter2.villageItems[Chapter2VillageItem.FLOWER_RING]) {
+            return dialogue([
+                "May the peace be with us..."
+            ]);
+        }
+
         return dialogue([
-            "...J..."
-        ]);
+            "Last night... did you hear it?",
+            "There was a howl somewhere.",
+            "I have not been able to stop thinking about it.",
+            "Here. Please take this flower ring.",
+            "I hope it brings you some luck.",
+            "A flower ring is placed in your hand."
+        ], { completeAction: DialogueCompleteActions.GIVE_FLOWER_RING });
 
     case Chapter2MainQuestStep.READY_TO_LEAVE_VILLAGE:
         return dialogue([
-            "...J after village items..."
+            "You are leaving soon, aren't you?",
+            "Please be careful beyond the village.",
         ]);
 
     default:

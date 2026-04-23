@@ -32,6 +32,7 @@ export default class DialogueController implements Updateable {
     private currentDialogueLine: number = 0;
     private dialogueChoiceActive: boolean = false;
     private dialogueChoiceResolved: boolean = false;
+    private ignoreNextConfirm: boolean = false;
     
     private readonly dialogueLayerName = "dialogueOverlay";
 
@@ -85,6 +86,11 @@ export default class DialogueController implements Updateable {
             return;
         }
 
+        if (this.ignoreNextConfirm) {
+            this.ignoreNextConfirm = false;
+            return;
+        }
+
         if (!this.confirm()) {
             return;
         }
@@ -102,8 +108,11 @@ export default class DialogueController implements Updateable {
         this.currentDialogueLine += 1;
     
         if (this.currentDialogueLine >= this.activeDialogue.lines.length) {
+            const completedDialogue = this.activeDialogue;
             this.dialogueScreen.completeRead();
-            this.endDialogue();
+            if (this.activeDialogue === completedDialogue) {
+                this.endDialogue();
+            }
             return;
         }
     
@@ -122,6 +131,7 @@ export default class DialogueController implements Updateable {
         this.currentDialogueLine = 0;
         this.dialogueChoiceActive = false;
         this.dialogueChoiceResolved = false;
+        this.ignoreNextConfirm = true;
         this.dialogueScreen.hideChoices();
         this.dialogueScreen.setOnCompleteCallback(() => {
             dialogue.onComplete?.();
@@ -184,6 +194,7 @@ export default class DialogueController implements Updateable {
         this.currentDialogueLine = 0;
         this.dialogueChoiceActive = false;
         this.dialogueChoiceResolved = false;
+        this.ignoreNextConfirm = false;
         if (!callbackHandledByReadCompletion) {
             this.dialogueScreen.clearOnCompleteCallback();
         }
