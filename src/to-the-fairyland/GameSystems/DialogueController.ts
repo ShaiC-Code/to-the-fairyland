@@ -1,14 +1,15 @@
-import Updateable from "../../../Wolfie2D/DataTypes/Interfaces/Updateable";
-import Input from "../../../Wolfie2D/Input/Input";
-import Scene from "../../../Wolfie2D/Scene/Scene";
-import Viewport from "../../../Wolfie2D/SceneGraph/Viewport";
-import PlayerActor from "../../Actors/PlayerActor";
-import PlayerAI from "../../AI/Player/PlayerAI";
-import { PlayerControlMode, PlayerInput } from "../../AI/Player/PlayerController";
-import { AssetBundle } from "../../Scenes/MappedAdventureScene";
-import DialogueScreen from "../../UI/DialogueScreen";
-import { UIScreenOptions } from "../../UI/UIScreen";
-import { DialogueChoiceOption, DialogueInteraction } from "./InteractionDatabase";
+import Updateable from "../../Wolfie2D/DataTypes/Interfaces/Updateable";
+import Input from "../../Wolfie2D/Input/Input";
+import Scene from "../../Wolfie2D/Scene/Scene";
+import Viewport from "../../Wolfie2D/SceneGraph/Viewport";
+import PlayerActor from "../Actors/PlayerActor";
+import PlayerAI from "../AI/Player/PlayerAI";
+import { PlayerControlMode, PlayerInput } from "../AI/Player/PlayerController";
+import { AssetBundle } from "../Scenes/MappedAdventureScene";
+import CutsceneScreen from "../UI/CutsceneScreen";
+import DialogueScreen from "../UI/DialogueScreen";
+import { UIScreenOptions } from "../UI/UIScreen";
+import { DialogueChoiceOption, DialogueInteraction } from "./InteractionSystem/InteractionDatabase";
 
 export default class DialogueController implements Updateable {
     private assetBundle: AssetBundle = {
@@ -22,11 +23,15 @@ export default class DialogueController implements Updateable {
     protected viewport: Viewport;
     
     private player: PlayerActor;
-    private dialogueScreen: DialogueScreen;
     private handleDialogueCompleteAction: (option: DialogueInteraction) => void;
     private handleDialogueChoiceAction: (option: DialogueChoiceOption) => void;
     private confirm: () => boolean;
 
+    private dialogueScreen: DialogueScreen;
+    private cutsceneScreen: CutsceneScreen;
+    private textDisplay: DialogueScreen | CutsceneScreen;
+    private cutsceneMode: boolean = false;
+    
     private activeDialogue: DialogueInteraction | null = null;
     private activeSpeakerName: string | undefined;
     private currentDialogueLine: number = 0;
@@ -35,6 +40,7 @@ export default class DialogueController implements Updateable {
     private ignoreNextConfirm: boolean = false;
     
     private readonly dialogueLayerName = "dialogueOverlay";
+    private readonly cutsceneLayerName = "cutsceneOverlay";
 
     public isActive: boolean = false;
 
@@ -62,6 +68,18 @@ export default class DialogueController implements Updateable {
             undefined,
             options
         );
+
+        
+        this.cutsceneScreen = new CutsceneScreen(
+            this.cutsceneLayerName,
+            this.scene,
+            () => this.viewport.getCenter(),
+            () => this.viewport.getHalfSize(),
+            undefined,
+            options
+        );
+
+        this.textDisplay = this.dialogueScreen
     }
     
     get sceneAssets() {
@@ -82,7 +100,7 @@ export default class DialogueController implements Updateable {
         }
 
         if (this.dialogueChoiceActive) {
-            this.dialogueScreen.update(deltaT);
+            this.textDisplay.update(deltaT);
             return;
         }
 
@@ -95,8 +113,8 @@ export default class DialogueController implements Updateable {
             return;
         }
     
-        if (this.dialogueScreen.isTyping()) {
-            this.dialogueScreen.revealCurrentLine();
+        if (this.textDisplay.isTyping()) {
+            this.textDisplay.revealCurrentLine();
             return;
         }
 
@@ -108,15 +126,12 @@ export default class DialogueController implements Updateable {
         this.currentDialogueLine += 1;
     
         if (this.currentDialogueLine >= this.activeDialogue.lines.length) {
-            const completedDialogue = this.activeDialogue;
-            this.dialogueScreen.completeRead();
-            if (this.activeDialogue === completedDialogue) {
-                this.endDialogue();
-            }
+            this.textDisplay.completeRead();
+            this.endDialogue();
             return;
         }
     
-        this.dialogueScreen.showLine(
+        this.textDisplay.showLine(
             this.activeDialogue.lines[this.currentDialogueLine]
         );
     }
@@ -132,15 +147,15 @@ export default class DialogueController implements Updateable {
         this.dialogueChoiceActive = false;
         this.dialogueChoiceResolved = false;
         this.ignoreNextConfirm = true;
-        this.dialogueScreen.hideChoices();
-        this.dialogueScreen.setOnCompleteCallback(() => {
+        this.textDisplay.hideChoices();
+        this.textDisplay.setOnCompleteCallback(() => {
             dialogue.onComplete?.();
             this.handleDialogueCompleteAction(dialogue);
         });
 
-        this.dialogueScreen.setSpeakerName(this.activeSpeakerName);
+        this.textDisplay.setSpeakerName(this.activeSpeakerName);
 
-        this.dialogueScreen.showLine(
+        this.textDisplay.showLine(
             dialogue.lines[this.currentDialogueLine]
         );
         this.isActive = true;
@@ -163,13 +178,13 @@ export default class DialogueController implements Updateable {
         const choice = this.activeDialogue.choice;
         this.dialogueChoiceActive = true;
 
-        this.dialogueScreen.setChoices(
+        this.textDisplay.setChoices(
             choice.options.map((option: DialogueChoiceOption) => ({
                 label: option.label,
                 onSelect: () => {
                     this.dialogueChoiceActive = false;
                     this.dialogueChoiceResolved = true;
-                    this.dialogueScreen.hideChoices();
+                    this.textDisplay.hideChoices();
                     option.onSelect?.();
                     this.handleDialogueChoiceAction(option);
                     this.startDialogue(option.interaction, this.activeSpeakerName);
@@ -177,7 +192,7 @@ export default class DialogueController implements Updateable {
             }))
         );
 
-        this.dialogueScreen.showChoices();
+        this.textDisplay.showChoices();
     }
     
     protected endDialogue(): void {
@@ -196,12 +211,21 @@ export default class DialogueController implements Updateable {
         this.dialogueChoiceResolved = false;
         this.ignoreNextConfirm = false;
         if (!callbackHandledByReadCompletion) {
-            this.dialogueScreen.clearOnCompleteCallback();
+            this.textDisplay.clearOnCompleteCallback();
         }
-        this.dialogueScreen.hideChoices();
-        this.dialogueScreen.hide();
-        this.dialogueScreen.setSpeakerName(undefined);
+        this.textDisplay.hideChoices();
+        this.textDisplay.hide();
+        this.textDisplay.setSpeakerName(undefined);
         this.activeSpeakerName = undefined;
+    }
+
+    public setCutsceneMode(toggle: boolean): void {
+        this.cutsceneMode = toggle;
+        if (toggle) {
+            this.textDisplay = this.cutsceneScreen;
+        } else {
+            this.textDisplay = this.dialogueScreen;
+        }
     }
 
     public playDialogueSFX(): void {

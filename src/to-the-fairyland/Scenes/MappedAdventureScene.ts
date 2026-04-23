@@ -12,21 +12,18 @@ import MainMenu from "./MainMenu";
 import { CustomUIElementType } from "../UI/CustomUIElements/CustomUIElementTypes";
 import HoverButton from "../UI/CustomUIElements/HoverButton";
 import UIImage from "../UI/CustomUIElements/UIImage";
-import { GraphicType } from "../../Wolfie2D/Nodes/Graphics/GraphicTypes";
-import Color from "../../Wolfie2D/Utils/Color";
-import Graphic from "../../Wolfie2D/Nodes/Graphic";
 import { PlayerInput } from "../AI/Player/PlayerController";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 import { DialogueChoiceAction, DialogueChoiceOption, DialogueInteraction, DialogueCompleteAction, getInteractionData } from "../GameSystems/InteractionSystem/InteractionDatabase";
 import PlayerStateManager from "../GameSystems/PlayerSystem/PlayerStateManager";
 import GameSessionManager from "../GameSystems/GameSessionSystem/GameSessionManager";
-import { TimeOfDay } from "../GameSystems/WorldSystem/WorldState";
 import InventoryItem from "../GameSystems/ItemSystem/InventoryItem";
 import { UIScreenActionBindings } from "../UI/UIScreen";
 import WeatherController from "../GameSystems/WorldSystem/WeatherController";
 import SpotlightOverlay from "../UI/CustomUIElements/SpotlightOverlay";
-import SpotlightEffectOverlay from "../Overlays/SpotlightEffectOverlay";
-import DialogueController from "../GameSystems/InteractionSystem/DialogueController";
+import DialogueController from "../GameSystems/DialogueController";
+import TimeController from "../GameSystems/WorldSystem/TimeController";
+import CameraController from "../GameSystems/CameraController";
 
 export type AssetRef = Readonly<{
     readonly key: string;
@@ -98,7 +95,6 @@ export default abstract class MappedAdventureScene extends Scene {
     protected readonly interactablesLayerName = "Interactables";
     protected readonly actorLayerName = "Actors";
     protected readonly actorLayerDepth = 10;
-    protected readonly zoomLevel = 1;
     protected readonly entranceLayerName = "Entrances";
 
     protected player!: PlayerActor;
@@ -106,16 +102,16 @@ export default abstract class MappedAdventureScene extends Scene {
     protected collision!: OrthogonalTilemap;
     protected interactables: TiledObject[] = [];
     protected spawnName?: string;
-    protected pauseScreen!: PauseScreen;
-    protected inventoryScreen!: InventoryScreen;
-    protected worldPaused: boolean = false;
     protected entrances: TiledObject[] = [];
     protected transitioning = false;
 
-    private timeOverlay: Graphic | null = null;
-    private timeSpotlightOverlay: SpotlightEffectOverlay | null = null;
+    protected pauseScreen!: PauseScreen;
+    protected inventoryScreen!: InventoryScreen;
+    protected worldPaused: boolean = false;
     
+    protected cameraController!: CameraController;
     protected dialogueController!: DialogueController;
+    protected timeController!: TimeController;
     protected weatherController!: WeatherController;
     
     // lets the scene receive data, ex: {spawnName: "Door1"}
@@ -249,11 +245,6 @@ export default abstract class MappedAdventureScene extends Scene {
             confirm: () => Input.isJustPressed(PlayerInput.INTERACT)
         };
 
-        this.applyCameraBounds();
-        this.viewport.follow(this.player);
-        this.viewport.setZoomLevel(this.zoomLevel);
-        this.viewport.snapToTarget();
-
         // Initialize pause and inventory screens with viewport data
         this.pauseScreen = new PauseScreen(
             "pauseOverlay",
@@ -285,21 +276,9 @@ export default abstract class MappedAdventureScene extends Scene {
                 uiActions
             }
         );
-        
-        this.timeSpotlightOverlay = new SpotlightEffectOverlay(
-            "timeSpotlightOverlay",
-            this,
-            () => this.viewport.getCenter(),
-            () => this.viewport.getHalfSize(),
-            new Color(0, 0, 0, 0.3),
-            this.player,
-            Math.min(this.viewport.getHalfSize().x, this.viewport.getHalfSize().y) * 0.6,
-            0.7
-        );
 
         const worldState = this.gameSessionManager.getWorldState();
-        this.setTimeOfDay(worldState.timeOfDay);
-        
+
         this.dialogueController = new DialogueController(
             this,
             this.viewport,
@@ -316,7 +295,13 @@ export default abstract class MappedAdventureScene extends Scene {
                 uiActions
             }
         );
+
+        this.cameraController = new CameraController(this, this.viewport, this.player, this.ground)
+        
         this.dialogueController.sceneAssets = this.assets;
+
+        this.timeController = new TimeController(this, this.viewport, this.player);
+        this.timeController.setTimeOfDay(worldState.timeOfDay);
 
         this.weatherController = new WeatherController(this, this.viewport);
         this.weatherController.sceneAssets = this.assets;
@@ -355,7 +340,11 @@ export default abstract class MappedAdventureScene extends Scene {
 
         this.pauseScreen.update(deltaT);
         this.inventoryScreen.update(deltaT);
+        
+        this.cameraController.update(deltaT);
         this.dialogueController.update(deltaT);
+        this.timeController.update(deltaT);
+        this.weatherController.update(deltaT);
 
         // Run gameplay interactions only while the world is not simulation-paused.
         if(!menuOpen) {
@@ -397,9 +386,6 @@ export default abstract class MappedAdventureScene extends Scene {
                 }
             }
         }
-        
-        this.timeSpotlightOverlay?.update(deltaT);
-        this.weatherController.update(deltaT);
     }
 
     protected setWorldPaused(paused: boolean): void {
@@ -546,50 +532,6 @@ export default abstract class MappedAdventureScene extends Scene {
         return objects.find(obj => this.objectOccupiesTile(obj, tile));
     }
 
-    // Returns the time-of-day overlay color for this scene.
-    // Return null for no overlay (default).
-    protected setTimeOfDay(time: TimeOfDay): void {
-        const color = this.getColorForTime(time);
-        if (!color) {
-            if (this.timeOverlay) {
-                this.timeOverlay.visible = false;
-            }
-
-            if (this.timeSpotlightOverlay) {
-                this.timeSpotlightOverlay.hide();
-            }
-            return;
-        }
-        if (!this.timeOverlay) {
-            this.addParallaxLayer("timeOverlay", Vec2.ZERO, 9999);
-            const half = this.viewport.getHalfSize();
-            this.timeOverlay = this.add.graphic(GraphicType.RECT, "timeOverlay", {
-                position: half.clone(),
-                size: half.scaled(2)
-            });
-        }
-        this.timeOverlay.color = color;
-
-        // Add spotlight overlay for DUSK
-        if (time === TimeOfDay.DUSK) {
-            this.timeOverlay.visible = true;
-            this.timeSpotlightOverlay?.show();
-        } else {
-            this.timeOverlay.visible = false;
-            this.timeSpotlightOverlay?.hide();
-        }
-    }  
-
-    private getColorForTime(time: TimeOfDay): Color | null {
-        switch (time) {
-            case TimeOfDay.DAY:  return null;
-            case TimeOfDay.NOON:  return new Color(200, 140, 60, 0.30);
-            case TimeOfDay.DUSK:  return new Color(30, 20, 60, 0.45);
-            case TimeOfDay.NIGHT: return new Color(10, 10, 60, 0.75);
-            default:              return null;
-        }
-    }
-
     /**
      * Places the player at the given spawn object and initializes PlayerAI with the correct start tile.
      * The player is positioned using feet alignment so the sprite stands correctly on the grid.
@@ -618,53 +560,6 @@ export default abstract class MappedAdventureScene extends Scene {
         } else if (facingProp === "right") {
             ai.facing = Vec2.RIGHT;
         }
-    }
-
-    /**
-     * Sets the viewport bounds from the map's bounds layer so the camera stays inside the playable area.
-     * Falls back to the full ground tilemap size if no bounds layer exists or if it has no painted tiles.
-     */
-    protected applyCameraBounds(): void {
-        const mapBounds = this.getTilemap(this.mapBoundsLayerName) as OrthogonalTilemap | null;
-
-        if (!mapBounds) {
-            this.viewport.setBounds(0, 0, this.ground.size.x, this.ground.size.y);
-            return;
-        }
-
-        const dims = mapBounds.getDimensions();
-        const tileSize = mapBounds.getScaledTileSize();
-
-        let minCol = dims.x;
-        let minRow = dims.y;
-        let maxCol = -1;
-        let maxRow = -1;
-
-        for (let row = 0; row < dims.y; row++) {
-            for (let col = 0; col < dims.x; col++) {
-                if (mapBounds.getTile(col, row) !== 0) {
-                    minCol = Math.min(minCol, col);
-                    minRow = Math.min(minRow, row);
-                    maxCol = Math.max(maxCol, col);
-                    maxRow = Math.max(maxRow, row);
-                }
-            }
-        }
-
-        if (maxCol < 0 || maxRow < 0) {
-            this.viewport.setBounds(0, 0, this.ground.size.x, this.ground.size.y);
-            return;
-        }
-
-        const topLeft = mapBounds.getWorldPosition(minCol, minRow);
-        const bottomRight = mapBounds.getWorldPosition(maxCol, maxRow);
-
-        this.viewport.setBounds(
-            topLeft.x,
-            topLeft.y,
-            bottomRight.x + tileSize.x,
-            bottomRight.y + tileSize.y
-        );
     }
 
     /**

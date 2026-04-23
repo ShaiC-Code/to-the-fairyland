@@ -12,10 +12,10 @@ type DialogueChoice = {
     onSelect?: () => void;
 };
 
-export default class DialogueScreen extends UIScreen {
+export default class CutsceneScreen extends UIScreen {
     private textBox!: TextBox;
     private nameBox!: Label;
-    private defaultRevealSpeed = 105;
+    private defaultRevealSpeed = 80;
     private choices: DialogueChoice[] = [];
     private choiceButtonKeys: string[] = [];
     private selectedChoiceIndex = 0;
@@ -28,7 +28,7 @@ export default class DialogueScreen extends UIScreen {
     private readonly nameBoxSize = new Vec2(140, 52);
     private readonly choiceButtonSize = new Vec2(180, 52);
     private readonly choiceSafeZoneTopPadding = 6;
-    private readonly choiceSafeZoneBottomPadding = 24;
+    private readonly choiceSafeZoneBottomPadding = 20;
     private readonly choiceSafeZoneHeight = this.choiceButtonSize.y + this.choiceSafeZoneTopPadding + this.choiceSafeZoneBottomPadding;
 
     private readonly selectedButtonBackground = new Color(255, 255, 255, 1);
@@ -46,9 +46,10 @@ export default class DialogueScreen extends UIScreen {
     protected override initializeUI(): void {
         const viewportHalfSize = this.getViewportHalfSize();
         const viewportSize = viewportHalfSize.clone().scale(2);
+        const screenCenter = viewportHalfSize.clone();
 
-        const boxSize = new Vec2(viewportSize.x - 80, 200);
-        const boxPos = new Vec2(viewportHalfSize.x, viewportSize.y - boxSize.y / 2 - 40);
+        const boxSize = new Vec2(viewportSize.x - 200, 400);
+        const boxPos = new Vec2(screenCenter.x, screenCenter.y);
         const nameBoxGap = 0;
 
         const nameBoxPos = new Vec2(
@@ -66,7 +67,7 @@ export default class DialogueScreen extends UIScreen {
         this.nameBox.borderWidth = 8;
         this.nameBox.borderRadius = 0;
         this.nameBox.textColor = Color.WHITE;
-        this.nameBox.visible = false;      
+        this.nameBox.visible = false;
 
         this.addTextBox("dialogueText", boxPos, boxSize, "", this.dialogueFontSize, {
             halign: "left",
@@ -173,7 +174,7 @@ export default class DialogueScreen extends UIScreen {
 
     public setChoices(choices: DialogueChoice[]): void {
         if (choices.length === 0) {
-            throw new Error("DialogueScreen requires at least one choice.");
+            throw new Error("CutsceneScreen requires at least one choice.");
         }
 
         this.choices = choices;
