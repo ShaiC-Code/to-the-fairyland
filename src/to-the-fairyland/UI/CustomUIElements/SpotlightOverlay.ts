@@ -55,12 +55,18 @@ export default class SpotlightOverlay extends Rect {
         bctx.globalCompositeOperation = 'destination-out';
 
         const grad = bctx.createRadialGradient(
-            0, 0, innerRadius,
+            0, 0, 0,
             0, 0, outerRadius
         );
-
-        grad.addColorStop(0, 'rgba(0,0,0,1)');
-        grad.addColorStop(1, 'rgba(0,0,0,0)');
+        
+        grad.addColorStop(0.00, 'rgba(0,0,0,1.00)');
+        grad.addColorStop(0.08, 'rgba(0,0,0,0.98)');
+        grad.addColorStop(0.20, 'rgba(0,0,0,0.92)');
+        grad.addColorStop(0.38, 'rgba(0,0,0,0.78)');
+        grad.addColorStop(0.60, 'rgba(0,0,0,0.48)');
+        grad.addColorStop(0.82, 'rgba(0,0,0,0.18)');
+        grad.addColorStop(1.00, 'rgba(0,0,0,0.00)');
+        
 
         bctx.fillStyle = grad;
         bctx.beginPath();
