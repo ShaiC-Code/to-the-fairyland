@@ -23,12 +23,14 @@ export enum Chapter2MainQuestStep {
 
 }
 
+export enum Chapter2VillageItem {
+    FRESH_PRETTY_TOOTH = "FRESH_PRETTY_TOOTH",
+    FLOWER_RING = "FLOWER_RING"
+}
+
 export interface Chapter2StoryState {
     mainQuestStep: Chapter2MainQuestStep;
-    villageItems: {
-        gotVilaTooth: boolean;
-        gotJItem: boolean;
-    };
+    villageItems: Record<Chapter2VillageItem, boolean>;
 }
 
 export interface StoryState {
@@ -52,8 +54,8 @@ export function createInitialChapter2State(): Chapter2StoryState {
     return {
         mainQuestStep: Chapter2MainQuestStep.COLLECT_VILLAGE_ITEMS,
         villageItems: {
-            gotVilaTooth: false,
-            gotJItem: false
+            [Chapter2VillageItem.FRESH_PRETTY_TOOTH]: false,
+            [Chapter2VillageItem.FLOWER_RING]: false
         }
     };
 }
