@@ -28,7 +28,7 @@ export default abstract class MappedAdventureChapter1Scene extends MappedAdventu
             [DialogueChoiceActions.COOK_FROZEN_BERRIES]: () => this.giveCookedBerries(),
             [DialogueChoiceActions.SLEEP]: () => {
                 this.storyManager.chapter1.markSlept();
-                this.setTimeOfDay(this.gameSessionManager.getWorldState().timeOfDay);
+                this.timeController.setTimeOfDay(this.gameSessionManager.getWorldState().timeOfDay);
             },
             [DialogueChoiceActions.PICKUP_MAP]: () => this.pickupMap()
         }

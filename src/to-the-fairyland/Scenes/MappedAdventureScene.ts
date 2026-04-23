@@ -12,21 +12,17 @@ import MainMenu from "./MainMenu";
 import { CustomUIElementType } from "../UI/CustomUIElements/CustomUIElementTypes";
 import HoverButton from "../UI/CustomUIElements/HoverButton";
 import UIImage from "../UI/CustomUIElements/UIImage";
-import { GraphicType } from "../../Wolfie2D/Nodes/Graphics/GraphicTypes";
-import Color from "../../Wolfie2D/Utils/Color";
-import Graphic from "../../Wolfie2D/Nodes/Graphic";
 import { PlayerInput } from "../AI/Player/PlayerController";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 import { DialogueChoiceAction, DialogueChoiceOption, DialogueInteraction, DialogueCompleteAction, getInteractionData } from "../GameSystems/InteractionSystem/InteractionDatabase";
 import PlayerStateManager from "../GameSystems/PlayerSystem/PlayerStateManager";
 import GameSessionManager from "../GameSystems/GameSessionSystem/GameSessionManager";
-import { TimeOfDay } from "../GameSystems/WorldSystem/WorldState";
 import InventoryItem from "../GameSystems/ItemSystem/InventoryItem";
 import { UIScreenActionBindings } from "../UI/UIScreen";
 import WeatherController from "../GameSystems/WorldSystem/WeatherController";
 import SpotlightOverlay from "../UI/CustomUIElements/SpotlightOverlay";
-import SpotlightEffectOverlay from "../Overlays/SpotlightEffectOverlay";
 import DialogueController from "../GameSystems/InteractionSystem/DialogueController";
+import TimeController from "../GameSystems/WorldSystem/TimeController";
 
 export type AssetRef = Readonly<{
     readonly key: string;
@@ -106,16 +102,15 @@ export default abstract class MappedAdventureScene extends Scene {
     protected collision!: OrthogonalTilemap;
     protected interactables: TiledObject[] = [];
     protected spawnName?: string;
-    protected pauseScreen!: PauseScreen;
-    protected inventoryScreen!: InventoryScreen;
-    protected worldPaused: boolean = false;
     protected entrances: TiledObject[] = [];
     protected transitioning = false;
 
-    private timeOverlay: Graphic | null = null;
-    private timeSpotlightOverlay: SpotlightEffectOverlay | null = null;
+    protected pauseScreen!: PauseScreen;
+    protected inventoryScreen!: InventoryScreen;
+    protected worldPaused: boolean = false;
     
     protected dialogueController!: DialogueController;
+    protected timeController!: TimeController;
     protected weatherController!: WeatherController;
     
     // lets the scene receive data, ex: {spawnName: "Door1"}
@@ -285,21 +280,9 @@ export default abstract class MappedAdventureScene extends Scene {
                 uiActions
             }
         );
-        
-        this.timeSpotlightOverlay = new SpotlightEffectOverlay(
-            "timeSpotlightOverlay",
-            this,
-            () => this.viewport.getCenter(),
-            () => this.viewport.getHalfSize(),
-            new Color(0, 0, 0, 0.3),
-            this.player,
-            Math.min(this.viewport.getHalfSize().x, this.viewport.getHalfSize().y) * 0.6,
-            0.7
-        );
 
         const worldState = this.gameSessionManager.getWorldState();
-        this.setTimeOfDay(worldState.timeOfDay);
-        
+
         this.dialogueController = new DialogueController(
             this,
             this.viewport,
@@ -317,6 +300,9 @@ export default abstract class MappedAdventureScene extends Scene {
             }
         );
         this.dialogueController.sceneAssets = this.assets;
+
+        this.timeController = new TimeController(this, this.viewport, this.player);
+        this.timeController.setTimeOfDay(worldState.timeOfDay);
 
         this.weatherController = new WeatherController(this, this.viewport);
         this.weatherController.sceneAssets = this.assets;
@@ -398,7 +384,7 @@ export default abstract class MappedAdventureScene extends Scene {
             }
         }
         
-        this.timeSpotlightOverlay?.update(deltaT);
+        this.timeController.update(deltaT);
         this.weatherController.update(deltaT);
     }
 
@@ -544,50 +530,6 @@ export default abstract class MappedAdventureScene extends Scene {
      */
     protected findObjectAtTile(objects: TiledObject[], tile: Vec2): TiledObject | undefined {
         return objects.find(obj => this.objectOccupiesTile(obj, tile));
-    }
-
-    // Returns the time-of-day overlay color for this scene.
-    // Return null for no overlay (default).
-    protected setTimeOfDay(time: TimeOfDay): void {
-        const color = this.getColorForTime(time);
-        if (!color) {
-            if (this.timeOverlay) {
-                this.timeOverlay.visible = false;
-            }
-
-            if (this.timeSpotlightOverlay) {
-                this.timeSpotlightOverlay.hide();
-            }
-            return;
-        }
-        if (!this.timeOverlay) {
-            this.addParallaxLayer("timeOverlay", Vec2.ZERO, 9999);
-            const half = this.viewport.getHalfSize();
-            this.timeOverlay = this.add.graphic(GraphicType.RECT, "timeOverlay", {
-                position: half.clone(),
-                size: half.scaled(2)
-            });
-        }
-        this.timeOverlay.color = color;
-
-        // Add spotlight overlay for DUSK
-        if (time === TimeOfDay.DUSK) {
-            this.timeOverlay.visible = true;
-            this.timeSpotlightOverlay?.show();
-        } else {
-            this.timeOverlay.visible = false;
-            this.timeSpotlightOverlay?.hide();
-        }
-    }  
-
-    private getColorForTime(time: TimeOfDay): Color | null {
-        switch (time) {
-            case TimeOfDay.DAY:  return null;
-            case TimeOfDay.NOON:  return new Color(200, 140, 60, 0.30);
-            case TimeOfDay.DUSK:  return new Color(30, 20, 60, 0.45);
-            case TimeOfDay.NIGHT: return new Color(10, 10, 60, 0.75);
-            default:              return null;
-        }
     }
 
     /**
