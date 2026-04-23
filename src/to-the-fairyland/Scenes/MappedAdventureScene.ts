@@ -21,8 +21,9 @@ import InventoryItem from "../GameSystems/ItemSystem/InventoryItem";
 import { UIScreenActionBindings } from "../UI/UIScreen";
 import WeatherController from "../GameSystems/WorldSystem/WeatherController";
 import SpotlightOverlay from "../UI/CustomUIElements/SpotlightOverlay";
-import DialogueController from "../GameSystems/InteractionSystem/DialogueController";
+import DialogueController from "../GameSystems/DialogueController";
 import TimeController from "../GameSystems/WorldSystem/TimeController";
+import CameraController from "../GameSystems/CameraController";
 
 export type AssetRef = Readonly<{
     readonly key: string;
@@ -94,7 +95,6 @@ export default abstract class MappedAdventureScene extends Scene {
     protected readonly interactablesLayerName = "Interactables";
     protected readonly actorLayerName = "Actors";
     protected readonly actorLayerDepth = 10;
-    protected readonly zoomLevel = 1;
     protected readonly entranceLayerName = "Entrances";
 
     protected player!: PlayerActor;
@@ -109,6 +109,7 @@ export default abstract class MappedAdventureScene extends Scene {
     protected inventoryScreen!: InventoryScreen;
     protected worldPaused: boolean = false;
     
+    protected cameraController!: CameraController;
     protected dialogueController!: DialogueController;
     protected timeController!: TimeController;
     protected weatherController!: WeatherController;
@@ -244,11 +245,6 @@ export default abstract class MappedAdventureScene extends Scene {
             confirm: () => Input.isJustPressed(PlayerInput.INTERACT)
         };
 
-        this.applyCameraBounds();
-        this.viewport.follow(this.player);
-        this.viewport.setZoomLevel(this.zoomLevel);
-        this.viewport.snapToTarget();
-
         // Initialize pause and inventory screens with viewport data
         this.pauseScreen = new PauseScreen(
             "pauseOverlay",
@@ -299,6 +295,9 @@ export default abstract class MappedAdventureScene extends Scene {
                 uiActions
             }
         );
+
+        this.cameraController = new CameraController(this, this.viewport, this.player, this.ground)
+        
         this.dialogueController.sceneAssets = this.assets;
 
         this.timeController = new TimeController(this, this.viewport, this.player);
@@ -341,7 +340,11 @@ export default abstract class MappedAdventureScene extends Scene {
 
         this.pauseScreen.update(deltaT);
         this.inventoryScreen.update(deltaT);
+        
+        this.cameraController.update(deltaT);
         this.dialogueController.update(deltaT);
+        this.timeController.update(deltaT);
+        this.weatherController.update(deltaT);
 
         // Run gameplay interactions only while the world is not simulation-paused.
         if(!menuOpen) {
@@ -383,9 +386,6 @@ export default abstract class MappedAdventureScene extends Scene {
                 }
             }
         }
-        
-        this.timeController.update(deltaT);
-        this.weatherController.update(deltaT);
     }
 
     protected setWorldPaused(paused: boolean): void {
@@ -560,53 +560,6 @@ export default abstract class MappedAdventureScene extends Scene {
         } else if (facingProp === "right") {
             ai.facing = Vec2.RIGHT;
         }
-    }
-
-    /**
-     * Sets the viewport bounds from the map's bounds layer so the camera stays inside the playable area.
-     * Falls back to the full ground tilemap size if no bounds layer exists or if it has no painted tiles.
-     */
-    protected applyCameraBounds(): void {
-        const mapBounds = this.getTilemap(this.mapBoundsLayerName) as OrthogonalTilemap | null;
-
-        if (!mapBounds) {
-            this.viewport.setBounds(0, 0, this.ground.size.x, this.ground.size.y);
-            return;
-        }
-
-        const dims = mapBounds.getDimensions();
-        const tileSize = mapBounds.getScaledTileSize();
-
-        let minCol = dims.x;
-        let minRow = dims.y;
-        let maxCol = -1;
-        let maxRow = -1;
-
-        for (let row = 0; row < dims.y; row++) {
-            for (let col = 0; col < dims.x; col++) {
-                if (mapBounds.getTile(col, row) !== 0) {
-                    minCol = Math.min(minCol, col);
-                    minRow = Math.min(minRow, row);
-                    maxCol = Math.max(maxCol, col);
-                    maxRow = Math.max(maxRow, row);
-                }
-            }
-        }
-
-        if (maxCol < 0 || maxRow < 0) {
-            this.viewport.setBounds(0, 0, this.ground.size.x, this.ground.size.y);
-            return;
-        }
-
-        const topLeft = mapBounds.getWorldPosition(minCol, minRow);
-        const bottomRight = mapBounds.getWorldPosition(maxCol, maxRow);
-
-        this.viewport.setBounds(
-            topLeft.x,
-            topLeft.y,
-            bottomRight.x + tileSize.x,
-            bottomRight.y + tileSize.y
-        );
     }
 
     /**

@@ -1,15 +1,15 @@
-import Updateable from "../../../Wolfie2D/DataTypes/Interfaces/Updateable";
-import Input from "../../../Wolfie2D/Input/Input";
-import Scene from "../../../Wolfie2D/Scene/Scene";
-import Viewport from "../../../Wolfie2D/SceneGraph/Viewport";
-import PlayerActor from "../../Actors/PlayerActor";
-import PlayerAI from "../../AI/Player/PlayerAI";
-import { PlayerControlMode, PlayerInput } from "../../AI/Player/PlayerController";
-import { AssetBundle } from "../../Scenes/MappedAdventureScene";
-import CutsceneScreen from "../../UI/CutsceneScreen";
-import DialogueScreen from "../../UI/DialogueScreen";
-import { UIScreenOptions } from "../../UI/UIScreen";
-import { DialogueChoiceOption, DialogueInteraction } from "./InteractionDatabase";
+import Updateable from "../../Wolfie2D/DataTypes/Interfaces/Updateable";
+import Input from "../../Wolfie2D/Input/Input";
+import Scene from "../../Wolfie2D/Scene/Scene";
+import Viewport from "../../Wolfie2D/SceneGraph/Viewport";
+import PlayerActor from "../Actors/PlayerActor";
+import PlayerAI from "../AI/Player/PlayerAI";
+import { PlayerControlMode, PlayerInput } from "../AI/Player/PlayerController";
+import { AssetBundle } from "../Scenes/MappedAdventureScene";
+import CutsceneScreen from "../UI/CutsceneScreen";
+import DialogueScreen from "../UI/DialogueScreen";
+import { UIScreenOptions } from "../UI/UIScreen";
+import { DialogueChoiceOption, DialogueInteraction } from "./InteractionSystem/InteractionDatabase";
 
 export default class DialogueController implements Updateable {
     private assetBundle: AssetBundle = {
