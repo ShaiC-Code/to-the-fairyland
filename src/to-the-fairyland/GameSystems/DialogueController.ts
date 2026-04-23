@@ -37,6 +37,7 @@ export default class DialogueController implements Updateable {
     private currentDialogueLine: number = 0;
     private dialogueChoiceActive: boolean = false;
     private dialogueChoiceResolved: boolean = false;
+    private ignoreNextConfirm: boolean = false;
     
     private readonly dialogueLayerName = "dialogueOverlay";
     private readonly cutsceneLayerName = "cutsceneOverlay";
@@ -103,6 +104,11 @@ export default class DialogueController implements Updateable {
             return;
         }
 
+        if (this.ignoreNextConfirm) {
+            this.ignoreNextConfirm = false;
+            return;
+        }
+
         if (!this.confirm()) {
             return;
         }
@@ -140,6 +146,7 @@ export default class DialogueController implements Updateable {
         this.currentDialogueLine = 0;
         this.dialogueChoiceActive = false;
         this.dialogueChoiceResolved = false;
+        this.ignoreNextConfirm = true;
         this.textDisplay.hideChoices();
         this.textDisplay.setOnCompleteCallback(() => {
             dialogue.onComplete?.();
@@ -202,6 +209,7 @@ export default class DialogueController implements Updateable {
         this.currentDialogueLine = 0;
         this.dialogueChoiceActive = false;
         this.dialogueChoiceResolved = false;
+        this.ignoreNextConfirm = false;
         if (!callbackHandledByReadCompletion) {
             this.textDisplay.clearOnCompleteCallback();
         }
