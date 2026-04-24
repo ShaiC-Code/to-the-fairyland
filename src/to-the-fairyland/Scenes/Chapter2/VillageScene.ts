@@ -8,6 +8,8 @@ import RoadScene from "./RoadScene";
 import PlayerAI from "../../AI/Player/PlayerAI";
 import { PlayerStateType } from "../../AI/Player/PlayerStates/PlayerBehaviorState";
 import { dialogue, getNpcInteraction } from "../../GameSystems/InteractionSystem/InteractionDatabase";
+import TintEffectOverlay from "../../Overlays/TintEffectOverlay";
+import Color from "../../../Wolfie2D/Utils/Color";
 
 
 type NpcRuntime = {
@@ -38,8 +40,23 @@ export default class VillageScene extends MappedAdventureChapter2Scene {
         sounds: {}
     };
 
+    protected readonly bloodMistEffectLayerName = "bloodMistTintLayer";
+    protected bloodMistEffectLayer!: TintEffectOverlay;
+
     protected combinedAssetBundles(): AssetBundle {
         return this.mergeAssetBundles(super.combinedAssetBundles(), VillageScene.assetBundle);
+    }
+
+    public override startScene(): void {
+        super.startScene();
+        this.bloodMistEffectLayer = new TintEffectOverlay(
+            this.bloodMistEffectLayerName,
+            this,
+            () => this.viewport.getCenter(),
+            () => this.viewport.getHalfSize(),
+            new Color(255, 0, 0, 0.25)
+        );
+        this.bloodMistEffectLayer.show();
     }
 
     protected override spawnMapObjects(tilemapData: TiledTilemapData): void {
