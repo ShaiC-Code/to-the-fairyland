@@ -56,7 +56,6 @@ export default class VillageScene extends MappedAdventureChapter2Scene {
             () => this.viewport.getHalfSize(),
             new Color(255, 0, 0, 0.25)
         );
-        this.bloodMistEffectLayer.show();
     }
 
     protected override spawnMapObjects(tilemapData: TiledTilemapData): void {
