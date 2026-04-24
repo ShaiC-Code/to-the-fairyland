@@ -61,7 +61,7 @@ function getVilaInteraction(context: NpcInteractionContext): DialogueInteraction
                 "You came from outside the village, right?",
                 "Let me see... ah, I kept something nice.",
                 "It is one of my precious little things.",
-                "A pretty little tooth. I kept it because it was pretty.",
+                "A pretty little Tooth. I kept it because it was pretty.",
                 "Will you take my gift?"
             ],
             {
@@ -210,8 +210,8 @@ function getKInteraction(context: NpcInteractionContext): DialogueInteraction {
                 [
                     "Welcome.",
                     "Looks like the road has been unkind to you.",
-                    "I have a loaf cooling inside, if you would like some for the road.",
-                    "Will you take it?"
+                    "I have some tasty bread.",
+                    "Would you like some?"
                 ],
                 {
                     lineIndex: 3,
@@ -219,7 +219,7 @@ function getKInteraction(context: NpcInteractionContext): DialogueInteraction {
                         choiceOption(
                             "Yes",
                             dialogue([
-                                "K wraps a warm loaf in clean cloth and places it in your hands.",
+                                "K wraps a warm loaf of bread in clean cloth and places it in your hands.",
                                 "The smell is soft, buttery, and comforting.",
                                 "[You received Lofty Bread.]"
                             ]),
@@ -242,7 +242,7 @@ function getKInteraction(context: NpcInteractionContext): DialogueInteraction {
                 [
                     "If the road keeps you longer than expected, take this as well.",
                     "A rolled sleeping bag will help you rest well.",
-                    "Will you take it?"
+                    "Take it?"
                 ],
                 {
                     lineIndex: 2,

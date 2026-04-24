@@ -16,6 +16,9 @@ import TestScreen from "../UI/MainMenuScreens/TestScreen";
 import GameSessionManager from "../GameSystems/GameSessionSystem/GameSessionManager";
 import { PlayerInput } from "../AI/Player/PlayerController";
 import { UIScreenActionBindings } from "../UI/UIScreen";
+import RoadScene from "./Chapter2/RoadScene";
+import { Chapter2MainQuestStep } from "../GameSystems/StorySystem/StoryState";
+
 
 type AssetRef = Readonly<{
     key: string;
@@ -122,6 +125,7 @@ export default class MainMenu extends Scene {
         this.receiver.subscribe("backToMain");
         this.receiver.subscribe("level1");
         this.receiver.subscribe("level2");
+        this.receiver.subscribe("level3");
 
     }
 
@@ -183,6 +187,29 @@ export default class MainMenu extends Scene {
             
                 this.sceneManager.changeToScene(
                     VillageScene,
+                    { spawnName: "RoadStart" },
+                    undefined,
+                    {
+                        showLoadingOverlay: true,
+                        useFadeTransition: true,
+                        fadeOutMs: 500,
+                        fadeInMs: 500
+                    }
+                );
+                break;
+            }
+            case "level3": {
+                this.gameSessionManager.startNewChapter2Game();
+            
+                const chapter2 = this.gameSessionManager.getStoryState().chapter2;
+                if (!chapter2) {
+                    throw new Error("Chapter 2 story state was not initialized.");
+                }
+            
+                chapter2.mainQuestStep = Chapter2MainQuestStep.READY_TO_LEAVE_VILLAGE;
+            
+                this.sceneManager.changeToScene(
+                    RoadScene,
                     { spawnName: "RoadStart" },
                     undefined,
                     {

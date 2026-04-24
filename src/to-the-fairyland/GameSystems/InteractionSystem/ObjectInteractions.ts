@@ -49,7 +49,7 @@ const STATIC_OBJECT_INTERACTIONS: Readonly<Record<string, InteractionData>> = {
             "Pick up map?"
         ],
         {
-            lineIndex: 6,
+            lineIndex: 7,
             options: [
                 choiceOption(
                     "Yes",
