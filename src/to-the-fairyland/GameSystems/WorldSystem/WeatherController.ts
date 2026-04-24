@@ -198,6 +198,7 @@ export default class WeatherController implements Updateable {
     
         const preset = this.getWeatherParticlePreset(weather);
         this.weatherLayerDepth = layerDepth;
+        this.scene.getLayer(this.weatherLayerName).setDepth(layerDepth);
         this.weatherFadeInSpeed = preset.fadeInSpeed;
         this.ensureSnowPool(preset);
         this.weatherAlpha = 0;

@@ -40,9 +40,10 @@ const STATIC_OBJECT_INTERACTIONS: Readonly<Record<string, InteractionData>> = {
     MapItem: dialogueWithChoice(
         [
             "A blood-stained map rests in the snow.",
-            "It must have belonged to one of the fallen expedition members.",
-            "Three monster kingdoms are drawn across the worn map.",
-            "Beyond them, a distant land is marked in trembling ink: 'The FairyLand.'",
+            "It's from the expedition members.",
+            "Three monster kingdoms have broken through the human territories.",
+            "A distant land is marked in trembling ink...",
+            "'The FairyLand'",
             "A message sits beside it.",
             "'Humanity's last hope.'",
             "Pick up map?"
