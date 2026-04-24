@@ -93,7 +93,7 @@ export default class ShelterScene extends MappedAdventureChapter1Scene {
         }
     }
 
-    protected override isWeatherAmbienceIndoors(): boolean {
+    protected override isWeatherIndoors(): boolean {
         return true;
     }
 }

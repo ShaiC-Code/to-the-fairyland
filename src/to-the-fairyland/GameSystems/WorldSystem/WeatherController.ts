@@ -6,16 +6,18 @@ import Sprite from "../../../Wolfie2D/Nodes/Sprites/Sprite";
 import Scene from "../../../Wolfie2D/Scene/Scene";
 import Viewport from "../../../Wolfie2D/SceneGraph/Viewport";
 import { AudioChannelType } from "../../../Wolfie2D/Sound/AudioManager";
-import SnowflakeBehavior, { SnowflakeSettings } from "../../AI/SnowflakeBehavior";
+import Color from "../../../Wolfie2D/Utils/Color";
+import WeatherParticleBehavior, { WeatherParticleSettings } from "../../AI/WeatherParticleBehavior";
+import TintEffectOverlay from "../../Overlays/TintEffectOverlay";
 import { AssetBundle } from "../../Scenes/MappedAdventureScene";
 import { WeatherType } from "./WorldState";
 
-type SnowPreset = Readonly<{
+type WeatherParticlePreset = Readonly<{
     poolSize: number;
     fadeInSpeed: number;
     scaleMin: number;
     scaleMax: number;
-    settings: SnowflakeSettings;
+    settings: WeatherParticleSettings;
 }>;
 
 export default class WeatherController implements Updateable {
@@ -32,7 +34,7 @@ export default class WeatherController implements Updateable {
     protected reciever: Receiver;
     protected emitter: Emitter;
 
-    private snowflakes: Sprite[] = [];
+    private weatherParticles: Sprite[] = [];
     private weatherActive = false;
     private weatherAlpha = 0;
     private weatherFadeInSpeed = 0.5;
@@ -40,13 +42,16 @@ export default class WeatherController implements Updateable {
 
     private weatherAmbienceLoopsStarted = false;
     private weatherAmbienceMode: "inside" | "outside" | null = null;
-    private weatherAmbienceIndoors: boolean = false;
+    private weatherIndoors: boolean = false;
+
+    private weatherTintOverlay!: TintEffectOverlay;
 
     private readonly weatherAmbienceInsideChannel: AudioChannelType = AudioChannelType.CUSTOM_1;
     private readonly weatherAmbienceOutsideChannel: AudioChannelType = AudioChannelType.CUSTOM_2;
     private readonly weatherAmbienceFadeSeconds = 0.5;
     private readonly weatherAmbienceInitialFadeSeconds = 1.0;
     
+    private readonly weatherTintLayerName = "weatherTintLayer";
     private readonly weatherLayerName = "weather";
 
     constructor(scene: Scene, viewport: Viewport) {
@@ -54,6 +59,15 @@ export default class WeatherController implements Updateable {
         this.viewport = viewport;
         this.reciever = new Receiver();
         this.emitter = new Emitter();
+
+        this.weatherTintOverlay = new TintEffectOverlay(
+            this.weatherTintLayerName,
+            this.scene,
+            () => this.viewport.getCenter(),
+            () => this.viewport.getHalfSize(),
+            new Color(0, 0, 0, 0)
+        );
+
         this.scene.addLayer(this.weatherLayerName, this.weatherLayerDepth);
     }
     
@@ -68,16 +82,16 @@ export default class WeatherController implements Updateable {
     public update(deltaT: number): void {
         if (this.weatherActive && this.weatherAlpha < 1) {
             this.weatherAlpha = Math.min(this.weatherAlpha + deltaT * this.weatherFadeInSpeed, 1);
-            for (const flake of this.snowflakes) {
-                flake.alpha = this.weatherAlpha;
+            for (const particle of this.weatherParticles) {
+                particle.alpha = this.weatherAlpha;
             }
         }
 
         this.syncWeatherAmbience();
     }
 
-    public setWeatherAmbienceIndoors(indoors: boolean): void {
-        this.weatherAmbienceIndoors = indoors;
+    public setWeatherIndoors(indoors: boolean): void {
+        this.weatherIndoors = indoors;
         this.syncWeatherAmbience();
     }
 
@@ -87,7 +101,7 @@ export default class WeatherController implements Updateable {
         }
         this.weatherAmbienceLoopsStarted = true;
 
-        if (this.weatherAmbienceIndoors) {
+        if (this.weatherIndoors) {
             this.emitter.fireEvent(GameEventType.UNMUTE_CHANNEL, {channel: this.weatherAmbienceInsideChannel});
             this.emitter.fireEvent(GameEventType.MUTE_CHANNEL, {channel: this.weatherAmbienceOutsideChannel});
         } else {
@@ -123,7 +137,7 @@ export default class WeatherController implements Updateable {
             ? this.weatherAmbienceInitialFadeSeconds
             : this.weatherAmbienceFadeSeconds;
 
-        this.setWeatherAmbience(this.weatherAmbienceIndoors, fadeSeconds);
+        this.setWeatherAmbience(this.weatherIndoors, fadeSeconds);
     }
     
     public setWeatherAmbience(indoor: boolean, fadeSeconds: number = 0.35): void {
@@ -165,37 +179,45 @@ export default class WeatherController implements Updateable {
     }
 
     public setWeather(weather: WeatherType, layerDepth: number = this.weatherLayerDepth): void {
+        // const color = this.getWeatherTintColor(weather);
+        // if (color) {
+        //     this.weatherTintOverlay.setOverlayColor(color);
+        //     this.weatherTintOverlay.show();
+        // } else {
+        //     this.weatherTintOverlay.hide();
+        // }
+
         if (weather === WeatherType.NONE) {
-            for (const flake of this.snowflakes) {
-                flake.visible = false;
+            for (const particle of this.weatherParticles) {
+                particle.visible = false;
             }
             this.weatherActive = false;
             this.muteWeatherAmbience(this.weatherAmbienceFadeSeconds);
             return;
         }
     
-        const preset = this.getSnowPreset(weather);
+        const preset = this.getWeatherParticlePreset(weather);
         this.weatherLayerDepth = layerDepth;
         this.scene.getLayer(this.weatherLayerName).setDepth(layerDepth);
         this.weatherFadeInSpeed = preset.fadeInSpeed;
         this.ensureSnowPool(preset);
         this.weatherAlpha = 0;
     
-        for (let i = 0; i < this.snowflakes.length; i++) {
-            const flake = this.snowflakes[i];
+        for (let i = 0; i < this.weatherParticles.length; i++) {
+            const particle = this.weatherParticles[i];
     
             if (i < preset.poolSize) {
                 const scale = preset.scaleMin + Math.random() * (preset.scaleMax - preset.scaleMin);
     
-                flake.visible = true;
-                flake.alpha = 0;
-                flake.scale.set(scale, scale);
+                particle.visible = true;
+                particle.alpha = 0;
+                particle.scale.set(scale, scale);
 
-                const flakeAI = flake.ai as SnowflakeBehavior;
-                flakeAI.activate({ settings: preset.settings });
-                flakeAI.scatterOnScreen();
+                const particleAI = particle.ai as WeatherParticleBehavior;
+                particleAI.activate({ settings: preset.settings });
+                particleAI.scatterOnScreen();
             } else {
-                flake.visible = false;
+                particle.visible = false;
             }
         }
     
@@ -203,28 +225,37 @@ export default class WeatherController implements Updateable {
         this.syncWeatherAmbience();
     }
     
-    private ensureSnowPool(preset: SnowPreset): void {  
+    private ensureSnowPool(preset: WeatherParticlePreset): void {  
         const snowflakeKeys = [
             this.sceneAssets.sprites.snowflake1Sprite.key,
             this.sceneAssets.sprites.snowflake2Sprite.key,
             this.sceneAssets.sprites.snowflake3Sprite.key
         ];  
 
-        while (this.snowflakes.length < preset.poolSize) {
-            const key = snowflakeKeys[this.snowflakes.length % snowflakeKeys.length];
+        while (this.weatherParticles.length < preset.poolSize) {
+            const key = snowflakeKeys[this.weatherParticles.length % snowflakeKeys.length];
             const flake = this.scene.add.sprite(key, this.weatherLayerName);
     
             flake.visible = false;
-            flake.addAI(SnowflakeBehavior, {
+            flake.addAI(WeatherParticleBehavior, {
                 viewport: this.viewport,
                 settings: preset.settings
             });
     
-            this.snowflakes.push(flake);
+            this.weatherParticles.push(flake);
+        }
+    }
+
+    private getWeatherTintColor(weather: WeatherType): Color | null {
+        switch (weather) {
+        case WeatherType.NONE: return null;
+        case WeatherType.SNOW: return new Color(255, 255, 255, 0.1);
+        case WeatherType.SNOWSTORM: return new Color(255, 255, 255, 0.25);
+        default: return null;
         }
     }
     
-    private getSnowPreset(weather: WeatherType): SnowPreset {
+    private getWeatherParticlePreset(weather: WeatherType): WeatherParticlePreset {
         switch (weather) {
         case WeatherType.SNOW:
             return {

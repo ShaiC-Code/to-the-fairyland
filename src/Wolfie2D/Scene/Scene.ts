@@ -203,9 +203,11 @@ export default class Scene implements Updateable {
         // Add parallax layer items to the visible set (we're rendering them all for now)
         this.parallaxLayers.forEach(key => {
             let pLayer = this.parallaxLayers.get(key);
-            for(let node of pLayer.getItems()){
-                if(node instanceof CanvasNode){
-                    visibleSet.push(node);
+            if (!pLayer.isHidden()) {
+                for(let node of pLayer.getItems()){
+                    if(node instanceof CanvasNode){
+                        visibleSet.push(node);
+                    }
                 }
             }
         });
