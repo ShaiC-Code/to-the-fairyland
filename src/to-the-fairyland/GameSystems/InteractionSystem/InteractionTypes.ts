@@ -9,7 +9,8 @@ export type InteractionData = DialogueInteraction;
 // These actions fire after a non-branching dialogue has fully finished.
 export const DialogueCompleteActions = {
     GOTO_CHAPTER2: "gotoChapter2",
-    GIVE_FLOWER_RING: "giveFlowerRing"
+    GIVE_FLOWER_RING: "giveFlowerRing",
+    GIVE_OBSIDIAN_BOOTS: "giveObsidianBoots"
 } as const;
 
 export type DialogueCompleteAction =
@@ -20,6 +21,8 @@ export const DialogueChoiceActions = {
     COLLECT_FROZEN_BERRIES: "collectFrozenBerries",
     COOK_FROZEN_BERRIES: "cookFrozenBerries",
     TAKE_FRESH_PRETTY_TOOTH: "takeFreshPrettyTooth",
+    TAKE_LOFTY_BREAD: "takeLoftyBread",
+    TAKE_SLEEPING_BAG: "takeSleepingBag",
     SLEEP: "sleep",
     PICKUP_MAP: "pickupMap"
 } as const;

@@ -72,7 +72,7 @@ function getVilaInteraction(context: NpcInteractionContext): DialogueInteraction
                         dialogue([
                             "Vila smiles and presses the tooth into your hand.",
                             "It is warmer than you expected.",
-                            "You received a Fresh Pretty Tooth."
+                            "[You received a Fresh Pretty Tooth.]"
                         ]),
                         { choiceAction: DialogueChoiceActions.TAKE_FRESH_PRETTY_TOOTH }
                     ),
@@ -136,13 +136,22 @@ function getArgusInteraction(context: NpcInteractionContext): DialogueInteractio
 
     switch (chapter2.mainQuestStep) {
     case Chapter2MainQuestStep.COLLECT_VILLAGE_ITEMS:
+        if (chapter2.villageItems[Chapter2VillageItem.OBSIDIAN_BOOTS]) {
+            return dialogue([
+                "You should not stay here long..."
+            ]);
+        }
+
         return dialogue([
-            "...Argus..."
-        ]);
+            "You are the traveler everyone keeps whispering about.",
+            "Hmm. You will not get far with those worn soles.",
+            "Take these Obsidian Boots.",
+            "[You received a set of Obsidian Boots.]",
+        ], { completeAction: DialogueCompleteActions.GIVE_OBSIDIAN_BOOTS });
 
     case Chapter2MainQuestStep.READY_TO_LEAVE_VILLAGE:
         return dialogue([
-            "...Argus after village items..."
+            "You should not stay here long..."
         ]);
 
     default:
@@ -172,7 +181,7 @@ function getJInteraction(context: NpcInteractionContext): DialogueInteraction {
             "I have not been able to stop thinking about it.",
             "Here. Please take this flower ring.",
             "I hope it brings you some luck.",
-            "A flower ring is placed in your hand."
+            "[A flower ring is placed in your hand.]"
         ], { completeAction: DialogueCompleteActions.GIVE_FLOWER_RING });
 
     case Chapter2MainQuestStep.READY_TO_LEAVE_VILLAGE:
@@ -196,14 +205,79 @@ function getKInteraction(context: NpcInteractionContext): DialogueInteraction {
 
     switch (chapter2.mainQuestStep) {
     case Chapter2MainQuestStep.COLLECT_VILLAGE_ITEMS:
+        if (!chapter2.villageItems[Chapter2VillageItem.LOFTY_BREAD]) {
+            return dialogueWithChoice(
+                [
+                    "Welcome.",
+                    "Looks like the road has been unkind to you.",
+                    "I have a loaf cooling inside, if you would like some for the road.",
+                    "Will you take it?"
+                ],
+                {
+                    lineIndex: 3,
+                    options: [
+                        choiceOption(
+                            "Yes",
+                            dialogue([
+                                "K wraps a warm loaf in clean cloth and places it in your hands.",
+                                "The smell is soft, buttery, and comforting.",
+                                "[You received Lofty Bread.]"
+                            ]),
+                            { choiceAction: DialogueChoiceActions.TAKE_LOFTY_BREAD }
+                        ),
+                        choiceOption(
+                            "No",
+                            dialogue([
+                                "K nods softly.",
+                                "\"Then the offer will remain here.\""
+                            ])
+                        )
+                    ]
+                }
+            );
+        }
+
+        if (!chapter2.villageItems[Chapter2VillageItem.SLEEPING_BAG]) {
+            return dialogueWithChoice(
+                [
+                    "If the road keeps you longer than expected, take this as well.",
+                    "A rolled sleeping bag will help you rest well.",
+                    "Will you take it?"
+                ],
+                {
+                    lineIndex: 2,
+                    options: [
+                        choiceOption(
+                            "Yes",
+                            dialogue([
+                                "K places a neatly rolled sleeping bag in your arms.",
+                                "\"A traveler deserves warmth,\" he says.",
+                                "[You received a Sleeping Bag.]"
+                            ]),
+                            { choiceAction: DialogueChoiceActions.TAKE_SLEEPING_BAG }
+                        ),
+                        choiceOption(
+                            "No",
+                            dialogue([
+                                "K gives a small nod.",
+                                "\"Then I will keep it ready in case you change your mind.\""
+                            ])
+                        )
+                    ]
+                }
+            );
+        }
+
         return dialogue([
-            "...K..."
+            "I believe I have given you enough...",
+            "Please don't ask for more."
         ]);
 
-    case Chapter2MainQuestStep.READY_TO_LEAVE_VILLAGE:
-        return dialogue([
-            "...K after village items..."
-        ]);
+        case Chapter2MainQuestStep.READY_TO_LEAVE_VILLAGE:
+            return dialogue([
+                "I believe I have given you enough...",
+                "Please don't ask for more."
+            ]);
 
     default:
         return dialogue(["...K..."]);

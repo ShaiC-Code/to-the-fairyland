@@ -38,7 +38,7 @@ export default class TimeController implements Updateable {
             () => this.viewport.getHalfSize(),
             new Color(0, 0, 0, 0.9),
             this.player,
-            Math.min(this.viewport.getHalfSize().x, this.viewport.getHalfSize().y) * 2.5,
+            Math.min(this.viewport.getHalfSize().x, this.viewport.getHalfSize().y) * 3.3,
             0
         );
     }

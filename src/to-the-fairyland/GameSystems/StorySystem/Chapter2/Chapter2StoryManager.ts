@@ -5,7 +5,10 @@ type SyncWorldState = () => void;
 
 const REQUIRED_VILLAGE_ITEMS = [
     Chapter2VillageItem.FRESH_PRETTY_TOOTH,
-    Chapter2VillageItem.FLOWER_RING
+    Chapter2VillageItem.FLOWER_RING,
+    Chapter2VillageItem.LOFTY_BREAD,
+    Chapter2VillageItem.SLEEPING_BAG,
+    Chapter2VillageItem.OBSIDIAN_BOOTS
 ] as const;
 
 export default class Chapter2StoryManager {

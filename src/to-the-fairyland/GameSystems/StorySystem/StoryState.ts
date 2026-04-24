@@ -25,7 +25,10 @@ export enum Chapter2MainQuestStep {
 
 export enum Chapter2VillageItem {
     FRESH_PRETTY_TOOTH = "FRESH_PRETTY_TOOTH",
-    FLOWER_RING = "FLOWER_RING"
+    FLOWER_RING = "FLOWER_RING",
+    LOFTY_BREAD = "LOFTY_BREAD",
+    SLEEPING_BAG = "SLEEPING_BAG",
+    OBSIDIAN_BOOTS = "OBSIDIAN_BOOTS"
 }
 
 export interface Chapter2StoryState {
@@ -55,7 +58,10 @@ export function createInitialChapter2State(): Chapter2StoryState {
         mainQuestStep: Chapter2MainQuestStep.COLLECT_VILLAGE_ITEMS,
         villageItems: {
             [Chapter2VillageItem.FRESH_PRETTY_TOOTH]: false,
-            [Chapter2VillageItem.FLOWER_RING]: false
+            [Chapter2VillageItem.FLOWER_RING]: false,
+            [Chapter2VillageItem.LOFTY_BREAD]: false,
+            [Chapter2VillageItem.SLEEPING_BAG]: false,
+            [Chapter2VillageItem.OBSIDIAN_BOOTS]: false
         }
     };
 }
