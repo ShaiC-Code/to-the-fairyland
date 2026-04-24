@@ -1,4 +1,5 @@
 import Updateable from "../../Wolfie2D/DataTypes/Interfaces/Updateable";
+import AnimatedSprite from "../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
 import OrthogonalTilemap from "../../Wolfie2D/Nodes/Tilemaps/OrthogonalTilemap";
 import Scene from "../../Wolfie2D/Scene/Scene";
 import Viewport from "../../Wolfie2D/SceneGraph/Viewport";
@@ -9,25 +10,72 @@ export default class CameraController implements Updateable {
     protected viewport: Viewport;
     protected player: PlayerActor;
     protected ground: OrthogonalTilemap;
+    protected actorLayerName: string;
+
+    private cameraTarget: AnimatedSprite;
+    private seedX: number = 0;
+    private seedY: number = 0;
+    private shakeTime: number = 0;
+    private shakeDuration: number = 0;
+    private shakeStrength: number = 0;
 
     protected readonly zoomLevel = 1;
-
     protected readonly mapBoundsLayerName = "MapBoundLayer";
 
-    constructor(scene: Scene, viewport: Viewport, player: PlayerActor, ground: OrthogonalTilemap) {
+    constructor(scene: Scene, viewport: Viewport, player: PlayerActor, ground: OrthogonalTilemap, actorLayerName: string) {
         this.scene = scene;
         this.viewport = viewport;
         this.player = player;
         this.ground = ground;
+        this.actorLayerName = actorLayerName;
+
+        this.cameraTarget = this.scene.add.animatedSprite(
+            AnimatedSprite,
+            this.player.sceneAssets.spritesheets.playerSheet.key,
+            this.actorLayerName
+        );
+        this.cameraTarget.visible = false;
+        this.cameraTarget.alpha = 0;
+        this.cameraTarget.scale.set(0, 0);
+        this.cameraTarget.position.copy(this.player.position);
+        this.cameraTarget.freeze();
+        this.cameraTarget.disablePhysics();
 
         this.applyCameraBounds();
-        this.viewport.follow(this.player);
+        this.viewport.follow(this.cameraTarget);
         this.viewport.setZoomLevel(this.zoomLevel);
         this.viewport.snapToTarget();
     }
 
     update(deltaT: number): void {
-        return;
+        this.cameraTarget.position.copy(this.player.position);
+
+        if (this.shakeTime > 0) {
+            this.shakeTime = Math.max(0, this.shakeTime - deltaT*1000);
+
+            const t = (this.shakeDuration - this.shakeTime) / 1000;
+
+            const decay = Math.exp(-t * 3);
+            const frequency = 20;
+
+            this.seedX = Math.random() * 1000;
+            this.seedY = Math.random() * 1000;
+            
+            const jitterX = Math.sin(t * 13.7 + this.seedX) * 0.5;
+            const jitterY = Math.sin(t * 17.3 + this.seedY) * 0.5;
+
+            const offsetX = Math.sin(t * frequency + jitterX);
+            const offsetY = Math.sin(t * frequency * 1.3 + jitterY);
+
+            this.cameraTarget.position.x += offsetX * this.shakeStrength * decay * 0.75;
+            this.cameraTarget.position.y += offsetY * this.shakeStrength * decay * 1.5;
+        }
+    }
+
+    public shake(duration: number, strength: number): void {
+        this.shakeTime = duration;
+        this.shakeDuration = duration;
+        this.shakeStrength = strength;
     }
     
     /**

@@ -296,7 +296,7 @@ export default abstract class MappedAdventureScene extends Scene {
             }
         );
 
-        this.cameraController = new CameraController(this, this.viewport, this.player, this.ground)
+        this.cameraController = new CameraController(this, this.viewport, this.player, this.ground, this.actorLayerName);
         
         this.dialogueController.sceneAssets = this.assets;
 
@@ -305,7 +305,7 @@ export default abstract class MappedAdventureScene extends Scene {
 
         this.weatherController = new WeatherController(this, this.viewport);
         this.weatherController.sceneAssets = this.assets;
-        this.weatherController.setWeatherAmbienceIndoors(this.isWeatherAmbienceIndoors());
+        this.weatherController.setWeatherIndoors(this.isWeatherIndoors());
         this.weatherController.startWeatherAmbienceLoops();
     }
 
@@ -424,7 +424,7 @@ export default abstract class MappedAdventureScene extends Scene {
      * Override in child scenes if weather ambience should default indoors.
      * This can later be made dynamic (e.g. based on player tile inside a room volume).
      */
-    protected isWeatherAmbienceIndoors(): boolean {
+    protected isWeatherIndoors(): boolean {
         return false;
     }
 

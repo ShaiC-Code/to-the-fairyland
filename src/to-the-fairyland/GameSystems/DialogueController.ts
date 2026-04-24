@@ -2,9 +2,11 @@ import Updateable from "../../Wolfie2D/DataTypes/Interfaces/Updateable";
 import Input from "../../Wolfie2D/Input/Input";
 import Scene from "../../Wolfie2D/Scene/Scene";
 import Viewport from "../../Wolfie2D/SceneGraph/Viewport";
+import Color from "../../Wolfie2D/Utils/Color";
 import PlayerActor from "../Actors/PlayerActor";
 import PlayerAI from "../AI/Player/PlayerAI";
 import { PlayerControlMode, PlayerInput } from "../AI/Player/PlayerController";
+import TintEffectOverlay from "../Overlays/TintEffectOverlay";
 import { AssetBundle } from "../Scenes/MappedAdventureScene";
 import CutsceneScreen from "../UI/CutsceneScreen";
 import DialogueScreen from "../UI/DialogueScreen";
@@ -30,6 +32,7 @@ export default class DialogueController implements Updateable {
     private dialogueScreen: DialogueScreen;
     private cutsceneScreen: CutsceneScreen;
     private textDisplay: DialogueScreen | CutsceneScreen;
+    private cutsceneBackgroundTintOverlay: TintEffectOverlay;
     private cutsceneMode: boolean = false;
     
     private activeDialogue: DialogueInteraction | null = null;
@@ -41,6 +44,7 @@ export default class DialogueController implements Updateable {
     
     private readonly dialogueLayerName = "dialogueOverlay";
     private readonly cutsceneLayerName = "cutsceneOverlay";
+    private readonly cutsceneBackgroundTintLayerName = "cutsceneBackgroundTintLayer";
 
     public isActive: boolean = false;
 
@@ -80,6 +84,14 @@ export default class DialogueController implements Updateable {
         );
 
         this.textDisplay = this.dialogueScreen
+        
+        this.cutsceneBackgroundTintOverlay = new TintEffectOverlay(
+            this.cutsceneBackgroundTintLayerName,
+            this.scene,
+            () => this.viewport.getCenter(),
+            () => this.viewport.getHalfSize(),
+            new Color(0, 0, 0, 1)
+        );
     }
     
     get sceneAssets() {
@@ -158,6 +170,9 @@ export default class DialogueController implements Updateable {
         this.textDisplay.showLine(
             dialogue.lines[this.currentDialogueLine]
         );
+        if (this.cutsceneMode) {
+            this.cutsceneBackgroundTintOverlay.show();
+        }
         this.isActive = true;
     }
 
@@ -197,6 +212,7 @@ export default class DialogueController implements Updateable {
     
     protected endDialogue(): void {
         this.isActive = false;
+        this.cutsceneBackgroundTintOverlay.hide();
         const dialogue = this.activeDialogue;
         const callbackHandledByReadCompletion = !!dialogue
             && !dialogue.choice

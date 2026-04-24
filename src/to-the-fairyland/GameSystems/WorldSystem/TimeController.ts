@@ -50,7 +50,12 @@ export default class TimeController implements Updateable {
     
     public setTimeOfDay(time: TimeOfDay): void {
         const color = this.getColorForTime(time);
-        this.timeTintOverlay.setOverlayColor(color);
+        if (color) {
+            this.timeTintOverlay.setOverlayColor(color);
+            this.timeTintOverlay.show();
+        } else {
+            this.timeTintOverlay.hide();
+        }
 
         // Add spotlight overlay for DUSK
         if (time === TimeOfDay.DUSK) {
@@ -60,13 +65,13 @@ export default class TimeController implements Updateable {
         }
     }  
 
-    private getColorForTime(time: TimeOfDay): Color {
+    private getColorForTime(time: TimeOfDay): Color | null {
         switch (time) {
-            case TimeOfDay.DAY:  return new Color(0, 0, 0, 0);
+            case TimeOfDay.DAY:  return null;
             case TimeOfDay.NOON:  return new Color(200, 140, 60, 0.30);
             case TimeOfDay.DUSK:  return new Color(30, 20, 60, 0.45);
             case TimeOfDay.NIGHT: return new Color(10, 10, 60, 0.75);
-            default:              return new Color(0, 0, 0, 0);;
+            default:              return null;
         }
     }
 }

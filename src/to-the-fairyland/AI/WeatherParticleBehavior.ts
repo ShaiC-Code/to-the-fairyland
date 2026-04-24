@@ -4,7 +4,7 @@ import Sprite from "../../Wolfie2D/Nodes/Sprites/Sprite";
 import Viewport from "../../Wolfie2D/SceneGraph/Viewport";
 
 
-export type SnowflakeSettings = Readonly<{
+export type WeatherParticleSettings = Readonly<{
     spawnPadding: number;
     recyclePadding: number;
     inflowEpsilon: number;
@@ -18,10 +18,10 @@ export type SnowflakeSettings = Readonly<{
     wobbleFrequencyMax: number;
 }>;
 
-export default class SnowflakeBehavior implements AI {
+export default class WeatherParticleBehavior implements AI {
     private owner: Sprite;
     private viewport: Viewport;
-    private settings: SnowflakeSettings;
+    private settings: WeatherParticleSettings;
 
     private fallSpeed: number;
     private windSpeed: number;
