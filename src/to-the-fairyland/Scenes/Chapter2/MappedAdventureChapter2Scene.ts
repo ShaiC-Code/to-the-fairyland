@@ -8,6 +8,10 @@ import LoftyBread from "../../GameSystems/ItemSystem/Items/LoftyBread";
 import { Chapter2VillageItem } from "../../GameSystems/StorySystem/StoryState";
 import SleepingBag from "../../GameSystems/ItemSystem/Items/SleepingBag";
 import ObsidianBoots from "../../GameSystems/ItemSystem/Items/ObsidianBoots";
+import { ItemUseAction, ItemUseActions, ItemUseResult } from "../../GameSystems/ItemSystem/ItemUseActions";
+import { TimeOfDay } from "../../GameSystems/WorldSystem/WorldState";
+import { GameEventType } from "../../../Wolfie2D/Events/GameEventType";
+
 
 
 
@@ -36,7 +40,7 @@ export default abstract class MappedAdventureChapter2Scene extends MappedAdventu
         }
     };
     
-
+    
     protected readonly storyManager = StoryManager.getInstance();
 
     protected combinedAssetBundles(): AssetBundle {
@@ -46,7 +50,12 @@ export default abstract class MappedAdventureChapter2Scene extends MappedAdventu
     public override unloadScene(): void {
         super.unloadScene();
         this.keepAssets(MappedAdventureChapter2Scene.assetBundle);
+    
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: this.assets.sounds.walkingWoodSFX.key });
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: this.assets.sounds.walkingSnowSFX.key });
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: this.assets.sounds.walkingSnowBushSFX.key });
     }
+    
 
     protected gotoChapter3(): void {
         this.sceneManager.changeToScene(
@@ -116,4 +125,66 @@ export default abstract class MappedAdventureChapter2Scene extends MappedAdventu
     
         this.storyManager.chapter2.markVillageItemReceived(Chapter2VillageItem.OBSIDIAN_BOOTS);
     }
+
+    protected canUseSleepingBagHere(): boolean {
+        return false;
+    }
+    
+    protected override previewItemAction(action: ItemUseAction): ItemUseResult {
+        if (action === ItemUseActions.SLEEP_WITH_SLEEPING_BAG) {
+            return this.previewSleepWithSleepingBag();
+        }
+    
+        return super.previewItemAction(action);
+    }
+    
+    protected override runItemAction(action: ItemUseAction): ItemUseResult {
+        if (action === ItemUseActions.SLEEP_WITH_SLEEPING_BAG) {
+            return this.sleepWithSleepingBag();
+        }
+    
+        return super.runItemAction(action);
+    }
+    
+    private previewSleepWithSleepingBag(): ItemUseResult {
+        if (!this.canUseSleepingBagHere()) {
+            return {
+                success: false,
+                lines: ["This is not a safe place to sleep."]
+            };
+        }
+    
+        if (!this.storyManager.chapter2.canSleepOnRoad()) {
+            return {
+                success: false,
+                lines: ["It is not time to sleep yet."]
+            };
+        }
+    
+        return {
+            success: true,
+            lines: ["You rest for a while."]
+        };
+    }
+    
+    private sleepWithSleepingBag(): ItemUseResult {
+        const result = this.previewSleepWithSleepingBag();
+    
+        if (!result.success) {
+            return result;
+        }
+    
+        const worldState = this.gameSessionManager.getWorldState();
+    
+        worldState.timeOfDay =
+            worldState.timeOfDay === TimeOfDay.DAY
+                ? TimeOfDay.NIGHT
+                : TimeOfDay.DAY;
+    
+        this.timeController.setTimeOfDay(worldState.timeOfDay);
+        this.storyManager.chapter2.markSleptOnRoad();
+    
+        return result;
+    }
+    
 }

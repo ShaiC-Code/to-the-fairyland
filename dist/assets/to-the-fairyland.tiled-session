@@ -86,14 +86,14 @@
                 8
             ],
             "scale": 0.5,
-            "selectedLayer": 3,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 1203,
-                "y": 1095
+                "x": 1445,
+                "y": 1299
             }
         },
         "tilemaps/Chapter2/Road1.json#Chapter2_Village_Tiles": {
-            "scaleInDock": 0.25
+            "scaleInDock": 0.75
         },
         "tilemaps/Chapter2/Road2.json": {
             "expandedObjectLayers": [

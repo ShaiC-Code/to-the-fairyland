@@ -17,7 +17,11 @@ import GameSessionManager from "../GameSystems/GameSessionSystem/GameSessionMana
 import { PlayerInput } from "../AI/Player/PlayerController";
 import { UIScreenActionBindings } from "../UI/UIScreen";
 import RoadScene from "./Chapter2/RoadScene";
-import { Chapter2MainQuestStep } from "../GameSystems/StorySystem/StoryState";
+import SleepingBag from "../GameSystems/ItemSystem/Items/SleepingBag";
+import {
+    Chapter2MainQuestStep,
+} from "../GameSystems/StorySystem/StoryState";
+
 
 
 type AssetRef = Readonly<{
@@ -207,6 +211,14 @@ export default class MainMenu extends Scene {
                 }
             
                 chapter2.mainQuestStep = Chapter2MainQuestStep.READY_TO_LEAVE_VILLAGE;
+
+                // =============== Fake inventory state =====================
+                const inventory = this.gameSessionManager.getPlayerState().inventory;
+
+                if (inventory.find(item => item instanceof SleepingBag) === null) {
+                    inventory.add(new SleepingBag());
+                }
+                // ==========================================================
             
                 this.sceneManager.changeToScene(
                     RoadScene,

@@ -24,6 +24,9 @@ import SpotlightOverlay from "../UI/CustomUIElements/SpotlightOverlay";
 import DialogueController from "../GameSystems/DialogueController";
 import TimeController from "../GameSystems/WorldSystem/TimeController";
 import CameraController from "../GameSystems/CameraController";
+import { ItemUseAction, ItemUseActions, ItemUseResult } from "../GameSystems/ItemSystem/ItemUseActions";
+import { PlayerStateType } from "../AI/Player/PlayerStates/PlayerBehaviorState";
+
 
 export type AssetRef = Readonly<{
     readonly key: string;
@@ -642,8 +645,76 @@ export default abstract class MappedAdventureScene extends Scene {
 
     protected consumeInventoryItem(item: InventoryItem): void {
         this.inventoryScreen.hide();
+
         item.consume({
-            showDialogue: interaction => this.startDialogue(interaction)
+            showDialogue: interaction => this.startDialogue(interaction),
+            previewItemAction: action => this.previewItemAction(action),
+            runItemAction: action => this.runItemAction(action)
         });
     }
+
+    // use to determine the result before running actual action. So we can display different dialogues base on different world state 
+    protected previewItemAction(_action: ItemUseAction): ItemUseResult {
+        return {
+            success: false,
+            lines: ["Nothing happens."]
+        };
+    }
+    
+    protected runItemAction(action: ItemUseAction): ItemUseResult {
+        return this.previewItemAction(action);
+    }
+    
+    protected rejectAutoTransitionEntry(): void {
+        this.transitioning = false;
+    
+        const ai = this.player.ai as PlayerAI;
+    
+        const safeTile = ai.currentTile.clone();
+        const blockedDirection = ai.targetTile
+            ? ai.targetTile.clone().sub(ai.currentTile)
+            : ai.facing.clone();
+    
+        const bounceDirection = blockedDirection.scaled(-1);
+        const bounceTile = safeTile.clone().add(bounceDirection);
+    
+        const safeTileCenter = this.ground.getTileCenter(safeTile.x, safeTile.y);
+        const safePosition = this.player.getCenterForFeetPosition(
+            safeTileCenter.x,
+            safeTileCenter.y
+        );
+    
+        this.player.position.copy(safePosition);
+    
+        ai.currentTile = safeTile;
+        ai.targetTile = null;
+        ai.moving = false;
+        ai.moveProgress = 0;
+        ai.moveStart = safePosition.clone();
+        ai.moveEnd = safePosition.clone();
+    
+        if (!ai.canMoveToTile(safeTile, bounceDirection)) {
+            ai.facing = bounceDirection;
+            this.player.setSortTile(safeTile);
+            ai.changeState(PlayerStateType.IDLE);
+            return;
+        }
+    
+        const bounceTileCenter = this.ground.getTileCenter(bounceTile.x, bounceTile.y);
+        const bouncePosition = this.player.getCenterForFeetPosition(
+            bounceTileCenter.x,
+            bounceTileCenter.y
+        );
+    
+        ai.facing = bounceDirection;
+        ai.targetTile = bounceTile;
+        ai.moveEnd = bouncePosition;
+        ai.currentMoveDuration = ai.moveDuration;
+        ai.moving = true;
+    
+        this.player.setSortTile(bounceTile);
+        ai.changeState(PlayerStateType.MOVING);
+    }
+    
+    
 }

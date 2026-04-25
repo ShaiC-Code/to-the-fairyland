@@ -14,7 +14,7 @@ export function getTimeOfDayForStory(story: Readonly<StoryState>): TimeOfDay {
                 case Chapter1MainQuestStep.NEED_TO_COOK:
                 case Chapter1MainQuestStep.NEED_TO_EAT:
                 case Chapter1MainQuestStep.RETURN_TO_BED:
-                    return TimeOfDay.DUSK;
+                    return TimeOfDay.NIGHT;
 
                 case Chapter1MainQuestStep.SLEPT:
                 case Chapter1MainQuestStep.MAP_PICKED:

@@ -5,8 +5,6 @@ import IdleBehavior from "../../AI/NPC/NPCBehavior/IdleBehavior";
 import { AssetBundle } from "../MappedAdventureScene";
 import MappedAdventureChapter2Scene from "./MappedAdventureChapter2Scene";
 import RoadScene from "./RoadScene";
-import PlayerAI from "../../AI/Player/PlayerAI";
-import { PlayerStateType } from "../../AI/Player/PlayerStates/PlayerBehaviorState";
 import { dialogue, getNpcInteraction } from "../../GameSystems/InteractionSystem/InteractionDatabase";
 import TintEffectOverlay from "../../Overlays/TintEffectOverlay";
 import Color from "../../../Wolfie2D/Utils/Color";
@@ -126,8 +124,7 @@ export default class VillageScene extends MappedAdventureChapter2Scene {
     protected override handleAutoTransition(obj: TiledObject): void {
         if (obj.name === "PathToAdventure") {
             if (!this.storyManager.chapter2.canLeaveVillage()) {
-                this.transitioning = false;
-                this.rejectAdventurePathEntry();
+                this.rejectAutoTransitionEntry();
     
                 this.startDialogue(
                     dialogue([
@@ -150,55 +147,5 @@ export default class VillageScene extends MappedAdventureChapter2Scene {
             );
         }
     }
-
-    private rejectAdventurePathEntry(): void {
-        const ai = this.player.ai as PlayerAI;
-    
-        const safeTile = ai.currentTile.clone();
-        const blockedDirection = ai.targetTile
-            ? ai.targetTile.clone().sub(ai.currentTile)
-            : ai.facing.clone();
-    
-        const bounceDirection = blockedDirection.scaled(-1);
-        const bounceTile = safeTile.clone().add(bounceDirection);
-    
-        const safeTileCenter = this.ground.getTileCenter(safeTile.x, safeTile.y);
-        const safePosition = this.player.getCenterForFeetPosition(
-            safeTileCenter.x,
-            safeTileCenter.y
-        );
-    
-        this.player.position.copy(safePosition);
-    
-        ai.currentTile = safeTile;
-        ai.targetTile = null;
-        ai.moving = false;
-        ai.moveProgress = 0;
-        ai.moveStart = safePosition.clone();
-        ai.moveEnd = safePosition.clone();
-    
-        if (!ai.canMoveToTile(safeTile, bounceDirection)) {
-            ai.facing = bounceDirection;
-            this.player.setSortTile(safeTile);
-            ai.changeState(PlayerStateType.IDLE);
-            return;
-        }
-    
-        const bounceTileCenter = this.ground.getTileCenter(bounceTile.x, bounceTile.y);
-        const bouncePosition = this.player.getCenterForFeetPosition(
-            bounceTileCenter.x,
-            bounceTileCenter.y
-        );
-    
-        ai.facing = bounceDirection;
-        ai.targetTile = bounceTile;
-        ai.moveEnd = bouncePosition;
-        ai.currentMoveDuration = ai.moveDuration;
-        ai.moving = true;
-    
-        this.player.setSortTile(bounceTile);
-        ai.changeState(PlayerStateType.MOVING);
-    }
-    
     
 }

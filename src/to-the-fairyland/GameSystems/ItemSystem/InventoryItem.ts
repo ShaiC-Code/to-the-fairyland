@@ -1,9 +1,12 @@
 import Unique from "../../../Wolfie2D/DataTypes/Interfaces/Unique";
 import Inventory from "./Inventory";
 import { DialogueInteraction } from "../InteractionSystem/InteractionDatabase";
+import { ItemUseAction, ItemUseResult } from "./ItemUseActions";
 
 export interface InventoryItemConsumeContext {
     showDialogue: (interaction: DialogueInteraction) => void;
+    previewItemAction: (action: ItemUseAction) => ItemUseResult;
+    runItemAction: (action: ItemUseAction) => ItemUseResult;
 }
 
 /**
