@@ -3,6 +3,8 @@ export enum ActiveChapter {
     CHAPTER2 = "CHAPTER2"
 }
 
+//======================== Chapter1 =================================
+
 export enum Chapter1MainQuestStep {
     NEED_FOOD = "NEED_FOOD",
     NEED_TO_COOK = "NEED_TO_COOK",
@@ -16,12 +18,20 @@ export interface Chapter1StoryState {
     mainQuestStep: Chapter1MainQuestStep;
 }
 
+//======================== Chapter2 =================================
+export const Chapter2MainQuestStep = {
+    COLLECT_VILLAGE_ITEMS: "COLLECT_VILLAGE_ITEMS",
+    READY_TO_LEAVE_VILLAGE: "READY_TO_LEAVE_VILLAGE",
+    NEED_TO_SLEEP_ON_ROAD: "NEED_TO_SLEEP_ON_ROAD",
+    NEED_TO_APPROACH_CLIFF: "NEED_TO_APPROACH_CLIFF",
+    VILLAGE_SHAKE: "VILLAGE_SHAKE",
+    CHECK_VILLAGE: "CHECK_VILLAGE"
+} as const;
 
-export enum Chapter2MainQuestStep {
-    COLLECT_VILLAGE_ITEMS = "COLLECT_VILLAGE_ITEMS",
-    READY_TO_LEAVE_VILLAGE = "READY_TO_LEAVE_VILLAGE"
+export type Chapter2MainQuestStep =
+    typeof Chapter2MainQuestStep[keyof typeof Chapter2MainQuestStep];
 
-}
+export const CHAPTER2_MAIN_QUEST_ORDER = Object.values(Chapter2MainQuestStep);
 
 export enum Chapter2VillageItem {
     FRESH_PRETTY_TOOTH = "FRESH_PRETTY_TOOTH",
@@ -35,6 +45,7 @@ export interface Chapter2StoryState {
     mainQuestStep: Chapter2MainQuestStep;
     villageItems: Record<Chapter2VillageItem, boolean>;
 }
+// =================================================================
 
 export interface StoryState {
     activeChapter: ActiveChapter;

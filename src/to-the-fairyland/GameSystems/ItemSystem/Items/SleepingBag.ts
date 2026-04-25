@@ -13,7 +13,12 @@ export default class SleepingBag extends InventoryItem {
 
     public consume(context: InventoryItemConsumeContext): void {
         const result = context.previewItemAction(ItemUseActions.SLEEP_WITH_SLEEPING_BAG);
-
+    
+        if (!result.success) {
+            context.showDialogue(dialogue(result.lines));
+            return;
+        }
+    
         context.showDialogue(
             dialogueWithChoice(
                 ["Would you like to sleep now?"],
@@ -23,9 +28,9 @@ export default class SleepingBag extends InventoryItem {
                         choiceOption(
                             "Yes",
                             dialogue(result.lines),
-                            result.success
-                                ? { onSelect: () => context.runItemAction(ItemUseActions.SLEEP_WITH_SLEEPING_BAG) }
-                                : undefined
+                            {
+                                onSelect: () => context.runItemAction(ItemUseActions.SLEEP_WITH_SLEEPING_BAG)
+                            }
                         ),
                         choiceOption(
                             "No",
@@ -36,4 +41,5 @@ export default class SleepingBag extends InventoryItem {
             )
         );
     }
+    
 }

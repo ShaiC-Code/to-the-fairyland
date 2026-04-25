@@ -24,8 +24,8 @@ import SpotlightOverlay from "../UI/CustomUIElements/SpotlightOverlay";
 import DialogueController from "../GameSystems/DialogueController";
 import TimeController from "../GameSystems/WorldSystem/TimeController";
 import CameraController from "../GameSystems/CameraController";
-import { TimeOfDay } from "../GameSystems/WorldSystem/WorldState";
 import { ItemUseAction, ItemUseActions, ItemUseResult } from "../GameSystems/ItemSystem/ItemUseActions";
+import { PlayerStateType } from "../AI/Player/PlayerStates/PlayerBehaviorState";
 
 
 export type AssetRef = Readonly<{
@@ -654,64 +654,67 @@ export default abstract class MappedAdventureScene extends Scene {
     }
 
     // use to determine the result before running actual action. So we can display different dialogues base on different world state 
-    protected previewItemAction(action: ItemUseAction): ItemUseResult {
-        switch (action) {
-            case ItemUseActions.SLEEP_WITH_SLEEPING_BAG:
-                return this.previewSleepWithSleepingBag();
-    
-            default:
-                return {
-                    success: false,
-                    lines: ["Nothing happens."]
-                };
-        }
-    }
-
-    protected runItemAction(action: ItemUseAction): ItemUseResult {
-        switch (action) {
-            case ItemUseActions.SLEEP_WITH_SLEEPING_BAG:
-                return this.sleepWithSleepingBag();
-    
-            default:
-                return {
-                    success: false,
-                    lines: ["Nothing happens."]
-                };
-        }
-    }
-
-    private previewSleepWithSleepingBag(): ItemUseResult {
-        const time = this.gameSessionManager.getWorldState().timeOfDay;
-    
-        if (time === TimeOfDay.DAY || time === TimeOfDay.NIGHT) {
-            return {
-                success: true,
-                lines: ["You rest for a while."]
-            };
-        }
-    
+    protected previewItemAction(_action: ItemUseAction): ItemUseResult {
         return {
             success: false,
-            lines: ["It is not time to sleep yet."]
+            lines: ["Nothing happens."]
         };
     }
-
-    private sleepWithSleepingBag(): ItemUseResult {
-        const result = this.previewSleepWithSleepingBag();
     
-        if (!result.success) {
-            return result;
+    protected runItemAction(action: ItemUseAction): ItemUseResult {
+        return this.previewItemAction(action);
+    }
+    
+    protected rejectAutoTransitionEntry(): void {
+        this.transitioning = false;
+    
+        const ai = this.player.ai as PlayerAI;
+    
+        const safeTile = ai.currentTile.clone();
+        const blockedDirection = ai.targetTile
+            ? ai.targetTile.clone().sub(ai.currentTile)
+            : ai.facing.clone();
+    
+        const bounceDirection = blockedDirection.scaled(-1);
+        const bounceTile = safeTile.clone().add(bounceDirection);
+    
+        const safeTileCenter = this.ground.getTileCenter(safeTile.x, safeTile.y);
+        const safePosition = this.player.getCenterForFeetPosition(
+            safeTileCenter.x,
+            safeTileCenter.y
+        );
+    
+        this.player.position.copy(safePosition);
+    
+        ai.currentTile = safeTile;
+        ai.targetTile = null;
+        ai.moving = false;
+        ai.moveProgress = 0;
+        ai.moveStart = safePosition.clone();
+        ai.moveEnd = safePosition.clone();
+    
+        if (!ai.canMoveToTile(safeTile, bounceDirection)) {
+            ai.facing = bounceDirection;
+            this.player.setSortTile(safeTile);
+            ai.changeState(PlayerStateType.IDLE);
+            return;
         }
     
-        const worldState = this.gameSessionManager.getWorldState();
+        const bounceTileCenter = this.ground.getTileCenter(bounceTile.x, bounceTile.y);
+        const bouncePosition = this.player.getCenterForFeetPosition(
+            bounceTileCenter.x,
+            bounceTileCenter.y
+        );
     
-        worldState.timeOfDay =
-            worldState.timeOfDay === TimeOfDay.DAY
-                ? TimeOfDay.NIGHT
-                : TimeOfDay.DAY;
+        ai.facing = bounceDirection;
+        ai.targetTile = bounceTile;
+        ai.moveEnd = bouncePosition;
+        ai.currentMoveDuration = ai.moveDuration;
+        ai.moving = true;
     
-        this.timeController.setTimeOfDay(worldState.timeOfDay);
-    
-        return result;
+        this.player.setSortTile(bounceTile);
+        ai.changeState(PlayerStateType.MOVING);
     }
+    
+    
 }

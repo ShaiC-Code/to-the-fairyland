@@ -1,4 +1,11 @@
-import { Chapter2MainQuestStep, Chapter2StoryState, Chapter2VillageItem, StoryState } from "../StoryState";
+import {
+    CHAPTER2_MAIN_QUEST_ORDER,
+    Chapter2MainQuestStep,
+    Chapter2StoryState,
+    Chapter2VillageItem,
+    StoryState
+} from "../StoryState";
+
 
 type GetStoryState = () => StoryState;
 type SyncWorldState = () => void;
@@ -10,6 +17,7 @@ const REQUIRED_VILLAGE_ITEMS = [
     Chapter2VillageItem.SLEEPING_BAG,
     Chapter2VillageItem.OBSIDIAN_BOOTS
 ] as const;
+
 
 export default class Chapter2StoryManager {
     public constructor(
@@ -47,8 +55,8 @@ export default class Chapter2StoryManager {
     }
     
     public canLeaveVillage(): boolean {
-        return this.getState().mainQuestStep === Chapter2MainQuestStep.READY_TO_LEAVE_VILLAGE;
-    }
+        return this.hasReachedStep(Chapter2MainQuestStep.READY_TO_LEAVE_VILLAGE);
+    }    
     
     private advanceIfVillageItemsComplete(): void {
         const state = this.getState();
@@ -58,7 +66,52 @@ export default class Chapter2StoryManager {
             REQUIRED_VILLAGE_ITEMS.every(item => state.villageItems[item])
         ) {
             state.mainQuestStep = Chapter2MainQuestStep.READY_TO_LEAVE_VILLAGE;
-            this.syncWorldState();
         }
     }
+
+    public markArrivedAtRoad3(): void {
+        this.advanceToStep(Chapter2MainQuestStep.NEED_TO_SLEEP_ON_ROAD);
+    }    
+    
+    public canSleepOnRoad(): boolean {
+        return this.getState().mainQuestStep === Chapter2MainQuestStep.NEED_TO_SLEEP_ON_ROAD;
+    }
+    
+    public markSleptOnRoad(): void {
+        this.advanceToStep(Chapter2MainQuestStep.NEED_TO_APPROACH_CLIFF);
+    }
+    
+    public needsToApproachCliff(): boolean {
+        return this.getState().mainQuestStep === Chapter2MainQuestStep.NEED_TO_APPROACH_CLIFF;
+    }
+    
+    public markVillageShakeStarted(): void {
+        this.advanceToStep(Chapter2MainQuestStep.VILLAGE_SHAKE);
+    }
+    
+    public markVillageShakeComplete(): void {
+        this.advanceToStep(Chapter2MainQuestStep.CHECK_VILLAGE);
+    }
+    
+    public needsToCheckVillage(): boolean {
+        return this.getState().mainQuestStep === Chapter2MainQuestStep.CHECK_VILLAGE;
+    }
+    
+
+    private hasReachedStep(step: Chapter2MainQuestStep): boolean {
+        const currentIndex = CHAPTER2_MAIN_QUEST_ORDER.indexOf(this.getState().mainQuestStep);
+        const targetIndex = CHAPTER2_MAIN_QUEST_ORDER.indexOf(step);
+    
+        return currentIndex !== -1 && targetIndex !== -1 && currentIndex >= targetIndex;
+    }
+
+    private advanceToStep(step: Chapter2MainQuestStep): void {
+        if (this.hasReachedStep(step)) {
+            return;
+        }
+    
+        this.getState().mainQuestStep = step;
+    }
+    
+    
 }
