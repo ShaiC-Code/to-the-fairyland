@@ -24,6 +24,9 @@ import SpotlightOverlay from "../UI/CustomUIElements/SpotlightOverlay";
 import DialogueController from "../GameSystems/DialogueController";
 import TimeController from "../GameSystems/WorldSystem/TimeController";
 import CameraController from "../GameSystems/CameraController";
+import { TimeOfDay } from "../GameSystems/WorldSystem/WorldState";
+import { ItemUseAction, ItemUseActions, ItemUseResult } from "../GameSystems/ItemSystem/ItemUseActions";
+
 
 export type AssetRef = Readonly<{
     readonly key: string;
@@ -642,8 +645,73 @@ export default abstract class MappedAdventureScene extends Scene {
 
     protected consumeInventoryItem(item: InventoryItem): void {
         this.inventoryScreen.hide();
+
         item.consume({
-            showDialogue: interaction => this.startDialogue(interaction)
+            showDialogue: interaction => this.startDialogue(interaction),
+            previewItemAction: action => this.previewItemAction(action),
+            runItemAction: action => this.runItemAction(action)
         });
+    }
+
+    // use to determine the result before running actual action. So we can display different dialogues base on different world state 
+    protected previewItemAction(action: ItemUseAction): ItemUseResult {
+        switch (action) {
+            case ItemUseActions.SLEEP_WITH_SLEEPING_BAG:
+                return this.previewSleepWithSleepingBag();
+    
+            default:
+                return {
+                    success: false,
+                    lines: ["Nothing happens."]
+                };
+        }
+    }
+
+    protected runItemAction(action: ItemUseAction): ItemUseResult {
+        switch (action) {
+            case ItemUseActions.SLEEP_WITH_SLEEPING_BAG:
+                return this.sleepWithSleepingBag();
+    
+            default:
+                return {
+                    success: false,
+                    lines: ["Nothing happens."]
+                };
+        }
+    }
+
+    private previewSleepWithSleepingBag(): ItemUseResult {
+        const time = this.gameSessionManager.getWorldState().timeOfDay;
+    
+        if (time === TimeOfDay.DAY || time === TimeOfDay.NIGHT) {
+            return {
+                success: true,
+                lines: ["You rest for a while."]
+            };
+        }
+    
+        return {
+            success: false,
+            lines: ["It is not time to sleep yet."]
+        };
+    }
+
+    private sleepWithSleepingBag(): ItemUseResult {
+        const result = this.previewSleepWithSleepingBag();
+    
+        if (!result.success) {
+            return result;
+        }
+    
+        const worldState = this.gameSessionManager.getWorldState();
+    
+        worldState.timeOfDay =
+            worldState.timeOfDay === TimeOfDay.DAY
+                ? TimeOfDay.NIGHT
+                : TimeOfDay.DAY;
+    
+        this.timeController.setTimeOfDay(worldState.timeOfDay);
+    
+        return result;
     }
 }
