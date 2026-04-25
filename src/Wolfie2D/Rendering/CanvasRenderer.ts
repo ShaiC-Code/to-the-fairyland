@@ -92,14 +92,14 @@ export default class CanvasRenderer extends RenderingManager {
                     return rowDiff;
                 }
         
-                const colDiff = aTile.x - bTile.x;
-                if (colDiff !== 0) {
-                    return colDiff;
-                }
-        
                 const sortOrderDiff = a.getSortOrder() - b.getSortOrder();
                 if (sortOrderDiff !== 0) {
                     return sortOrderDiff;
+                }
+
+                const colDiff = aTile.x - bTile.x;
+                if (colDiff !== 0) {
+                    return colDiff;
                 }
         
                 return a.id - b.id;
