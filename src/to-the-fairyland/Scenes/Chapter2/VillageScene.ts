@@ -32,7 +32,8 @@ export default class VillageScene extends MappedAdventureChapter2Scene {
             J: { key: "J", path: "/assets/spritesheets/J.json" },
             Argus: { key: "Argus", path: "/assets/spritesheets/Argus.json" },
             Vila: { key: "Vila", path: "/assets/spritesheets/Vila.json" },
-            Lucy: { key: "Lucy", path: "/assets/spritesheets/Lucy.json" }
+            Lucy: { key: "Lucy", path: "/assets/spritesheets/Lucy.json" },
+            Lycan: { key: "Lycan", path: "/assets/spritesheets/Lycan.json" }
         },
         sprites: {},
         sounds: {}
@@ -58,6 +59,11 @@ export default class VillageScene extends MappedAdventureChapter2Scene {
 
     protected override spawnMapObjects(tilemapData: TiledTilemapData): void {
         this.npcs = [];
+
+        if (this.storyManager.chapter2.needsToCheckVillage()) {
+            this.spawnCheckVillageLycans(tilemapData);
+            return;
+        }
 
         const npcLayer = tilemapData.layers.find(layer => layer.name === "NPCs");
         const npcPoints = npcLayer?.objects ?? [];
@@ -92,6 +98,46 @@ export default class VillageScene extends MappedAdventureChapter2Scene {
             actor: npc
         });
     }
+
+    private spawnCheckVillageLycans(tilemapData: TiledTilemapData): void {
+        const lycanLayer = tilemapData.layers.find(layer => layer.name === "EnemySpawns");
+        const lycanPoints = lycanLayer?.objects ?? [];
+    
+        for (const obj of lycanPoints) {
+            this.spawnLycan(obj);
+        }
+    }
+    
+    private spawnLycan(obj: TiledObject): void {
+        const lycan = this.add.animatedSprite(
+            NPCActor,
+            this.assets.spritesheets.Lycan.key,
+            this.actorLayerName
+        );
+    
+        const scale = 1.25;
+        lycan.scale.set(scale, scale);
+        
+        const tile = this.getObjectTile(obj);
+        const tileCenter = this.ground.getTileCenter(tile.x, tile.y);
+    
+        lycan.position.set(tileCenter.x, tileCenter.y - lycan.size.y / 2 + 15);
+        lycan.setSortTile(tile);
+        lycan.setSortOrder(10);
+    
+        const facing = obj.properties?.find(prop => prop.name === "facing")?.value;
+        lycan.animation.play(this.getIdleAnimationForFacing(facing), true);
+    
+        lycan.addAI(IdleBehavior, {});
+    }
+    
+    private getIdleAnimationForFacing(facing: string | undefined): string {
+        if (facing === "up") return "IDLE_UP";
+        if (facing === "left") return "IDLE_LEFT";
+        if (facing === "right") return "IDLE_RIGHT";
+        return "IDLE_DOWN";
+    }
+    
 
     protected override tryStartSceneInteractionAtTile(tile: Vec2): boolean {
         const npc = this.findNpcAtTile(tile);

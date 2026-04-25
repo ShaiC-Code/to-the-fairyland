@@ -1,13 +1,14 @@
 {
-    "activeFile": "tilemaps/Chapter2/Village.json",
+    "activeFile": "tilemaps/Chapter4/CliffBottom.json",
     "expandedProjectPaths": [
-        "tilemaps",
-        "tilemaps/Chapter1",
-        "tilemaps/Chapter5",
         "spritesheets",
+        ".",
+        "tilemaps/Chapter5",
         "tilemaps/Chapter2",
+        "tilemaps/Chapter1",
+        "tilemaps/Chapter4",
         "tilemaps/Chapter6",
-        "."
+        "tilemaps"
     ],
     "fileStates": {
         "": {
@@ -48,12 +49,14 @@
         },
         "tilemaps/Chapter2/Cliff.json": {
             "expandedObjectLayers": [
+                3,
+                4,
                 5
             ],
             "scale": 0.5,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 919,
+                "x": 918,
                 "y": 1431
             }
         },
@@ -62,16 +65,16 @@
         },
         "tilemaps/Chapter2/Road.json": {
             "expandedObjectLayers": [
-                4,
                 3,
-                5,
+                4,
                 2,
+                5,
                 8
             ],
             "scale": 0.75,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 1038,
+                "x": 1038.6666666666667,
                 "y": 1146
             }
         },
@@ -80,15 +83,15 @@
         },
         "tilemaps/Chapter2/Road1.json": {
             "expandedObjectLayers": [
-                4,
                 3,
+                4,
                 5,
                 8
             ],
             "scale": 0.5,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 1445,
+                "x": 1446,
                 "y": 1299
             }
         },
@@ -97,15 +100,15 @@
         },
         "tilemaps/Chapter2/Road2.json": {
             "expandedObjectLayers": [
-                4,
                 3,
+                4,
                 5,
                 8
             ],
             "scale": 1.5,
             "selectedLayer": 4,
             "viewCenter": {
-                "x": 990.3333333333333,
+                "x": 990.6666666666666,
                 "y": 1539
             }
         },
@@ -114,15 +117,15 @@
         },
         "tilemaps/Chapter2/Road3.json": {
             "expandedObjectLayers": [
-                4,
                 3,
+                4,
                 5,
                 8
             ],
             "scale": 0.5,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 1123,
+                "x": 1248,
                 "y": 1385
             }
         },
@@ -136,13 +139,57 @@
             "scale": 0.5,
             "selectedLayer": 6,
             "viewCenter": {
-                "x": 1113,
-                "y": 1215
+                "x": 1089,
+                "y": 1054
             }
         },
         "tilemaps/Chapter2/Village.json#Village": {
             "scaleInDock": 0.33,
             "scaleInEditor": 1
+        },
+        "tilemaps/Chapter4/CliffBottom.json": {
+            "scale": 0.5772569444444444,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 1067.1157894736841,
+                "y": 1253.3413533834587
+            }
+        },
+        "tilemaps/Chapter4/CliffBottom.json#Chapter2_Village_Tiles": {
+            "scaleInDock": 1
+        },
+        "tilemaps/Chapter4/DeeperForest.json": {
+            "scale": 0.5772569444444444,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 1023.8075187969926,
+                "y": 1151.133834586466
+            }
+        },
+        "tilemaps/Chapter4/DeeperForest.json#Chapter2_Village_Tiles": {
+            "scaleInDock": 1
+        },
+        "tilemaps/Chapter4/GreatTree.json": {
+            "scale": 0.5772569444444444,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 1023.8075187969926,
+                "y": 1151.133834586466
+            }
+        },
+        "tilemaps/Chapter4/GreatTree.json#Chapter2_Village_Tiles": {
+            "scaleInDock": 1
+        },
+        "tilemaps/Chapter4/TreeInner.json": {
+            "scale": 0.5772569444444444,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 1023.8075187969926,
+                "y": 1151.133834586466
+            }
+        },
+        "tilemaps/Chapter4/TreeInner.json#Chapter2_Village_Tiles": {
+            "scaleInDock": 1
         },
         "tilemaps/Chapter5/UndergroundTunnel.json": {
             "scale": 0.125,
@@ -175,27 +222,28 @@
     "map.tileWidth": 64,
     "map.width": 60,
     "openFiles": [
-        "tilemaps/Chapter1/Chapter1.json",
-        "tilemaps/Chapter1/Shelter.json",
         "tilemaps/Chapter2/Village.json",
-        "tilemaps/Chapter2/Road.json",
-        "tilemaps/Chapter2/Road1.json",
-        "tilemaps/Chapter2/Road2.json",
-        "tilemaps/Chapter2/Cliff.json",
-        "tilemaps/Chapter2/Road3.json"
-    ],
-    "project": "to-the-fairyland.tiled-project",
-    "recentFiles": [
-        "tilemaps/Chapter2/Village.json",
-        "tilemaps/Chapter1/Chapter1.json",
-        "tilemaps/Chapter1/Shelter.json",
         "tilemaps/Chapter2/Road.json",
         "tilemaps/Chapter2/Road1.json",
         "tilemaps/Chapter2/Road2.json",
         "tilemaps/Chapter2/Road3.json",
         "tilemaps/Chapter2/Cliff.json",
-        "tilemaps/Chapter6/DesertLand.json",
-        "tilemaps/Chapter5/UndergroundTunnel.json"
+        "tilemaps/Chapter4/CliffBottom.json"
+    ],
+    "project": "to-the-fairyland.tiled-project",
+    "recentFiles": [
+        "tilemaps/Chapter2/Road.json",
+        "tilemaps/Chapter2/Road1.json",
+        "tilemaps/Chapter2/Road2.json",
+        "tilemaps/Chapter2/Road3.json",
+        "tilemaps/Chapter2/Cliff.json",
+        "tilemaps/Chapter4/CliffBottom.json",
+        "tilemaps/Chapter2/Village.json",
+        "tilemaps/Chapter4/DeeperForest.json",
+        "tilemaps/Chapter4/GreatTree.json",
+        "tilemaps/Chapter4/TreeInner.json",
+        "tilemaps/Chapter1/Chapter1.json",
+        "tilemaps/Chapter1/Shelter.json"
     ],
     "resizeMap.removeObjects": false,
     "tileset.embedInMap": true,
