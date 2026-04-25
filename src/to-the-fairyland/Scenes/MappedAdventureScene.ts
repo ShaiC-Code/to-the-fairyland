@@ -26,6 +26,7 @@ import TimeController from "../GameSystems/WorldSystem/TimeController";
 import CameraController from "../GameSystems/CameraController";
 import { ItemUseAction, ItemUseActions, ItemUseResult } from "../GameSystems/ItemSystem/ItemUseActions";
 import { PlayerStateType } from "../AI/Player/PlayerStates/PlayerBehaviorState";
+import { WeatherType } from "../GameSystems/WorldSystem/WorldState";
 
 
 export type AssetRef = Readonly<{
@@ -73,9 +74,8 @@ export default abstract class MappedAdventureScene extends Scene {
             uiClickSFX: { key: "ui-click", path: "/assets/sounds/ui-click.ogg" },
             menuOpenSFX: { key: "menu-open", path: "/assets/sounds/menu-open.ogg" },
             menuCloseSFX: { key: "menu-close", path: "/assets/sounds/menu-close.ogg" },
-            woodenDoorSFX: { key: "door-wooden", path: "/assets/sounds/door-wooden.ogg" },
-            weatherSnowInsideSFX: { key: "weather-snow-inside", path: "/assets/sounds/weather-snow-inside.ogg" },
-            weatherSnowOutsideSFX: { key: "weather-snow-outside", path: "/assets/sounds/weather-snow-outside.ogg" }
+            walkingDirtSFX: { key: "walking-dirt", path: "/assets/sounds/walking-dirt.ogg" },
+            woodenDoorSFX: { key: "door-wooden", path: "/assets/sounds/door-wooden.ogg" }
         }
     };
 
@@ -144,6 +144,7 @@ export default abstract class MappedAdventureScene extends Scene {
     public unloadScene(): void {
         this.keepAssets(MappedAdventureScene.assetBundle);
         this.weatherController.muteWeatherAmbience();
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: this.assets.sounds.walkingDirtSFX.key});
     }
 
     protected mergeAssetBundles(parent: AssetBundle, child: AssetBundle): AssetBundle {
@@ -308,8 +309,7 @@ export default abstract class MappedAdventureScene extends Scene {
 
         this.weatherController = new WeatherController(this, this.viewport);
         this.weatherController.sceneAssets = this.assets;
-        this.weatherController.setWeatherIndoors(this.isWeatherIndoors());
-        this.weatherController.startWeatherAmbienceLoops();
+        this.weatherController.setWeather(WeatherType.NONE);
     }
 
     public override updateScene(deltaT: number): void {

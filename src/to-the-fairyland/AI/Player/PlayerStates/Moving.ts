@@ -20,6 +20,8 @@ export default class Moving extends PlayerState {
             nextFootstepSFXKey = this.owner.sceneAssets.sounds.walkingSnowSFX.key;
         } else if (groundType === "bush") {
             nextFootstepSFXKey = this.owner.sceneAssets.sounds.walkingSnowBushSFX.key;
+        } else {
+            nextFootstepSFXKey = this.owner.sceneAssets.sounds.walkingDirtSFX.key;
         }
 
         if (this.currentFootstepSFXKey === nextFootstepSFXKey) {
@@ -33,7 +35,7 @@ export default class Moving extends PlayerState {
         this.currentFootstepSFXKey = nextFootstepSFXKey;
 
         if (this.currentFootstepSFXKey) {
-            this.emitter.fireEvent(GameEventType.PLAY_SOUND, {
+            this.emitter.fireEvent(GameEventType.PLAY_SFX, {
                 key: this.currentFootstepSFXKey,
                 loop: true,
                 holdReference: true

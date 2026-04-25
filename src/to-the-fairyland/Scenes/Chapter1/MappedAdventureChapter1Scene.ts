@@ -15,7 +15,10 @@ export default abstract class MappedAdventureChapter1Scene extends MappedAdventu
         sounds: {
             walkingSnowSFX: { key: "walking-snow", path: "/assets/sounds/walking-snow.ogg" },
             walkingWoodSFX: { key: "walking-wood", path: "/assets/sounds/walking-wood.ogg" },
-            walkingSnowBushSFX: { key: "walking-snow-bush", path: "/assets/sounds/walking-snow-bush.ogg" }
+            walkingSnowBushSFX: { key: "walking-snow-bush", path: "/assets/sounds/walking-snow-bush.ogg" },
+            weatherSnowSFX: { key: "weather-snow", path: "/assets/sounds/weather-snow.ogg" },
+            weatherSnowStormSFX: { key: "weather-snowstorm", path: "/assets/sounds/weather-snowstorm.ogg" },
+            wolvesHowlingSFX: { key: "wolves-howling", path: "/assets/sounds/wolves-howling.ogg" }
         }
     };
 

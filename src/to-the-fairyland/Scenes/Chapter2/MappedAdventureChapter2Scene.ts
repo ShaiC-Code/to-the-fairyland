@@ -24,7 +24,8 @@ export default abstract class MappedAdventureChapter2Scene extends MappedAdventu
         sounds: {
             walkingSnowSFX: { key: "walking-snow", path: "/assets/sounds/walking-snow.ogg" },
             walkingWoodSFX: { key: "walking-wood", path: "/assets/sounds/walking-wood.ogg" },
-            walkingSnowBushSFX: { key: "walking-snow-bush", path: "/assets/sounds/walking-snow-bush.ogg" }
+            walkingSnowBushSFX: { key: "walking-snow-bush", path: "/assets/sounds/walking-snow-bush.ogg" },
+            somethingBigSFX: { key: "something-big", path: "/assets/sounds/something-big.ogg" }
         }
     };
 
