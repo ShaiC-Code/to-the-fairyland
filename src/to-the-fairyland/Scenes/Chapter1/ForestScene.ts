@@ -7,6 +7,8 @@ import { GameEventType } from "../../../Wolfie2D/Events/GameEventType";
 import { Chapter1MainQuestStep } from "../../GameSystems/StorySystem/StoryState";
 import Sprite from "../../../Wolfie2D/Nodes/Sprites/Sprite";
 import { WeatherType } from "../../GameSystems/WorldSystem/WorldState";
+import Timer from "../../../Wolfie2D/Timing/Timer";
+import NullFunc from "../../../Wolfie2D/DataTypes/Functions/NullFunc";
 
 export default class ForestScene extends MappedAdventureChapter1Scene {
     protected readonly tilemap = {
@@ -29,6 +31,7 @@ export default class ForestScene extends MappedAdventureChapter1Scene {
     
     private mapItemSprite: Sprite | null = null;
     private mapItemObject: TiledObject | null = null;
+    protected howlEvent?: Timer;
 
     protected combinedAssetBundles(): AssetBundle {
         return this.mergeAssetBundles(super.combinedAssetBundles(), ForestScene.assetBundle);
@@ -37,6 +40,11 @@ export default class ForestScene extends MappedAdventureChapter1Scene {
     public override startScene(): void {
         super.startScene();
         this.weatherController.setWeather(WeatherType.SNOWSTORM, 50);
+        this.howlEvent = new Timer(0, () => {
+            this.emitter.fireEvent(GameEventType.PLAY_SFX, { key: this.assets.sounds.wolvesHowlingSFX.key });
+            this.setHowlEventTimer();
+        });
+        this.setHowlEventTimer();
     }
 
     protected override configureLayers(): void {
@@ -108,6 +116,15 @@ export default class ForestScene extends MappedAdventureChapter1Scene {
             );
             this.emitter.fireEvent(GameEventType.PLAY_SFX, {key: this.assets.sounds.woodenDoorSFX.key, loop: false, holdReference: false});
         }
+    }
+
+    protected setHowlEventTimer() {
+        if (!this.howlEvent) {
+            this.howlEvent = new Timer(0, NullFunc);
+        }
+
+        const delay = (Math.random() * 20000) + 5000;
+        this.howlEvent.start(delay);
     }
 
     protected override onMapPickedUp(): void {

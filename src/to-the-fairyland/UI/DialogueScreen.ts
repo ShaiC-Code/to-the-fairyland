@@ -6,10 +6,13 @@ import Color from "../../Wolfie2D/Utils/Color";
 import UIScreen, { UIScreenOptions } from "./UIScreen";
 import Label from "../../Wolfie2D/Nodes/UIElements/Label";
 
-
 type DialogueChoice = {
     label: string;
     onSelect?: () => void;
+};
+
+type TextHint = {
+    color?: "yellow" | "red" | "default";
 };
 
 export default class DialogueScreen extends UIScreen {
@@ -74,6 +77,7 @@ export default class DialogueScreen extends UIScreen {
             maxLines: 3
         });
         this.textBox = this.getUIElement("dialogueText") as TextBox;
+        this.textBox.font = "Verdana";
 
         this.configureChoiceSafeZone(boxSize);
 
@@ -216,7 +220,11 @@ export default class DialogueScreen extends UIScreen {
     }
 
     public showLine(line: string, charsPerSecond: number = this.defaultRevealSpeed): void {
-        this.textBox.setText(line);
+        const { clean, hints } = this.parseTextHints(line);
+
+        this.applyTextHints(hints);
+
+        this.textBox.setText(clean);
         this.textBox.startTypewriter(charsPerSecond);
         this.show();
     }
@@ -238,6 +246,43 @@ export default class DialogueScreen extends UIScreen {
         this.nameBox.setText(name);
         this.nameBox.visible = true;
     }
-    
 
+    private applyTextHints(hints: TextHint): void {
+        switch (hints.color) {
+        case "yellow":
+            this.textBox.setTextColor(Color.YELLOW);
+            break;
+        case "red":
+            this.textBox.setTextColor(Color.RED);
+            break;
+        default:
+            this.textBox.setTextColor(Color.WHITE);
+        }
+    }
+
+    private parseTextHints(line: string): { clean: string; hints: TextHint } {
+        const regex = /<([^>]+)>/g;
+
+        let match;
+        const tags: string[] = [];
+        while ((match = regex.exec(line)) !== null) {
+            tags.push(match[1]);
+        }
+
+        let hints: TextHint = {};
+        for (const tag of tags) {
+            switch (tag) {
+                case "yellow":
+                    hints.color = "yellow";
+                    break;
+                case "red":
+                    hints.color = "red";
+                    break;
+            }
+        }
+
+        const clean = line.replace(/<[^>]+>/g, "");
+
+        return { clean, hints };
+    }
 }

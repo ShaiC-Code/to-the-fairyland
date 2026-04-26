@@ -70,9 +70,9 @@ function getVilaInteraction(context: NpcInteractionContext): DialogueInteraction
                     choiceOption(
                         "Yes",
                         dialogue([
+                            "<yellow>[You received a Fresh Pretty Tooth]",
                             "Vila smiles and presses the tooth into your hand.",
-                            "It is warmer than you expected.",
-                            "[You received a Fresh Pretty Tooth.]"
+                            "It is warmer than you expected."
                         ]),
                         { choiceAction: DialogueChoiceActions.TAKE_FRESH_PRETTY_TOOTH }
                     ),
@@ -146,7 +146,7 @@ function getArgusInteraction(context: NpcInteractionContext): DialogueInteractio
             "You are the traveler everyone keeps whispering about.",
             "Hmm. You will not get far with those worn soles.",
             "Take these Obsidian Boots.",
-            "[You received a set of Obsidian Boots.]",
+            "<yellow>[You received a set of Obsidian Boots]",
         ], { completeAction: DialogueCompleteActions.GIVE_OBSIDIAN_BOOTS });
 
     case Chapter2MainQuestStep.READY_TO_LEAVE_VILLAGE:
@@ -181,7 +181,7 @@ function getJInteraction(context: NpcInteractionContext): DialogueInteraction {
             "I have not been able to stop thinking about it.",
             "Here. Please take this flower ring.",
             "I hope it brings you some luck.",
-            "[A flower ring is placed in your hand.]"
+            "<yellow>[A flower ring is placed in your hand]"
         ], { completeAction: DialogueCompleteActions.GIVE_FLOWER_RING });
 
     case Chapter2MainQuestStep.READY_TO_LEAVE_VILLAGE:
@@ -219,9 +219,9 @@ function getKInteraction(context: NpcInteractionContext): DialogueInteraction {
                         choiceOption(
                             "Yes",
                             dialogue([
+                                "<yellow>[You received Lofty Bread]",
                                 "K wraps a warm loaf of bread in clean cloth and places it in your hands.",
-                                "The smell is soft, buttery, and comforting.",
-                                "[You received Lofty Bread.]"
+                                "The smell is soft, buttery, and comforting."
                             ]),
                             { choiceAction: DialogueChoiceActions.TAKE_LOFTY_BREAD }
                         ),
@@ -250,9 +250,9 @@ function getKInteraction(context: NpcInteractionContext): DialogueInteraction {
                         choiceOption(
                             "Yes",
                             dialogue([
+                                "<yellow>[You received a Sleeping Bag]",
                                 "K places a neatly rolled sleeping bag in your arms.",
-                                "\"A traveler deserves warmth,\" he says.",
-                                "[You received a Sleeping Bag.]"
+                                "\"A traveler deserves warmth,\" he says."
                             ]),
                             { choiceAction: DialogueChoiceActions.TAKE_SLEEPING_BAG }
                         ),

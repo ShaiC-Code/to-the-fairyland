@@ -26,7 +26,7 @@ const STATIC_OBJECT_INTERACTIONS: Readonly<Record<string, InteractionData>> = {
             options: [
                 choiceOption(
                     "Yes",
-                    dialogue(["You picked a few frozen berries."]),
+                    dialogue(["<yellow>[You received Frozen Berries]"]),
                     { choiceAction: DialogueChoiceActions.COLLECT_FROZEN_BERRIES }
                 ),
                 choiceOption(
@@ -43,9 +43,9 @@ const STATIC_OBJECT_INTERACTIONS: Readonly<Record<string, InteractionData>> = {
             "It's from the expedition members.",
             "Three monster kingdoms have broken through the human territories.",
             "A distant land is marked in trembling ink...",
-            "'The FairyLand'",
+            "<red>'The FairyLand'",
             "A message sits beside it.",
-            "'Humanity's last hope.'",
+            "<red>'Humanity's last hope.'",
             "Pick up map?"
         ],
         {
@@ -54,7 +54,7 @@ const STATIC_OBJECT_INTERACTIONS: Readonly<Record<string, InteractionData>> = {
                 choiceOption(
                     "Yes",
                     dialogue([
-                        "You take the map.",
+                        "<yellow>[You obtained the World Map]",
                         "Whatever happened here, their final hope now rests with you."
                     ]),
                     { choiceAction: DialogueChoiceActions.PICKUP_MAP }
@@ -83,7 +83,7 @@ export function getBedDialogue(step: Chapter1MainQuestStep): DialogueInteraction
     case Chapter1MainQuestStep.NEED_TO_COOK:
     case Chapter1MainQuestStep.NEED_TO_EAT:
         return dialogue([
-            "This bed looks warm and surprisingly comfortable.",
+            "The bed looks warm and surprisingly comfortable.",
             "Hunger is preventing you from sleeping..."
         ]);
 
@@ -146,7 +146,7 @@ export function getPotDialogue(step: Chapter1MainQuestStep): DialogueInteraction
                 options: [
                     choiceOption(
                         "Yes",
-                        dialogue(["You cook the frozen berries."]),
+                        dialogue(["<yellow>[You obtained Cooked Berries]"]),
                         { choiceAction: DialogueChoiceActions.COOK_FROZEN_BERRIES }
                     ),
                     choiceOption(
