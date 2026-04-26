@@ -16,4 +16,11 @@ export default class Road2Scene extends RoadSceneBase {
             this.changeToRoadSection(Road3Scene, "RoadStart");
         }
     }
+
+    protected override getLycanChaseSpawnPrefix(): string | null {
+        if (this.spawnName === "RoadStart") return "ChaseFromRoad1";
+        if (this.spawnName === "RoadEnd") return "ChaseFromRoad3";
+        return null;
+    }
+    
 }

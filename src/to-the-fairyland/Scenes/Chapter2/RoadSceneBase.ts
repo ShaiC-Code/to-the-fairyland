@@ -1,8 +1,18 @@
 import { AssetBundle } from "../MappedAdventureScene";
 import MappedAdventureChapter2Scene from "./MappedAdventureChapter2Scene";
 import { TiledTilemapData } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData";
+import LycanChaseSceneBase from "../LycanChaseSceneBase";
 
-export default abstract class RoadSceneBase extends MappedAdventureChapter2Scene {
+
+
+export default abstract class RoadSceneBase extends LycanChaseSceneBase {
+
+    private pendingLycanSpawnTilemapData: TiledTilemapData | null = null;
+    private lycanSpawnDelayTimer = 0;
+    private readonly lycanSpawnDelaySeconds = 0.5;
+    private lycanSpawned = false;
+
+
     protected static readonly roadAssetBundle: AssetBundle = {
         tilemaps: {},
         spritesheets: {},
@@ -12,6 +22,20 @@ export default abstract class RoadSceneBase extends MappedAdventureChapter2Scene
         },
         sounds: {}
     };
+
+    public override startScene(): void {
+        super.startScene();
+    }
+
+    public override updateScene(deltaT: number): void {
+        super.updateScene(deltaT);
+        this.updateDelayedLycanSpawn(deltaT);
+    }
+    
+    
+    protected getLycanChaseSpawnPrefix(): string | null {
+        return null;
+    }
 
     protected combinedAssetBundles(): AssetBundle {
         const sharedAssets = this.mergeAssetBundles(super.combinedAssetBundles(), RoadSceneBase.roadAssetBundle);
@@ -44,6 +68,8 @@ export default abstract class RoadSceneBase extends MappedAdventureChapter2Scene
     }
 
     protected override spawnMapObjects(tilemapData: TiledTilemapData): void {
+        this.resetLycans();
+
         const bushLayer = tilemapData.layers.find(layer => layer.name === "Bushes");
         const bushPoints = bushLayer?.objects.filter(obj => obj.name === "BushBerries") ?? [];
 
@@ -61,5 +87,38 @@ export default abstract class RoadSceneBase extends MappedAdventureChapter2Scene
             const tree = this.add.sprite(this.assets.sprites.forestTreeSprite.key, "ForestTrees");
             tree.position.set(point.x, point.y - tree.size.y / 2 + 100);
         }
+
+        if (this.storyManager.chapter2.needsToEscapeLycans()) {
+            this.pendingLycanSpawnTilemapData = tilemapData;
+            this.lycanSpawnDelayTimer = this.lycanSpawnDelaySeconds;
+            this.lycanSpawned = false;
+        }
     }
+
+    private updateDelayedLycanSpawn(deltaT: number): void {
+        if (this.lycanSpawned || !this.pendingLycanSpawnTilemapData) {
+            return;
+        }
+    
+        if (this.worldPaused || this.dialogueController.isActive) {
+            return;
+        }
+    
+        this.lycanSpawnDelayTimer -= deltaT;
+    
+        if (this.lycanSpawnDelayTimer > 0) {
+            return;
+        }
+    
+        const prefix = this.getLycanChaseSpawnPrefix();
+
+        if (prefix) {
+            this.spawnLycansWithPrefix(this.pendingLycanSpawnTilemapData, prefix);
+            this.startAllLycanChases();
+        }
+    
+        this.pendingLycanSpawnTilemapData = null;
+        this.lycanSpawned = true;
+    }
+    
 }

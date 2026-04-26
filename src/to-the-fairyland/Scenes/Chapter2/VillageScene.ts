@@ -8,6 +8,8 @@ import RoadScene from "./RoadScene";
 import { dialogue, getNpcInteraction } from "../../GameSystems/InteractionSystem/InteractionDatabase";
 import ScrollingPatternWorldLayer from "../../Overlays/ScrollingPatternWorldLayer";
 import LycanChaseBehavior from "../../AI/NPC/NPCBehavior/LycanChaseBehavior";
+import LycanChaseSceneBase from "../LycanChaseSceneBase";
+
 
 
 type NpcRuntime = {
@@ -15,20 +17,10 @@ type NpcRuntime = {
     actor: NPCActor;
 };
 
-export default class VillageScene extends MappedAdventureChapter2Scene {
+export default class VillageScene extends LycanChaseSceneBase {
     private npcs: NpcRuntime[] = [];
-    private lycans: NPCActor[] = [];
-    
-    private readonly lycanDetectionRadius = 320;
-    private readonly lycanRepathInterval = 0.25;
-    private readonly lycanFeetOffsetY = 15;
 
-    private readonly lycanMoveDuration = 0.16;
-    private readonly lycanBoostMoveDuration = 0.08;
-    private readonly lycanBoostChance = 0.15;
-    private readonly lycanBoostMinSteps = 2;
-    private readonly lycanBoostMaxSteps = 5;
-    private readonly lycanBoostLocksDirection = true;
+    private readonly lycanDetectionRadius = 400;
     
     protected readonly tilemap = {
         key: "village",
@@ -45,7 +37,6 @@ export default class VillageScene extends MappedAdventureChapter2Scene {
             Argus: { key: "Argus", path: "/assets/spritesheets/Argus.json" },
             Vila: { key: "Vila", path: "/assets/spritesheets/Vila.json" },
             Lucy: { key: "Lucy", path: "/assets/spritesheets/Lucy.json" },
-            Lycan: { key: "Lycan", path: "/assets/spritesheets/Lycan.json" }
         },
         sprites: {
             bloodMist: { key: "bloodMist", path: "/assets/sprites/overlays/bloodmist.png" }
@@ -77,8 +68,11 @@ export default class VillageScene extends MappedAdventureChapter2Scene {
                 alpha: 0.4
             }
         );
+        if (this.storyManager.chapter2.needsToEscapeLycans()) {
+            this.startAllLycanChases();
+        }
         
-        if (this.storyManager.chapter2.needsToCheckVillage()) {
+        if (this.storyManager.chapter2.hasReachedCheckVillage()) {
             this.bloodMistEffectLayer.show();
         }
     }
@@ -93,16 +87,16 @@ export default class VillageScene extends MappedAdventureChapter2Scene {
 
     protected override spawnMapObjects(tilemapData: TiledTilemapData): void {
         this.npcs = [];
-        this.lycans = [];
-
-        if (this.storyManager.chapter2.needsToCheckVillage()) {
+        this.resetLycans();
+    
+        if (this.storyManager.chapter2.hasReachedCheckVillage()) {
             this.spawnCheckVillageLycans(tilemapData);
             return;
         }
-
+    
         const npcLayer = tilemapData.layers.find(layer => layer.name === "NPCs");
         const npcPoints = npcLayer?.objects ?? [];
-
+    
         for (const obj of npcPoints) {
             this.spawnNPC(obj);
         }
@@ -135,36 +129,13 @@ export default class VillageScene extends MappedAdventureChapter2Scene {
     }
 
     private spawnCheckVillageLycans(tilemapData: TiledTilemapData): void {
-        const lycanLayer = tilemapData.layers.find(layer => layer.name === "EnemySpawns");
-        const lycanPoints = lycanLayer?.objects ?? [];
+        this.spawnLycansMatching(tilemapData, obj => {
+            if (this.storyManager.chapter2.needsToEscapeLycans()) {
+                return obj.name.startsWith("ChaseFromRoad_");
+            }
     
-        for (const obj of lycanPoints) {
-            this.spawnLycan(obj);
-        }
-    }
-    
-    private spawnLycan(obj: TiledObject): void {
-        const lycan = this.add.animatedSprite(
-            NPCActor,
-            this.assets.spritesheets.Lycan.key,
-            this.actorLayerName
-        );
-    
-        const scale = 1.25;
-        lycan.scale.set(scale, scale);
-        
-        const tile = this.getObjectTile(obj);
-        const tileCenter = this.ground.getTileCenter(tile.x, tile.y);
-    
-        lycan.position.set(tileCenter.x, tileCenter.y - lycan.size.y / 2 + 15);
-        lycan.setSortTile(tile);
-        lycan.setSortOrder(10);
-    
-        const facing = obj.properties?.find(prop => prop.name === "facing")?.value;
-        lycan.animation.play(this.getIdleAnimationForFacing(facing), true);
-    
-        lycan.addAI(IdleBehavior, {});
-        this.lycans.push(lycan);
+            return /^Lycan\d+$/.test(obj.name);
+        });
     }
 
     private updateLycanDetection(): void {
@@ -194,31 +165,7 @@ export default class VillageScene extends MappedAdventureChapter2Scene {
         console.log("Detected by Lycan:", detectedLycan.id);
     
         this.storyManager.chapter2.markEscapeLycansStarted();
-    
-        for (const lycan of this.lycans) {
-            lycan.addAI(LycanChaseBehavior, {
-                player: this.player,
-                ground: this.ground,
-                collision: this.collision,
-                startTile: lycan.getSortTile(),
-                moveDuration: this.lycanMoveDuration,
-                repathInterval: this.lycanRepathInterval,
-                feetOffsetY: this.lycanFeetOffsetY,
-
-                boostMoveDuration: this.lycanBoostMoveDuration,
-                boostChance: this.lycanBoostChance,
-                boostMinSteps: this.lycanBoostMinSteps,
-                boostMaxSteps: this.lycanBoostMaxSteps,
-                boostLocksDirection: this.lycanBoostLocksDirection
-            });
-        }
-    }
-    
-    private getIdleAnimationForFacing(facing: string | undefined): string {
-        if (facing === "up") return "IDLE_UP";
-        if (facing === "left") return "IDLE_LEFT";
-        if (facing === "right") return "IDLE_RIGHT";
-        return "IDLE_DOWN";
+        this.startAllLycanChases();
     }
     
 
