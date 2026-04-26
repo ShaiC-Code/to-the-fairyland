@@ -12,23 +12,23 @@ type AssetRef = Readonly<{
     path: string;
 }>;
 
-export default class SplashScreenScene extends Scene {
+export default class GameOverScreenScene extends Scene {
 
-	  protected readonly splashScreenImage: AssetRef = {
-        key: "splash-screen-image",
-        path: "/assets/images/splash-screen-image.png"
+	  protected readonly GameOverScreenImage: AssetRef = {
+        key: "game-over-screen-image",
+        path: "/assets/images/game-over-screen-image.png"
 	  };
 
-	  protected readonly splashScreenProceedSFX: AssetRef = {
-        key: "splash-screen-proceed",
+	  protected readonly gameOverScreenProceedSFX: AssetRef = {
+        key: "game-over-screen-proceed",
         path: "/assets/sounds/splash-screen-proceed.ogg"
 	  };
 
-    protected splashScreen!: SplashScreen;
+    protected gameOverScreen!: SplashScreen;
 
 	  public loadScene(): void {
-        this.load.image(this.splashScreenImage.key, this.splashScreenImage.path);
-        this.load.audio(this.splashScreenProceedSFX.key, this.splashScreenProceedSFX.path);
+        this.load.image(this.GameOverScreenImage.key, this.GameOverScreenImage.path);
+        this.load.audio(this.gameOverScreenProceedSFX.key, this.gameOverScreenProceedSFX.path);
 
         this.add.registerCustomCanvasNode(CustomUIElementType.UI_IMAGE, (options?: Record<string, any>) => {
             return new UIImage(options!.imageKey);
@@ -40,14 +40,14 @@ export default class SplashScreenScene extends Scene {
     }
 
     public startScene(): void {
-        this.splashScreen = new SplashScreen(
-            "splashScreen",
+        this.gameOverScreen = new SplashScreen(
+            "gameOverScreen",
             this,
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize(),
-            this.splashScreenImage.key,
+            this.GameOverScreenImage.key,
             () => this.sceneManager.changeToScene(
-                MainMenu,
+                MainMenu, // Should be send to player to checkpoint, but is MainMenu for now
                 undefined,
                 undefined,
                 {
@@ -57,7 +57,7 @@ export default class SplashScreenScene extends Scene {
                 }
             ),
             {
-                onClickSFXKey: this.splashScreenProceedSFX.key,
+                onClickSFXKey: this.gameOverScreenProceedSFX.key,
                 uiActions: {
                     navigatePrevious: () => false,
                     navigateNext: () => false,
@@ -65,10 +65,10 @@ export default class SplashScreenScene extends Scene {
                 }
             }
         );
-        this.splashScreen.show();
+        this.gameOverScreen.show();
     }
 
     public updateScene(deltaT: number): void {
-        this.splashScreen.update(deltaT);
+        this.gameOverScreen.update(deltaT);
     }
 }
