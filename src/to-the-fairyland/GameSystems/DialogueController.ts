@@ -1,4 +1,7 @@
 import Updateable from "../../Wolfie2D/DataTypes/Interfaces/Updateable";
+import Emitter from "../../Wolfie2D/Events/Emitter";
+import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
+import Receiver from "../../Wolfie2D/Events/Receiver";
 import Input from "../../Wolfie2D/Input/Input";
 import Scene from "../../Wolfie2D/Scene/Scene";
 import Viewport from "../../Wolfie2D/SceneGraph/Viewport";
@@ -23,6 +26,9 @@ export default class DialogueController implements Updateable {
     
     protected scene: Scene;
     protected viewport: Viewport;
+        
+    protected reciever: Receiver;
+    protected emitter: Emitter;
     
     private player: PlayerActor;
     private handleDialogueCompleteAction: (option: DialogueInteraction) => void;
@@ -63,6 +69,9 @@ export default class DialogueController implements Updateable {
         this.handleDialogueChoiceAction = handleDialogueChoiceAction;
 
         this.confirm = options?.uiActions?.confirm ?? (() => Input.isJustPressed(PlayerInput.INTERACT));
+        
+        this.reciever = new Receiver();
+        this.emitter = new Emitter();
 
         this.dialogueScreen = new DialogueScreen(
             this.dialogueLayerName,
@@ -110,6 +119,10 @@ export default class DialogueController implements Updateable {
         if (!this.activeDialogue) {
             return;
         }
+    
+        if (!this.textDisplay.isTyping()) {
+            this.stopDialogueSpeakingSFX();
+        }
 
         if (this.dialogueChoiceActive) {
             this.textDisplay.update(deltaT);
@@ -127,6 +140,7 @@ export default class DialogueController implements Updateable {
     
         if (this.textDisplay.isTyping()) {
             this.textDisplay.revealCurrentLine();
+            this.stopDialogueSpeakingSFX();
             return;
         }
 
@@ -146,6 +160,8 @@ export default class DialogueController implements Updateable {
         this.textDisplay.showLine(
             this.activeDialogue.lines[this.currentDialogueLine]
         );
+        this.playDialogueNextSFX();
+        this.playDialogueSpeakingSFX();
     }
 
     public startDialogue(dialogue: DialogueInteraction, speakerName?: string): void {
@@ -173,6 +189,8 @@ export default class DialogueController implements Updateable {
         if (this.cutsceneMode) {
             this.cutsceneBackgroundTintOverlay.show();
         }
+
+        this.playDialogueSpeakingSFX();
         this.isActive = true;
     }
 
@@ -212,6 +230,8 @@ export default class DialogueController implements Updateable {
     
     protected endDialogue(): void {
         this.isActive = false;
+        this.stopDialogueSpeakingSFX();
+
         this.cutsceneBackgroundTintOverlay.hide();
         const dialogue = this.activeDialogue;
         const callbackHandledByReadCompletion = !!dialogue
@@ -244,7 +264,23 @@ export default class DialogueController implements Updateable {
         }
     }
 
-    public playDialogueSFX(): void {
-        return; // Placeholder for now, can be used for dialogue-specific sound effects in the future
+    private playDialogueSpeakingSFX(): void {
+        this.emitter.fireEvent(GameEventType.PLAY_SFX, {
+            key: this.sceneAssets.sounds.dialogueSpeakingSFX.key,
+            loop: true,
+            holdReference: true
+        });
+    }
+
+    private stopDialogueSpeakingSFX(): void {
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: this.sceneAssets.sounds.dialogueSpeakingSFX.key });
+    }
+
+    private playDialogueNextSFX(): void {
+        this.emitter.fireEvent(GameEventType.PLAY_SFX, {
+            key: this.sceneAssets.sounds.dialogueNextSFX.key,
+            loop: false,
+            holdReference: false
+        });
     }
 }

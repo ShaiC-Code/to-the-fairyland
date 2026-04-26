@@ -34,22 +34,17 @@ export default class WeatherController implements Updateable {
     protected reciever: Receiver;
     protected emitter: Emitter;
 
+    private currentWeather: WeatherType = WeatherType.NONE;
     private weatherParticles: Sprite[] = [];
     private weatherActive = false;
     private weatherAlpha = 0;
     private weatherFadeInSpeed = 0.5;
     private weatherLayerDepth = 50;
 
-    private weatherAmbienceLoopsStarted = false;
-    private weatherAmbienceMode: "inside" | "outside" | null = null;
-    private weatherIndoors: boolean = false;
-
     private weatherTintOverlay!: TintEffectOverlay;
 
-    private readonly weatherAmbienceInsideChannel: AudioChannelType = AudioChannelType.CUSTOM_1;
-    private readonly weatherAmbienceOutsideChannel: AudioChannelType = AudioChannelType.CUSTOM_2;
+    private readonly weatherAmbienceChannel: AudioChannelType = AudioChannelType.CUSTOM_1;
     private readonly weatherAmbienceFadeSeconds = 0.5;
-    private readonly weatherAmbienceInitialFadeSeconds = 1.0;
     
     private readonly weatherTintLayerName = "weatherTintLayer";
     private readonly weatherLayerName = "weather";
@@ -86,99 +81,40 @@ export default class WeatherController implements Updateable {
                 particle.alpha = this.weatherAlpha;
             }
         }
-
-        this.syncWeatherAmbience();
     }
 
-    public setWeatherIndoors(indoors: boolean): void {
-        this.weatherIndoors = indoors;
-        this.syncWeatherAmbience();
-    }
-
-    public startWeatherAmbienceLoops(): void {
-        if (this.weatherAmbienceLoopsStarted) {
+    private playWeatherAmbience(): void {
+        if (this.currentWeather === WeatherType.NONE) {
             return;
         }
-        this.weatherAmbienceLoopsStarted = true;
 
-        if (this.weatherIndoors) {
-            this.emitter.fireEvent(GameEventType.UNMUTE_CHANNEL, {channel: this.weatherAmbienceInsideChannel});
-            this.emitter.fireEvent(GameEventType.MUTE_CHANNEL, {channel: this.weatherAmbienceOutsideChannel});
-        } else {
-            this.emitter.fireEvent(GameEventType.MUTE_CHANNEL, {channel: this.weatherAmbienceInsideChannel});
-            this.emitter.fireEvent(GameEventType.UNMUTE_CHANNEL, {channel: this.weatherAmbienceOutsideChannel});
-        }
-
-        // Start weather ambience stems once and keep them running across mapped scenes.
-        this.emitter.fireEvent(GameEventType.PLAY_SFX, {
-            key: this.sceneAssets.sounds.weatherSnowInsideSFX.key,
+        this.emitter.fireEvent(GameEventType.PLAY_SOUND, {
+            key: this.getWeatherAmbianceKey(this.currentWeather),
             loop: true,
             holdReference: true,
-            channel: this.weatherAmbienceInsideChannel,
-            fadeInSeconds: this.weatherAmbienceInitialFadeSeconds
+            channel: this.weatherAmbienceChannel,
+            fadeInSeconds: this.weatherAmbienceFadeSeconds
         });
-
-        this.emitter.fireEvent(GameEventType.PLAY_SFX, {
-            key: this.sceneAssets.sounds.weatherSnowOutsideSFX.key,
-            loop: true,
-            holdReference: true,
-            channel: this.weatherAmbienceOutsideChannel,
-            fadeInSeconds: this.weatherAmbienceInitialFadeSeconds
-        });
+        
     }
 
-    protected syncWeatherAmbience(): void {
-        if (!this.weatherActive) {
-            this.muteWeatherAmbience(this.weatherAmbienceFadeSeconds);
-            return;
-        }
-
-        const fadeSeconds = this.weatherAmbienceMode === null
-            ? this.weatherAmbienceInitialFadeSeconds
-            : this.weatherAmbienceFadeSeconds;
-
-        this.setWeatherAmbience(this.weatherIndoors, fadeSeconds);
+    private stopWeatherAmbience(): void {
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: this.getWeatherAmbianceKey(this.currentWeather)});
     }
+
     
-    public setWeatherAmbience(indoor: boolean, fadeSeconds: number = 0.35): void {
-        const nextMode: "inside" | "outside" = indoor ? "inside" : "outside";
-        if (this.weatherAmbienceMode === nextMode) {
-            return;
-        }
-
-        this.weatherAmbienceMode = nextMode;
-
-        const insideEvent = {
-            channel: this.weatherAmbienceInsideChannel,
-            fadeSeconds
-        };
-        const outsideEvent = {
-            channel: this.weatherAmbienceOutsideChannel,
-            fadeSeconds
-        };
-
-        if (indoor) {
-            this.emitter.fireEvent(GameEventType.UNMUTE_CHANNEL, insideEvent);
-            this.emitter.fireEvent(GameEventType.MUTE_CHANNEL, outsideEvent);
-        } else {
-            this.emitter.fireEvent(GameEventType.MUTE_CHANNEL, insideEvent);
-            this.emitter.fireEvent(GameEventType.UNMUTE_CHANNEL, outsideEvent);
-        }
-    }
-    
-    public muteWeatherAmbience(fadeSeconds: number = 0): void {
-        this.weatherAmbienceMode = null;
-        this.emitter.fireEvent(GameEventType.MUTE_CHANNEL, {
-            channel: this.weatherAmbienceInsideChannel,
-            fadeSeconds
-        });
-        this.emitter.fireEvent(GameEventType.MUTE_CHANNEL, {
-            channel: this.weatherAmbienceOutsideChannel,
-            fadeSeconds
-        });
+    public muteWeatherAmbience(): void {
+        this.stopWeatherAmbience();
     }
 
     public setWeather(weather: WeatherType, layerDepth: number = this.weatherLayerDepth): void {
+        if (weather === this.currentWeather) {
+            return;
+        }
+        this.stopWeatherAmbience();
+
+        this.currentWeather = weather;
+        this.playWeatherAmbience();
         // const color = this.getWeatherTintColor(weather);
         // if (color) {
         //     this.weatherTintOverlay.setOverlayColor(color);
@@ -192,7 +128,6 @@ export default class WeatherController implements Updateable {
                 particle.visible = false;
             }
             this.weatherActive = false;
-            this.muteWeatherAmbience(this.weatherAmbienceFadeSeconds);
             return;
         }
     
@@ -222,7 +157,6 @@ export default class WeatherController implements Updateable {
         }
     
         this.weatherActive = true;
-        this.syncWeatherAmbience();
     }
     
     private ensureSnowPool(preset: WeatherParticlePreset): void {  
@@ -252,6 +186,15 @@ export default class WeatherController implements Updateable {
         case WeatherType.SNOW: return new Color(255, 255, 255, 0.1);
         case WeatherType.SNOWSTORM: return new Color(255, 255, 255, 0.25);
         default: return null;
+        }
+    }
+
+    private getWeatherAmbianceKey(weather: WeatherType): string {
+        switch (weather) {
+        case WeatherType.NONE: return "";
+        case WeatherType.SNOW: return this.sceneAssets.sounds.weatherSnowSFX.key;
+        case WeatherType.SNOWSTORM: return this.sceneAssets.sounds.weatherSnowStormSFX.key;
+        default: return "";
         }
     }
     
