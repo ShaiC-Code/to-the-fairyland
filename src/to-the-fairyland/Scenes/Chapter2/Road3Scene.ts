@@ -3,6 +3,7 @@ import RoadSceneBase from "./RoadSceneBase";
 import Road2Scene from "./Road2Scene";
 import CliffScene from "./CliffScene";
 import { dialogue } from "../../GameSystems/InteractionSystem/InteractionDatabase";
+import { GameEventType } from "../../../Wolfie2D/Events/GameEventType";
 
 
 export default class Road3Scene extends RoadSceneBase {
@@ -62,7 +63,8 @@ export default class Road3Scene extends RoadSceneBase {
     
     private triggerVillageShake(): void {
         this.storyManager.chapter2.markVillageShakeStarted();
-    
+
+        this.emitter.fireEvent(GameEventType.PLAY_SFX, { key: this.assets.sounds.somethingBigSFX.key });
         this.cameraController.shake(2200, 40);
     
         this.startDialogue(dialogue(

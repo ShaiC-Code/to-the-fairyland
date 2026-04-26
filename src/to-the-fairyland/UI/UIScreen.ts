@@ -42,6 +42,7 @@ export default class UIScreen implements Updateable {
     protected layer: Layer;
     protected elements: Map<string, CanvasNode | undefined>;
     protected isOpen: boolean = false;
+    protected ignoreNextNavigationInput: boolean = false;
 
     protected onClickSFXKey?: string;
     protected onEnterSFXKey?: string;
@@ -109,6 +110,10 @@ export default class UIScreen implements Updateable {
         if (!this.isOpen) {
             return;
         }
+        if (this.ignoreNextNavigationInput) {
+            this.ignoreNextNavigationInput = false;
+            return;
+        }
         this.updateNavigation();
     }
     
@@ -116,6 +121,7 @@ export default class UIScreen implements Updateable {
         if (this.isOpen) return;
         this.playSFX(this.onShowSFXKey);
         this.isOpen = true;
+        this.ignoreNextNavigationInput = true;
 
         this.layer.setHidden(false);
         this.syncNavigationSelection();
@@ -125,6 +131,7 @@ export default class UIScreen implements Updateable {
         if (!this.isOpen) return;
         this.playSFX(this.onHideSFXKey);
         this.isOpen = false;
+        this.ignoreNextNavigationInput = false;
 
         this.layer.setHidden(true);
         this.clearNavigationSelection();

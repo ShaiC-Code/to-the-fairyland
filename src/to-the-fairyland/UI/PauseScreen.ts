@@ -5,10 +5,12 @@ import Color from "../../Wolfie2D/Utils/Color";
 import NullFunc from "../../Wolfie2D/DataTypes/Functions/NullFunc";
 
 export default class PauseScreen extends UIScreen {
+    private onControls: () => void;
     private onQuit: () => void;
 
-    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, onQuit: () => void, options?: UIScreenOptions) {
+    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, onControls: () => void, onQuit: () => void, options?: UIScreenOptions) {
         super(layerName, scene, getViewportCenter, getViewportHalfSize, options);
+        this.onControls = onControls;
         this.onQuit = onQuit;
 
         this.initializeUI();
@@ -29,7 +31,8 @@ export default class PauseScreen extends UIScreen {
             resume: new Vec2(screenCenter.x, listTop),
             save: new Vec2(screenCenter.x, listTop + verticalOffset),
             volume: new Vec2(screenCenter.x, listTop + verticalOffset * 2),
-            quit: new Vec2(screenCenter.x, listTop + verticalOffset * 3)
+            controls: new Vec2(screenCenter.x, listTop + verticalOffset * 3),
+            quit: new Vec2(screenCenter.x, listTop + verticalOffset * 4)
         };
 
 
@@ -45,6 +48,9 @@ export default class PauseScreen extends UIScreen {
         // Add Volume button
         this.addHoverButton("volumeBtn", menuButtonPos.volume, menuButtonSize, "VOLUME", {onClick: NullFunc});
 
+        // Add Volume button
+        this.addHoverButton("controlsBtn", menuButtonPos.controls, menuButtonSize, "CONTROLS", {onClick: () => this.onControls()});
+
         // Add Quit button
         this.addHoverButton("quitBtn", menuButtonPos.quit, menuButtonSize, "BACK TO MENU", {onClick: () => this.onQuit()});
 
@@ -52,6 +58,7 @@ export default class PauseScreen extends UIScreen {
             "resumeBtn",
             "saveBtn",
             "volumeBtn",
+            "controlsBtn",
             "quitBtn"
         ]);
 

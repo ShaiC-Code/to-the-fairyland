@@ -89,7 +89,7 @@ export default class ShelterScene extends MappedAdventureChapter1Scene {
                     fadeInMs: 300
                 }
             );
-            this.emitter.fireEvent(GameEventType.PLAY_SOUND, {key: this.assets.sounds.woodenDoorSFX.key, loop: false, holdReference: false});
+            this.emitter.fireEvent(GameEventType.PLAY_SFX, {key: this.assets.sounds.woodenDoorSFX.key, loop: false, holdReference: false});
         }
     }
 

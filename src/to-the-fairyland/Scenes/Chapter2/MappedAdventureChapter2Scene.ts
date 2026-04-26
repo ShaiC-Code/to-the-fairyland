@@ -24,7 +24,8 @@ export default abstract class MappedAdventureChapter2Scene extends MappedAdventu
         sounds: {
             walkingSnowSFX: { key: "walking-snow", path: "/assets/sounds/walking-snow.ogg" },
             walkingWoodSFX: { key: "walking-wood", path: "/assets/sounds/walking-wood.ogg" },
-            walkingSnowBushSFX: { key: "walking-snow-bush", path: "/assets/sounds/walking-snow-bush.ogg" }
+            walkingSnowBushSFX: { key: "walking-snow-bush", path: "/assets/sounds/walking-snow-bush.ogg" },
+            somethingBigSFX: { key: "something-big", path: "/assets/sounds/something-big.ogg" }
         }
     };
 
@@ -76,6 +77,7 @@ export default abstract class MappedAdventureChapter2Scene extends MappedAdventu
     
         if (!alreadyHasTooth) {
             inventory.add(new FreshPrettyTooth());
+            this.playItemReceivedSFX();
         }
     
         this.storyManager.chapter2.markVillageItemReceived(Chapter2VillageItem.FRESH_PRETTY_TOOTH);
@@ -88,6 +90,7 @@ export default abstract class MappedAdventureChapter2Scene extends MappedAdventu
     
         if (!alreadyHasFlowerRing) {
             inventory.add(new FlowerRing());
+            this.playItemReceivedSFX();
         }
     
         this.storyManager.chapter2.markVillageItemReceived(Chapter2VillageItem.FLOWER_RING);
@@ -99,6 +102,7 @@ export default abstract class MappedAdventureChapter2Scene extends MappedAdventu
 
         if (!alreadyHasLoftyBread) {
             inventory.add(new LoftyBread());
+            this.playItemReceivedSFX();
         }
 
         this.storyManager.chapter2.markVillageItemReceived(Chapter2VillageItem.LOFTY_BREAD);
@@ -110,6 +114,7 @@ export default abstract class MappedAdventureChapter2Scene extends MappedAdventu
     
         if (!alreadyHasSleepingBag) {
             inventory.add(new SleepingBag());
+            this.playItemReceivedSFX();
         }
     
         this.storyManager.chapter2.markVillageItemReceived(Chapter2VillageItem.SLEEPING_BAG);
@@ -121,6 +126,7 @@ export default abstract class MappedAdventureChapter2Scene extends MappedAdventu
     
         if (!alreadyHasObsidianBoots) {
             inventory.add(new ObsidianBoots());
+            this.playItemReceivedSFX();
         }
     
         this.storyManager.chapter2.markVillageItemReceived(Chapter2VillageItem.OBSIDIAN_BOOTS);
