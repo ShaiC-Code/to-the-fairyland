@@ -7,6 +7,7 @@ import MappedAdventureChapter2Scene from "./MappedAdventureChapter2Scene";
 import RoadScene from "./RoadScene";
 import { dialogue, getNpcInteraction } from "../../GameSystems/InteractionSystem/InteractionDatabase";
 import ScrollingPatternWorldLayer from "../../Overlays/ScrollingPatternWorldLayer";
+import LycanChaseBehavior from "../../AI/NPC/NPCBehavior/LycanChaseBehavior";
 
 
 type NpcRuntime = {
@@ -17,7 +18,17 @@ type NpcRuntime = {
 export default class VillageScene extends MappedAdventureChapter2Scene {
     private npcs: NpcRuntime[] = [];
     private lycans: NPCActor[] = [];
+    
     private readonly lycanDetectionRadius = 320;
+    private readonly lycanRepathInterval = 0.25;
+    private readonly lycanFeetOffsetY = 15;
+
+    private readonly lycanMoveDuration = 0.16;
+    private readonly lycanBoostMoveDuration = 0.08;
+    private readonly lycanBoostChance = 0.15;
+    private readonly lycanBoostMinSteps = 2;
+    private readonly lycanBoostMaxSteps = 5;
+    private readonly lycanBoostLocksDirection = true;
     
     protected readonly tilemap = {
         key: "village",
@@ -184,7 +195,23 @@ export default class VillageScene extends MappedAdventureChapter2Scene {
     
         this.storyManager.chapter2.markEscapeLycansStarted();
     
-        // Later: switch Lycan AI to chase behavior here.
+        for (const lycan of this.lycans) {
+            lycan.addAI(LycanChaseBehavior, {
+                player: this.player,
+                ground: this.ground,
+                collision: this.collision,
+                startTile: lycan.getSortTile(),
+                moveDuration: this.lycanMoveDuration,
+                repathInterval: this.lycanRepathInterval,
+                feetOffsetY: this.lycanFeetOffsetY,
+
+                boostMoveDuration: this.lycanBoostMoveDuration,
+                boostChance: this.lycanBoostChance,
+                boostMinSteps: this.lycanBoostMinSteps,
+                boostMaxSteps: this.lycanBoostMaxSteps,
+                boostLocksDirection: this.lycanBoostLocksDirection
+            });
+        }
     }
     
     private getIdleAnimationForFacing(facing: string | undefined): string {

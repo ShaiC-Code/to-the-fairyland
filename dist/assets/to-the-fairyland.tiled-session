@@ -1,14 +1,14 @@
 {
-    "activeFile": "tilemaps/Chapter4/CliffBottom.json",
+    "activeFile": "tilemaps/Chapter2/Village.json",
     "expandedProjectPaths": [
-        "spritesheets",
-        ".",
         "tilemaps/Chapter5",
-        "tilemaps/Chapter2",
-        "tilemaps/Chapter1",
-        "tilemaps/Chapter4",
+        "spritesheets",
         "tilemaps/Chapter6",
-        "tilemaps"
+        "tilemaps/Chapter4",
+        "tilemaps",
+        ".",
+        "tilemaps/Chapter2",
+        "tilemaps/Chapter1"
     ],
     "fileStates": {
         "": {
@@ -136,15 +136,15 @@
             "expandedObjectLayers": [
                 5
             ],
-            "scale": 0.5,
-            "selectedLayer": 6,
+            "scale": 1,
+            "selectedLayer": 7,
             "viewCenter": {
-                "x": 1089,
-                "y": 1054
+                "x": 1074,
+                "y": 1366.5
             }
         },
         "tilemaps/Chapter2/Village.json#Village": {
-            "scaleInDock": 0.33,
+            "scaleInDock": 0.5,
             "scaleInEditor": 1
         },
         "tilemaps/Chapter4/CliffBottom.json": {
@@ -222,23 +222,17 @@
     "map.tileWidth": 64,
     "map.width": 60,
     "openFiles": [
-        "tilemaps/Chapter2/Village.json",
-        "tilemaps/Chapter2/Road.json",
-        "tilemaps/Chapter2/Road1.json",
-        "tilemaps/Chapter2/Road2.json",
-        "tilemaps/Chapter2/Road3.json",
-        "tilemaps/Chapter2/Cliff.json",
-        "tilemaps/Chapter4/CliffBottom.json"
+        "tilemaps/Chapter2/Village.json"
     ],
     "project": "to-the-fairyland.tiled-project",
     "recentFiles": [
+        "tilemaps/Chapter2/Village.json",
         "tilemaps/Chapter2/Road.json",
         "tilemaps/Chapter2/Road1.json",
         "tilemaps/Chapter2/Road2.json",
         "tilemaps/Chapter2/Road3.json",
         "tilemaps/Chapter2/Cliff.json",
         "tilemaps/Chapter4/CliffBottom.json",
-        "tilemaps/Chapter2/Village.json",
         "tilemaps/Chapter4/DeeperForest.json",
         "tilemaps/Chapter4/GreatTree.json",
         "tilemaps/Chapter4/TreeInner.json",
