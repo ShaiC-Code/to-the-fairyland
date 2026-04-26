@@ -16,6 +16,8 @@ type NpcRuntime = {
 
 export default class VillageScene extends MappedAdventureChapter2Scene {
     private npcs: NpcRuntime[] = [];
+    private lycans: NPCActor[] = [];
+    private readonly lycanDetectionRadius = 320;
     
     protected readonly tilemap = {
         key: "village",
@@ -72,7 +74,7 @@ export default class VillageScene extends MappedAdventureChapter2Scene {
     
     public override updateScene(deltaT: number): void {
         super.updateScene(deltaT);
-    
+        this.updateLycanDetection();
         if (this.bloodMistEffectLayer) {
             this.bloodMistEffectLayer.update(deltaT);
         }
@@ -80,6 +82,7 @@ export default class VillageScene extends MappedAdventureChapter2Scene {
 
     protected override spawnMapObjects(tilemapData: TiledTilemapData): void {
         this.npcs = [];
+        this.lycans = [];
 
         if (this.storyManager.chapter2.needsToCheckVillage()) {
             this.spawnCheckVillageLycans(tilemapData);
@@ -150,6 +153,38 @@ export default class VillageScene extends MappedAdventureChapter2Scene {
         lycan.animation.play(this.getIdleAnimationForFacing(facing), true);
     
         lycan.addAI(IdleBehavior, {});
+        this.lycans.push(lycan);
+    }
+
+    private updateLycanDetection(): void {
+        if (
+            !this.storyManager.chapter2.needsLycanDetection() ||
+            this.worldPaused ||
+            this.dialogueController.isActive
+        ) {
+            return;
+        }
+    
+        const detectionRadiusSq = this.lycanDetectionRadius * this.lycanDetectionRadius;
+    
+        const detectedLycan = this.lycans.find(lycan =>
+            lycan.position.distanceSqTo(this.player.position) <= detectionRadiusSq
+        );
+    
+        if (!detectedLycan) {
+            return;
+        }
+    
+        this.storyManager.chapter2.markDetectedByLycans();
+        this.startLycanChase(detectedLycan);
+    }
+
+    private startLycanChase(detectedLycan: NPCActor): void {
+        console.log("Detected by Lycan:", detectedLycan.id);
+    
+        this.storyManager.chapter2.markEscapeLycansStarted();
+    
+        // Later: switch Lycan AI to chase behavior here.
     }
     
     private getIdleAnimationForFacing(facing: string | undefined): string {
