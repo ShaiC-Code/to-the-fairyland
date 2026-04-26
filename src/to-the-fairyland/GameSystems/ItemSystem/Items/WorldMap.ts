@@ -14,7 +14,8 @@ export default class WorldMap extends InventoryItem {
         context.showDialogue(
             dialogue([
                 "A weathered map marked with three monster kingdoms.",
-                "One note is circled in red ink: 'TheFairyLand.'"
+                "One note is circled in red ink.",
+                "<red>'TheFairyLand.'"
             ])
         );
     }

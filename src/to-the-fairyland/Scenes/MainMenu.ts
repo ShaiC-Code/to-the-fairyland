@@ -18,12 +18,9 @@ import { PlayerInput } from "../AI/Player/PlayerController";
 import { UIScreenActionBindings } from "../UI/UIScreen";
 import RoadScene from "./Chapter2/RoadScene";
 import SleepingBag from "../GameSystems/ItemSystem/Items/SleepingBag";
-import {
-    Chapter2MainQuestStep,
-} from "../GameSystems/StorySystem/StoryState";
+import { Chapter2MainQuestStep } from "../GameSystems/StorySystem/StoryState";
+import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 import { TimeOfDay } from "../GameSystems/WorldSystem/WorldState";
-
-
 
 type AssetRef = Readonly<{
     key: string;
@@ -40,8 +37,13 @@ export default class MainMenu extends Scene {
     private testMenu!: TestScreen;
 
     protected readonly mainScreenImage: AssetRef = {
-    key: "main-screen-image",
-    path: "/assets/images/main-screen-image.png"
+        key: "main-screen-image",
+        path: "/assets/images/main-screen-image.png"
+    };
+
+    protected readonly mainScreenMusic: AssetRef = {
+        key: "main-screen-music",
+        path: "/assets/sounds/main-screen-music.ogg"
     };
 
     protected readonly uiHover: AssetRef = {
@@ -56,6 +58,7 @@ export default class MainMenu extends Scene {
 
     public loadScene(){
         this.load.image(this.mainScreenImage.key, this.mainScreenImage.path);
+        this.load.audio(this.mainScreenMusic.key, this.mainScreenMusic.path);
 
         if (!this.resourceManager.getAudio(this.uiHover.key)) {
             this.load.audio(this.uiHover.key, this.uiHover.path);
@@ -72,6 +75,10 @@ export default class MainMenu extends Scene {
         this.add.registerCustomCanvasNode(CustomUIElementType.UI_IMAGE, (options?: Record<string, any>) => {
             return new UIImage(options!.imageKey);
         });
+    }
+
+    public unloadScene(): void {
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: this.mainScreenMusic.key });
     }
 
     public startScene(){
@@ -122,6 +129,8 @@ export default class MainMenu extends Scene {
             () => this.viewport.getHalfSize(),
             { onEnterSFXKey: this.uiHover.key, onClickSFXKey: this.uiClick.key, uiActions }
         );
+
+        this.emitter.fireEvent(GameEventType.PLAY_MUSIC, { key: this.mainScreenMusic.key, loop: true, holdReference: true });
 
         this.receiver.subscribe("openLevelMenu");
         this.receiver.subscribe("openControlsMenu");

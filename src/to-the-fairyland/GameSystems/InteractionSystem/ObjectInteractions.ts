@@ -26,7 +26,10 @@ const STATIC_OBJECT_INTERACTIONS: Readonly<Record<string, InteractionData>> = {
             options: [
                 choiceOption(
                     "Yes",
-                    dialogue(["<yellow>[You received Frozen Berries]"]),
+                    dialogue([
+                        "<yellow>[You received Frozen Berries]",
+                        "*You can Press [C] to open your inventory*"
+                    ]),
                     { choiceAction: DialogueChoiceActions.COLLECT_FROZEN_BERRIES }
                 ),
                 choiceOption(
@@ -55,7 +58,8 @@ const STATIC_OBJECT_INTERACTIONS: Readonly<Record<string, InteractionData>> = {
                     "Yes",
                     dialogue([
                         "<yellow>[You obtained the World Map]",
-                        "Whatever happened here, their final hope now rests with you."
+                        "Whatever happened here, their final hope now rests with you.",
+                        "You consider resting more before what ought to be a long journey."
                     ]),
                     { choiceAction: DialogueChoiceActions.PICKUP_MAP }
                 ),
@@ -98,7 +102,10 @@ export function getBedDialogue(step: Chapter1MainQuestStep): DialogueInteraction
                 options: [
                     choiceOption(
                         "Yes",
-                        dialogue(["You rest."]),
+                        dialogue([
+                            "You had terrible dreams.",
+                            "<red>You dreamt you were being mauled by wolves.",
+                        ]),
                         { choiceAction: DialogueChoiceActions.SLEEP }
                     ),
                     choiceOption(
@@ -116,7 +123,8 @@ export function getBedDialogue(step: Chapter1MainQuestStep): DialogueInteraction
         return dialogue(
             [
                 "...",
-                "No time for rest."
+                "Time is pressing.",
+                "You decide rest can be had later."
             ],
             { completeAction: DialogueCompleteActions.GOTO_CHAPTER2 }
         );
@@ -146,7 +154,10 @@ export function getPotDialogue(step: Chapter1MainQuestStep): DialogueInteraction
                 options: [
                     choiceOption(
                         "Yes",
-                        dialogue(["<yellow>[You obtained Cooked Berries]"]),
+                        dialogue([
+                            "<yellow>[You obtained Cooked Berries]",
+                            "*You can use items by interacting with them in your inventory*"
+                        ]),
                         { choiceAction: DialogueChoiceActions.COOK_FROZEN_BERRIES }
                     ),
                     choiceOption(
