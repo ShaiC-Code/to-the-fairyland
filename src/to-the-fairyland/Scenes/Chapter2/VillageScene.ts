@@ -6,8 +6,7 @@ import { AssetBundle } from "../MappedAdventureScene";
 import MappedAdventureChapter2Scene from "./MappedAdventureChapter2Scene";
 import RoadScene from "./RoadScene";
 import { dialogue, getNpcInteraction } from "../../GameSystems/InteractionSystem/InteractionDatabase";
-import TintEffectOverlay from "../../Overlays/TintEffectOverlay";
-import Color from "../../../Wolfie2D/Utils/Color";
+import ScrollingPatternWorldLayer from "../../Overlays/ScrollingPatternWorldLayer";
 
 
 type NpcRuntime = {
@@ -17,7 +16,7 @@ type NpcRuntime = {
 
 export default class VillageScene extends MappedAdventureChapter2Scene {
     private npcs: NpcRuntime[] = [];
-
+    
     protected readonly tilemap = {
         key: "village",
         path: "/assets/tilemaps/Chapter2/Village.json"
@@ -35,12 +34,15 @@ export default class VillageScene extends MappedAdventureChapter2Scene {
             Lucy: { key: "Lucy", path: "/assets/spritesheets/Lucy.json" },
             Lycan: { key: "Lycan", path: "/assets/spritesheets/Lycan.json" }
         },
-        sprites: {},
+        sprites: {
+            bloodMist: { key: "bloodMist", path: "/assets/sprites/overlays/bloodmist.png" }
+        },
         sounds: {}
     };
-
+ 
     protected readonly bloodMistEffectLayerName = "bloodMistTintLayer";
-    protected bloodMistEffectLayer!: TintEffectOverlay;
+    protected bloodMistEffectLayer!: ScrollingPatternWorldLayer;
+
 
     protected combinedAssetBundles(): AssetBundle {
         return this.mergeAssetBundles(super.combinedAssetBundles(), VillageScene.assetBundle);
@@ -48,14 +50,33 @@ export default class VillageScene extends MappedAdventureChapter2Scene {
 
     public override startScene(): void {
         super.startScene();
-        this.bloodMistEffectLayer = new TintEffectOverlay(
+    
+        this.bloodMistEffectLayer = new ScrollingPatternWorldLayer(
             this.bloodMistEffectLayerName,
             this,
-            () => this.viewport.getCenter(),
-            () => this.viewport.getHalfSize(),
-            new Color(255, 0, 0, 0.25)
+            this.viewport,
+            {
+                imageKey: this.assets.sprites.bloodMist.key,
+                depth: 50,
+                speed: 20,
+                direction: new Vec2(-1, 0.33),
+                scale: 1.0,
+                alpha: 0.4
+            }
         );
+        
+        if (this.storyManager.chapter2.needsToCheckVillage()) {
+            this.bloodMistEffectLayer.show();
+        }
     }
+    
+    public override updateScene(deltaT: number): void {
+        super.updateScene(deltaT);
+    
+        if (this.bloodMistEffectLayer) {
+            this.bloodMistEffectLayer.update(deltaT);
+        }
+    }    
 
     protected override spawnMapObjects(tilemapData: TiledTilemapData): void {
         this.npcs = [];
