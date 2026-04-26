@@ -78,5 +78,9 @@ export default class Road3Scene extends RoadSceneBase {
         ));
     }
     
+    protected override getLycanChaseSpawnPrefix(): string | null {
+        if (this.spawnName === "RoadStart") return "ChaseFromRoad2";
+        return null;
+    }    
     
 }

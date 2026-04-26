@@ -105,6 +105,7 @@ export default class Chapter2StoryManager {
         return currentIndex !== -1 && targetIndex !== -1 && currentIndex >= targetIndex;
     }
 
+
     private advanceToStep(step: Chapter2MainQuestStep): void {
         if (this.hasReachedStep(step)) {
             return;
@@ -131,6 +132,10 @@ export default class Chapter2StoryManager {
     
     public needsToEscapeLycans(): boolean {
         return this.getState().mainQuestStep === Chapter2MainQuestStep.ESCAPE_LYCANS;
+    }
+    
+    public hasReachedCheckVillage(): boolean {
+        return this.hasReachedStep(Chapter2MainQuestStep.CHECK_VILLAGE);
     }
     
 }
