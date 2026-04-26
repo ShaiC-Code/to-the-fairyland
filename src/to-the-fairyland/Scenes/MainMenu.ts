@@ -20,8 +20,7 @@ import RoadScene from "./Chapter2/RoadScene";
 import SleepingBag from "../GameSystems/ItemSystem/Items/SleepingBag";
 import { Chapter2MainQuestStep } from "../GameSystems/StorySystem/StoryState";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
-
-
+import { TimeOfDay } from "../GameSystems/WorldSystem/WorldState";
 
 type AssetRef = Readonly<{
     key: string;
@@ -141,7 +140,7 @@ export default class MainMenu extends Scene {
         this.receiver.subscribe("level1");
         this.receiver.subscribe("level2");
         this.receiver.subscribe("level3");
-
+        this.receiver.subscribe("level4");
     }
 
     public updateScene(deltaT: number){
@@ -242,6 +241,32 @@ export default class MainMenu extends Scene {
                         fadeInMs: 500
                     }
                 );
+                break;
+            }
+            case "level4": {
+                this.gameSessionManager.startNewChapter2Game();
+            
+                const chapter2 = this.gameSessionManager.getStoryState().chapter2;
+                if (!chapter2) {
+                    throw new Error("Chapter 2 story state was not initialized.");
+                }
+            
+                chapter2.mainQuestStep = Chapter2MainQuestStep.CHECK_VILLAGE;
+            
+                this.gameSessionManager.getWorldState().timeOfDay = TimeOfDay.NIGHT;
+            
+                this.sceneManager.changeToScene(
+                    VillageScene,
+                    { spawnName: "RoadEnd" },
+                    undefined,
+                    {
+                        showLoadingOverlay: true,
+                        useFadeTransition: true,
+                        fadeOutMs: 500,
+                        fadeInMs: 500
+                    }
+                );
+            
                 break;
             }
             

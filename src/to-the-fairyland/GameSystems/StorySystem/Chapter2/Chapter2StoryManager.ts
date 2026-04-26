@@ -113,5 +113,24 @@ export default class Chapter2StoryManager {
         this.getState().mainQuestStep = step;
     }
     
+    public markDetectedByLycans(): void {
+        this.advanceToStep(Chapter2MainQuestStep.DETECTED_BY_LYCANS);
+    }
+    
+    public needsLycanDetection(): boolean {
+        return this.getState().mainQuestStep === Chapter2MainQuestStep.CHECK_VILLAGE;
+    }
+    
+    public wasDetectedByLycans(): boolean {
+        return this.getState().mainQuestStep === Chapter2MainQuestStep.DETECTED_BY_LYCANS;
+    }
+    
+    public markEscapeLycansStarted(): void {
+        this.advanceToStep(Chapter2MainQuestStep.ESCAPE_LYCANS);
+    }
+    
+    public needsToEscapeLycans(): boolean {
+        return this.getState().mainQuestStep === Chapter2MainQuestStep.ESCAPE_LYCANS;
+    }
     
 }
