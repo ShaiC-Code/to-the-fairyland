@@ -27,6 +27,7 @@ import CameraController from "../GameSystems/CameraController";
 import { ItemUseAction, ItemUseActions, ItemUseResult } from "../GameSystems/ItemSystem/ItemUseActions";
 import { PlayerStateType } from "../AI/Player/PlayerStates/PlayerBehaviorState";
 import { WeatherType } from "../GameSystems/WorldSystem/WorldState";
+import PauseControlsScreen from "../UI/PauseControlsScreen";
 
 
 export type AssetRef = Readonly<{
@@ -74,6 +75,9 @@ export default abstract class MappedAdventureScene extends Scene {
             uiClickSFX: { key: "ui-click", path: "/assets/sounds/ui-click.ogg" },
             menuOpenSFX: { key: "menu-open", path: "/assets/sounds/menu-open.ogg" },
             menuCloseSFX: { key: "menu-close", path: "/assets/sounds/menu-close.ogg" },
+            dialogueSpeakingSFX: { key: "dialogue-speaking-male", path: "/assets/sounds/dialogue-speaking-male.ogg" },
+            dialogueNextSFX: { key: "dialogue-next", path: "/assets/sounds/dialogue-next.ogg" },
+            itemReceivedSFX: { key: "item-received", path: "/assets/sounds/item-received.ogg" },
             walkingDirtSFX: { key: "walking-dirt", path: "/assets/sounds/walking-dirt.ogg" },
             woodenDoorSFX: { key: "door-wooden", path: "/assets/sounds/door-wooden.ogg" }
         }
@@ -109,6 +113,7 @@ export default abstract class MappedAdventureScene extends Scene {
     protected transitioning = false;
 
     protected pauseScreen!: PauseScreen;
+    protected pauseControlsScreen!: PauseControlsScreen;
     protected inventoryScreen!: InventoryScreen;
     protected worldPaused: boolean = false;
     
@@ -255,6 +260,7 @@ export default abstract class MappedAdventureScene extends Scene {
             this,
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize(),
+            () => { this.pauseScreen?.hide(); this.pauseControlsScreen?.show() },
             () => this.sceneManager.changeToScene(MainMenu),
             {
                 onEnterSFXKey: this.assets.sounds.uiHoverSFX.key,
@@ -263,6 +269,15 @@ export default abstract class MappedAdventureScene extends Scene {
                 onHideSFXKey: this.assets.sounds.menuCloseSFX.key,
                 uiActions
             }
+        );
+
+        this.pauseControlsScreen = new PauseControlsScreen(
+            "pauseControlsOverlay",
+            this,
+            () => this.viewport.getCenter(),
+            () => this.viewport.getHalfSize(),
+            () => { this.pauseControlsScreen?.hide(); this.pauseScreen?.show() },
+            { onEnterSFXKey: this.assets.sounds.uiHoverSFX.key, onClickSFXKey: this.assets.sounds.uiClickSFX.key, uiActions }
         );
 
         this.inventoryScreen = new InventoryScreen(
@@ -313,7 +328,7 @@ export default abstract class MappedAdventureScene extends Scene {
     }
 
     public override updateScene(deltaT: number): void {
-        const pauseOpen = this.pauseScreen.getIsOpen();
+        const pauseOpen = this.pauseScreen.getIsOpen() || this.pauseControlsScreen.getIsOpen();
         const inventoryOpen = this.inventoryScreen.getIsOpen();
         const dialogueOpen = this.dialogueController.isActive;
         const menuOpen = pauseOpen || inventoryOpen || dialogueOpen;
@@ -325,6 +340,7 @@ export default abstract class MappedAdventureScene extends Scene {
         if(!menuSafetyFlag && !dialogueOpen && Input.isKeyJustPressed("escape")) {
             if (pauseOpen) {
                 this.pauseScreen.hide();
+                this.pauseControlsScreen.hide();
             } else if(!inventoryOpen) {
                 this.pauseScreen.show();
             }
@@ -342,6 +358,7 @@ export default abstract class MappedAdventureScene extends Scene {
         }
 
         this.pauseScreen.update(deltaT);
+        this.pauseControlsScreen.update(deltaT);
         this.inventoryScreen.update(deltaT);
         
         this.cameraController.update(deltaT);
@@ -716,5 +733,7 @@ export default abstract class MappedAdventureScene extends Scene {
         ai.changeState(PlayerStateType.MOVING);
     }
     
-    
+    protected playItemReceivedSFX(): void {
+        this.emitter.fireEvent(GameEventType.PLAY_SFX, {key: this.assets.sounds.itemReceivedSFX.key, loop: false, holdReference: false});
+    }
 }
