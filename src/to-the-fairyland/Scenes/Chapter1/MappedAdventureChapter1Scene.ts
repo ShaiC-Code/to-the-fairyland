@@ -6,6 +6,7 @@ import CookedBerries from "../../GameSystems/ItemSystem/Items/CookedBerries";
 import WorldMap from "../../GameSystems/ItemSystem/Items/WorldMap";
 import { GameEventType } from "../../../Wolfie2D/Events/GameEventType";
 import VillageScene from "../Chapter2/VillageScene";
+import Timer from "../../../Wolfie2D/Timing/Timer";
 
 export default abstract class MappedAdventureChapter1Scene extends MappedAdventureScene {
     protected static readonly assetBundle: AssetBundle = {
@@ -66,6 +67,7 @@ export default abstract class MappedAdventureChapter1Scene extends MappedAdventu
 
         const berries = new FrozenBerries(1);
         const addedItem = inventory.add(berries);
+        this.playItemReceivedSFX();
 
         if (addedItem !== null) {
             this.storyManager.chapter1.markFoodFound();
@@ -83,6 +85,7 @@ export default abstract class MappedAdventureChapter1Scene extends MappedAdventu
         inventory.remove(frozenBerries.id);
         const berries = new CookedBerries(1);
         const addedItem = inventory.add(berries);
+        this.playItemReceivedSFX();
 
         if (addedItem !== null) {
             this.storyManager.chapter1.markFoodCooked();
@@ -99,6 +102,7 @@ export default abstract class MappedAdventureChapter1Scene extends MappedAdventu
 
         const map = new WorldMap();
         const addedItem = inventory.add(map);
+        this.playItemReceivedSFX();
 
         if (addedItem !== null) {
             this.storyManager.chapter1.markMapPickedUp();
