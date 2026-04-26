@@ -181,7 +181,8 @@ function getJInteraction(context: NpcInteractionContext): DialogueInteraction {
             "I have not been able to stop thinking about it.",
             "Here. Please take this flower ring.",
             "I hope it brings you some luck.",
-            "<yellow>[A flower ring is placed in your hand]"
+            "A flower ring is placed in your hand.",
+            "<yellow>[You receieved the Flower Ring]"
         ], { completeAction: DialogueCompleteActions.GIVE_FLOWER_RING });
 
     case Chapter2MainQuestStep.READY_TO_LEAVE_VILLAGE:
