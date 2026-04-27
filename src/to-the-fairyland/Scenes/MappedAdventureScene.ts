@@ -36,6 +36,7 @@ export type AssetRef = Readonly<{
 }>;
 
 type SceneEntranceData = {
+    cheatsEnabled?: boolean;
     spawnName?: string;
 };
 
@@ -108,6 +109,7 @@ export default abstract class MappedAdventureScene extends Scene {
     protected ground!: OrthogonalTilemap;
     protected collision!: OrthogonalTilemap;
     protected interactables: TiledObject[] = [];
+    protected cheatsEnabled: boolean = false;
     protected spawnName?: string;
     protected entrances: TiledObject[] = [];
     protected transitioning = false;
@@ -124,6 +126,7 @@ export default abstract class MappedAdventureScene extends Scene {
     
     // lets the scene receive data, ex: {spawnName: "Door1"}
     public override initScene(init: SceneEntranceData = {}): void {
+        this.cheatsEnabled = init?.cheatsEnabled ?? false;
         this.spawnName = init?.spawnName;
         this.assets = this.combinedAssetBundles();
     }

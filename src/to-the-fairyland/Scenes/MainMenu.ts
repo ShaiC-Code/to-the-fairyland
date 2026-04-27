@@ -36,6 +36,8 @@ export default class MainMenu extends Scene {
     private helpMenu!: HelpScreen;
     private testMenu!: TestScreen;
 
+    private cheatsEnabled = false;
+
     protected readonly mainScreenImage: AssetRef = {
         key: "main-screen-image",
         path: "/assets/images/main-screen-image.png"
@@ -136,6 +138,7 @@ export default class MainMenu extends Scene {
         this.receiver.subscribe("openControlsMenu");
         this.receiver.subscribe("openHelpMenu");
         this.receiver.subscribe("openTestMenu");
+        this.receiver.subscribe("activateCheats");
         this.receiver.subscribe("backToMain");
         this.receiver.subscribe("level1");
         this.receiver.subscribe("level2");
@@ -173,6 +176,10 @@ export default class MainMenu extends Scene {
                 this.showScreen("testMenu");
                 break;
             }
+            case "activateCheats": {
+                this.cheatsEnabled = !this.cheatsEnabled;
+                break;
+            }
             case "backToMain": {
                 this.showScreen("mainMenu");
                 break;
@@ -183,6 +190,7 @@ export default class MainMenu extends Scene {
                 this.sceneManager.changeToScene(
                     ShelterScene,
                     {
+                        cheatsEnabled: this.cheatsEnabled,
                         spawnName: "SideOfBed",
                         facing: Vec2.DOWN
                     },
@@ -201,7 +209,10 @@ export default class MainMenu extends Scene {
             
                 this.sceneManager.changeToScene(
                     VillageScene,
-                    { spawnName: "RoadStart" },
+                    {
+                        cheatsEnabled: this.cheatsEnabled,
+                        spawnName: "RoadStart"
+                    },
                     undefined,
                     {
                         showLoadingOverlay: true,
@@ -232,7 +243,10 @@ export default class MainMenu extends Scene {
             
                 this.sceneManager.changeToScene(
                     RoadScene,
-                    { spawnName: "RoadStart" },
+                    {
+                        cheatsEnabled: this.cheatsEnabled,
+                        spawnName: "RoadStart"
+                    },
                     undefined,
                     {
                         showLoadingOverlay: true,
@@ -257,7 +271,10 @@ export default class MainMenu extends Scene {
             
                 this.sceneManager.changeToScene(
                     VillageScene,
-                    { spawnName: "RoadEnd" },
+                    {
+                        cheatsEnabled: this.cheatsEnabled,
+                        spawnName: "RoadEnd"
+                    },
                     undefined,
                     {
                         showLoadingOverlay: true,
@@ -266,10 +283,8 @@ export default class MainMenu extends Scene {
                         fadeInMs: 500
                     }
                 );
-            
                 break;
             }
-            
         }
     }
 
