@@ -3,11 +3,9 @@ import { TiledObject, TiledTilemapData } from "../../../Wolfie2D/DataTypes/Tiles
 import NPCActor from "../../Actors/NPCActor";
 import IdleBehavior from "../../AI/NPC/NPCBehavior/IdleBehavior";
 import { AssetBundle } from "../MappedAdventureScene";
-import MappedAdventureChapter2Scene from "./MappedAdventureChapter2Scene";
 import RoadScene from "./RoadScene";
 import { dialogue, getNpcInteraction } from "../../GameSystems/InteractionSystem/InteractionDatabase";
 import ScrollingPatternWorldLayer from "../../Overlays/ScrollingPatternWorldLayer";
-import LycanChaseBehavior from "../../AI/NPC/NPCBehavior/LycanChaseBehavior";
 import LycanChaseSceneBase from "../LycanChaseSceneBase";
 import { GameEventType } from "../../../Wolfie2D/Events/GameEventType";
 
@@ -236,5 +234,4 @@ export default class VillageScene extends LycanChaseSceneBase {
             );
         }
     }
-    
 }

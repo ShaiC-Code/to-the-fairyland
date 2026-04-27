@@ -12,10 +12,6 @@ import { ItemUseAction, ItemUseActions, ItemUseResult } from "../../GameSystems/
 import { TimeOfDay } from "../../GameSystems/WorldSystem/WorldState";
 import { GameEventType } from "../../../Wolfie2D/Events/GameEventType";
 
-
-
-
-
 export default abstract class MappedAdventureChapter2Scene extends MappedAdventureScene {
     protected static readonly assetBundle: AssetBundle = {
         tilemaps: {},
@@ -192,5 +188,4 @@ export default abstract class MappedAdventureChapter2Scene extends MappedAdventu
     
         return result;
     }
-    
 }

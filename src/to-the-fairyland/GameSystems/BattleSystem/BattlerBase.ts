@@ -3,14 +3,15 @@ import Region from "../../../Wolfie2D/DataTypes/Interfaces/Region";
 import Unique from "../../../Wolfie2D/DataTypes/Interfaces/Unique";
 import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 import BasicTargetable from "../Targeting/BasicTargetable";
-import { TargetableEntity } from "../Targeting/TargetableEntity";
-import { TargetingEntity } from "../Targeting/TargetingEntity";
+import TargetableEntity from "../Targeting/TargetableEntity";
+import TargetingEntity from "../Targeting/TargetingEntity";
 
 export default class BattlerBase implements Positioned, TargetableEntity {
 
     protected _region: Region & Positioned & Unique;
     protected _targetable: TargetableEntity;
     protected _battleGroup: number;
+    relativePosition!: Vec2;
 
     public constructor(region: Region & Positioned & Unique) {
         this._region = region;
@@ -29,8 +30,6 @@ export default class BattlerBase implements Positioned, TargetableEntity {
     }
 
     get id(): number { return this._region.id; }
-    
-    relativePosition: Vec2;
 
     get position(): Vec2 { return this._region.position; }
     get region(): Region { return this._region; }

@@ -2,9 +2,9 @@ import GameEvent from "../../../../Wolfie2D/Events/GameEvent";
 import Timer from "../../../../Wolfie2D/Timing/Timer";
 import PlayerActor from "../../../Actors/PlayerActor";
 import PlayerAI from "../PlayerAI";
-import PlayerState, { PlayerStateType } from "./PlayerBehaviorState";
+import PlayerBehaviorState, { PlayerStateType } from "./PlayerBehaviorState";
 
-export default class Invincible extends PlayerState {
+export default class Invincible extends PlayerBehaviorState {
 
     protected timer: Timer;
 

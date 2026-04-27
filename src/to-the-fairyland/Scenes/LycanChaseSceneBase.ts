@@ -9,7 +9,6 @@ import PlayerDeathHitOverlay from "../Overlays/PlayerDeathHitOverlay";
 import GameOverScreenScene from "./GameOverScreenScene";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 
-
 export default abstract class LycanChaseSceneBase extends MappedAdventureChapter2Scene {
     protected lycans: NPCActor[] = [];
     protected lycanDeathHitOverlay!: PlayerDeathHitOverlay;

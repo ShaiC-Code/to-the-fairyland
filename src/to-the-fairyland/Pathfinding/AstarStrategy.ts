@@ -2,9 +2,7 @@ import Stack from "../../Wolfie2D/DataTypes/Collections/Stack";
 import Vec2 from "../../Wolfie2D/DataTypes/Vec2";
 import NavigationPath from "../../Wolfie2D/Pathfinding/NavigationPath";
 import NavPathStrat from "../../Wolfie2D/Pathfinding/Strategies/NavigationStrategy";
-import GraphUtils from "../../Wolfie2D/Utils/GraphUtils";
 import PriorityQueue from "../../Wolfie2D/DataTypes/Collections/PriorityQueue";
-import EdgeNode from "../../Wolfie2D/DataTypes/Graphs/EdgeNode";
 
 type AStarNode = {
     index: number,
@@ -22,7 +20,6 @@ type AStarNode = {
  * 
  */
 export default class AstarStrategy extends NavPathStrat {
-
     /**
      * @see NavPathStrat.buildPath()
      */

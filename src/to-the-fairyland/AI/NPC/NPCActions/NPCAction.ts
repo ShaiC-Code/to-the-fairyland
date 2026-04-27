@@ -3,7 +3,7 @@ import GameEvent from "../../../../Wolfie2D/Events/GameEvent";
 import NPCActor from "../../../Actors/NPCActor";
 import NPCBehavior from "../NPCBehavior";
 import Finder from "../../../GameSystems/Searching/Finder";
-import { TargetableEntity } from "../../../GameSystems/Targeting/TargetableEntity";
+import TargetableEntity from "../../../GameSystems/Targeting/TargetableEntity";
 import BasicFinder from "../../../GameSystems/Searching/BasicFinder";
 import NavigationPath from "../../../../Wolfie2D/Pathfinding/NavigationPath";
 import Vec2 from "../../../../Wolfie2D/DataTypes/Vec2";
@@ -21,8 +21,8 @@ import Vec2 from "../../../../Wolfie2D/DataTypes/Vec2";
  */
 export default abstract class NPCAction extends GoapAction {
 
-    protected parent: NPCBehavior;
-    protected actor: NPCActor;
+    protected parent!: NPCBehavior;
+    protected actor!: NPCActor;
 
     // The targeting strategy used for this GotoAction - determines how the target is selected basically
     protected _targetFinder: Finder<TargetableEntity>;
@@ -39,12 +39,12 @@ export default abstract class NPCAction extends GoapAction {
 
     public constructor(parent: NPCBehavior, actor: NPCActor) {
         super(parent, actor);
-        this.targetFinder = new BasicFinder();
-        this.targets = [];
-        this.target = null;
-        this.path = null;
-        this.targetLastPosition = null;
-        this.targetMoveRepathThresholdSq = 64;
+        this._targetFinder = new BasicFinder();
+        this._targets = [];
+        this._target = null;
+        this._path = null;
+        this._targetLastPosition = null;
+        this._targetMoveRepathThresholdSq = 64;
     }
 
     public onEnter(options: Record<string, any>): void {
@@ -63,27 +63,27 @@ export default abstract class NPCAction extends GoapAction {
 
     public update(deltaT: number): void {
         // if target is null or path is null, do nothing.
-        if(this.target === null || this.path === null) return;
+        if (this.target === null || this.path === null) return;
 
         // If target is no longer valid for this action, end early and let GOAP replan
-        if(!this.isTargetStillValid(this.target)) {
+        if (!this.isTargetStillValid(this.target)) {
             this.finished();
             return;
         }
 
         // If the target moved enough since our last path, recalculate the path
-        if(this.targetLastPosition === null || this.target.position.distanceSqTo(this.targetLastPosition) > this.targetMoveRepathThresholdSq) {
+        if (this.targetLastPosition === null || this.target.position.distanceSqTo(this.targetLastPosition) > this.targetMoveRepathThresholdSq) {
             this.path = this.actor.getPath(this.actor.position, this.target.position);
             this.targetLastPosition = this.target.position.clone();
         }
 
         // if reached target, perform action
-        if(this.actor.atTarget()) {
+        if (this.actor.atTarget()) {
             this.performAction(this.target);
         }
 
         // move to target along path
-        else{
+        else {
             this.actor.moveOnPath(1, this.path);
         }
         

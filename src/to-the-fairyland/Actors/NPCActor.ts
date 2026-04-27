@@ -4,18 +4,14 @@ import AnimatedSprite from "../../Wolfie2D/Nodes/Sprites/AnimatedSprite"
 import NavigationPath from "../../Wolfie2D/Pathfinding/NavigationPath";
 import { BattlerEvent, HudEvent } from "../Events";
 import Inventory from "../GameSystems/ItemSystem/Inventory";
-import BasicTargetable from "../GameSystems/Targeting/BasicTargetable";
 import BasicTargeting from "../GameSystems/Targeting/BasicTargeting";
-
 import Battler from "../GameSystems/BattleSystem/Battler";
-import { TargetableEntity } from "../GameSystems/Targeting/TargetableEntity";
-import { TargetingEntity } from "../GameSystems/Targeting/TargetingEntity";
+import TargetableEntity from "../GameSystems/Targeting/TargetableEntity";
+import TargetingEntity from "../GameSystems/Targeting/TargetingEntity";
 import BasicBattler from "../GameSystems/BattleSystem/BasicBattler";
 import Timer from "../../Wolfie2D/Timing/Timer";
 import Scene from "../../Wolfie2D/Scene/Scene";
 import { AssetBundle } from "../Scenes/MappedAdventureScene";
-import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
-
 
 export default class NPCActor extends AnimatedSprite implements Battler, TargetingEntity {
     private assetBundle: AssetBundle = {
@@ -53,14 +49,12 @@ export default class NPCActor extends AnimatedSprite implements Battler, Targeti
     }
 
     /** The TargetingEntity interface */
-
     public clearTarget(): void { this._targeting.clearTarget(); }
     public setTarget(targetable: TargetableEntity): void { this._targeting.setTarget(targetable); }
     public hasTarget(): boolean { return this._targeting.hasTarget(); }
     public getTarget(): TargetableEntity { return this._targeting.getTarget(); }
     
     /** The TargetableEntity interface */
-
     public getTargeting(): TargetingEntity[] { return this._battler.getTargeting(); }
     public addTargeting(targeting: TargetingEntity): void { this._battler.addTargeting(targeting); }
     public removeTargeting(targeting: TargetingEntity): void { this._battler.removeTargeting(targeting); }
@@ -109,7 +103,6 @@ export default class NPCActor extends AnimatedSprite implements Battler, Targeti
     public get inventory(): Inventory { return this.battler.inventory; }
 
     /** Protected getters for the different components */
-
     protected get battler(): Battler { return this._battler; }
     protected get targeting(): TargetingEntity { return this._targeting; }
 }

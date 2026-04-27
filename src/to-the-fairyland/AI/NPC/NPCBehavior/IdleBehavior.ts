@@ -3,15 +3,12 @@ import NPCActor from "../../../Actors/NPCActor";
 import NPCBehavior from "../NPCBehavior";
 import GoalReached from "../NPCStatuses/FalseStatus";
 
-
-
 /**
  * Idle behavior for an NPC. The idle behavior can be given to an NPC to tell it to do... nothing!
  */
 export default class IdleBehavior extends NPCBehavior  {
-
     /** The GameNode that owns this NPCGoapAI */
-    protected override owner: NPCActor;
+    protected override owner!: NPCActor;
     
     /** Initialize the NPC AI */
     public initializeAI(owner: NPCActor, opts: Record<string, any>): void {
@@ -31,5 +28,4 @@ export default class IdleBehavior extends NPCBehavior  {
     
         this.initialize();
     }
-
 }

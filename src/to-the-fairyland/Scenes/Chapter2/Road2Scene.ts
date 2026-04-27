@@ -22,5 +22,4 @@ export default class Road2Scene extends RoadSceneBase {
         if (this.spawnName === "RoadEnd") return "ChaseFromRoad3";
         return null;
     }
-    
 }

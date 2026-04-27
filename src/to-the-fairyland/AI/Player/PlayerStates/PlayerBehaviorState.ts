@@ -3,7 +3,6 @@ import GameEvent from "../../../../Wolfie2D/Events/GameEvent";
 import PlayerAI from "../PlayerAI";
 import Vec2 from "../../../../Wolfie2D/DataTypes/Vec2";
 
-
 export enum PlayerAnimationType {
     IDLE_UP = "IDLE_UP",
     IDLE_DOWN = "IDLE_DOWN",
@@ -11,18 +10,16 @@ export enum PlayerAnimationType {
     IDLE_RIGHT = "IDLE_RIGHT"
 }
 
-
 export enum PlayerStateType {
     IDLE = "IDLE",
     INVINCIBLE = "INVINCIBLE",
-    ATTACKING = "ATTACKING",
     MOVING = "MOVING",
     DEAD = "DEAD"
 }
 
-export default abstract class PlayerState extends State {
+export default abstract class PlayerBehaviorState extends State {
 
-    protected parent: PlayerAI;
+    protected parent!: PlayerAI;
     protected owner: PlayerActor;
 
     public constructor(parent: PlayerAI, owner: PlayerActor) {
@@ -30,20 +27,14 @@ export default abstract class PlayerState extends State {
         this.owner = owner;
     }
     
-
     public override onEnter(options: Record<string, any>): void {}
     public override onExit(): Record<string, any> { return {}; }
-    public override update(deltaT: number): void {
-
-        if (this.parent.controller.useItem) {
-
-        }
-    }
+    public override update(deltaT: number): void {}
 
     public override handleInput(event: GameEvent): void {
         switch(event.type) {
             default: {
-                throw new Error(`Unhandled event of type ${event.type} caught in PlayerState!`);
+                throw new Error(`Unhandled event of type ${event.type} caught in PlayerBehaviorState!`);
             }
         }
     }
@@ -79,7 +70,6 @@ export default abstract class PlayerState extends State {
     protected playFacingAnimation(): void {
         this.owner.animation.playIfNotAlready(this.getFacingAnimation(), true);
     }
-
 }
 
 import Idle from "./Idle";

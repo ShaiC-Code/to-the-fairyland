@@ -1,11 +1,7 @@
 import StateMachineGoapAI from "../../../Wolfie2D/AI/Goap/StateMachineGoapAI";
 import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 import GameEvent from "../../../Wolfie2D/Events/GameEvent";
-import GameNode from "../../../Wolfie2D/Nodes/GameNode";
-import Line from "../../../Wolfie2D/Nodes/Graphics/Line";
-import Timer from "../../../Wolfie2D/Timing/Timer";
 import NPCActor from "../../Actors/NPCActor";
-import { ItemEvent } from "../../Events";
 import NPCAction from "./NPCActions/NPCAction";
 
 
@@ -15,11 +11,10 @@ import NPCAction from "./NPCActions/NPCAction";
  */
 export default abstract class NPCBehavior extends StateMachineGoapAI<NPCAction>  {
 
-    protected override owner: NPCActor;
+    protected override owner!: NPCActor;
 
     public initializeAI(owner: NPCActor, options: Record<string, any>): void {
         this.owner = owner;
-        this.receiver.subscribe(ItemEvent.LASERGUN_FIRED);
     }
 
     public activate(options: Record<string, any>): void {}
@@ -33,11 +28,6 @@ export default abstract class NPCBehavior extends StateMachineGoapAI<NPCAction> 
      */
     public handleEvent(event: GameEvent): void {
         switch(event.type) {
-            case ItemEvent.LASERGUN_FIRED: {
-                // console.log("Catching and handling lasergun fired event!!!");
-                this.handleLasergunFired(event.data.get("actorId"), event.data.get("to"), event.data.get("from"));
-                break;
-            }
             default: {
                 super.handleEvent(event);
                 break;

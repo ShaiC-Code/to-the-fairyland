@@ -3,8 +3,8 @@ import Unique from "../../../Wolfie2D/DataTypes/Interfaces/Unique";
 import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 import Inventory from "../ItemSystem/Inventory";
 import BasicTargetable from "../Targeting/BasicTargetable";
-import { TargetableEntity } from "../Targeting/TargetableEntity";
-import { TargetingEntity } from "../Targeting/TargetingEntity";
+import TargetableEntity from "../Targeting/TargetableEntity";
+import TargetingEntity from "../Targeting/TargetingEntity";
 import Battler from "./Battler";
 
 export default class BasicBattler implements Battler {
@@ -22,13 +22,13 @@ export default class BasicBattler implements Battler {
     public constructor(owner: Unique & Positioned) {
         this._owner = owner;
         this._targetable = new BasicTargetable(owner);
-        this.inventory = new Inventory();
+        this._inventory = new Inventory();
 
-        this.maxHealth = 0;
-        this.health = 0;
-        this.battleGroup = 0;
-        this.speed = 0;
-        this.battlerActive = true;
+        this._maxHealth = 0;
+        this._health = 0;
+        this._battleGroup = 0;
+        this._speed = 0;
+        this._active = true;
     }
     
     public get id(): number { return this._owner.id; }

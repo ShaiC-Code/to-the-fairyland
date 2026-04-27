@@ -1,8 +1,8 @@
 import GameEvent from "../../../../Wolfie2D/Events/GameEvent";
 import { PlayerStateType } from "./PlayerBehaviorState";
-import PlayerState from "./PlayerBehaviorState";
+import PlayerBehaviorState from "./PlayerBehaviorState";
 
-export default class Idle extends PlayerState {
+export default class Idle extends PlayerBehaviorState {
 
     public override onEnter(options: Record<string, any>): void {
         this.playFacingAnimation();

@@ -1,4 +1,3 @@
-// src/to-the-fairyland/Overlays/ScrollingPatternOverlay.ts
 import Vec2 from "../../Wolfie2D/DataTypes/Vec2";
 import Sprite from "../../Wolfie2D/Nodes/Sprites/Sprite";
 import Scene from "../../Wolfie2D/Scene/Scene";

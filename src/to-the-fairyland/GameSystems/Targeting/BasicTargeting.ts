@@ -1,16 +1,14 @@
 import Unique from "../../../Wolfie2D/DataTypes/Interfaces/Unique";
-import { TargetableEntity } from "./TargetableEntity";
-import { TargetingEntity } from "./TargetingEntity";
-
+import TargetableEntity from "./TargetableEntity";
+import TargetingEntity from "./TargetingEntity";
 
 export default class BasicTargeting implements TargetingEntity {
-
     protected owner: Unique;
     protected _target: TargetableEntity | null;
 
     constructor(owner: Unique) {
         this.owner = owner;
-        this.target = null;
+        this._target = null;
     }
 
     clearTarget(): void {
