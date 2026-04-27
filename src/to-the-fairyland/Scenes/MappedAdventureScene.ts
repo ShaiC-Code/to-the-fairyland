@@ -23,11 +23,10 @@ import SpotlightOverlay from "../UI/CustomUIElements/SpotlightOverlay";
 import DialogueController, { DialogueStartOptions } from "../GameSystems/DialogueController";
 import TimeController from "../GameSystems/WorldSystem/TimeController";
 import CameraController from "../GameSystems/CameraController";
-import { ItemUseAction, ItemUseActions, ItemUseResult } from "../GameSystems/ItemSystem/ItemUseActions";
+import { ItemUseAction, ItemUseResult } from "../GameSystems/ItemSystem/ItemUseActions";
 import { PlayerStateType } from "../AI/Player/PlayerStates/PlayerBehaviorState";
 import { WeatherType } from "../GameSystems/WorldSystem/WorldState";
 import PauseControlsScreen from "../UI/PauseControlsScreen";
-
 
 export type AssetRef = Readonly<{
     readonly key: string;
@@ -464,14 +463,6 @@ export default abstract class MappedAdventureScene extends Scene {
     protected handleInteraction(_obj: TiledObject): void {}
 
     protected handleAutoTransition(_obj: TiledObject): void {}
-
-    /**
-     * Override in child scenes if weather ambience should default indoors.
-     * This can later be made dynamic (e.g. based on player tile inside a room volume).
-     */
-    protected isWeatherIndoors(): boolean {
-        return false;
-    }
 
     /**
      * Retrieves a tile layer by name and throws an error if it is missing.

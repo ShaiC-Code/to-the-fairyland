@@ -5,7 +5,6 @@ import CliffScene from "./CliffScene";
 import { dialogue } from "../../GameSystems/InteractionSystem/InteractionDatabase";
 import { GameEventType } from "../../../Wolfie2D/Events/GameEventType";
 
-
 export default class Road3Scene extends RoadSceneBase {
     protected readonly tilemap = {
         key: "road3",
@@ -88,5 +87,4 @@ export default class Road3Scene extends RoadSceneBase {
         if (this.spawnName === "RoadEnd") return "ChaseFromCliff";
         return null;
     }
-    
 }

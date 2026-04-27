@@ -1,12 +1,12 @@
 import GameEvent from "../../../../Wolfie2D/Events/GameEvent";
 import { PlayerEvent } from "../../../Events";
-import PlayerState from "./PlayerBehaviorState";
+import PlayerBehaviorState from "./PlayerBehaviorState";
 
 /**
  * The Dead state for the PlayerAI. While the player is in the "Dead" state, the player does not
  * get updated and all incoming events to the PlayerAI are ignored.
  */
-export default class Dead extends PlayerState {
+export default class Dead extends PlayerBehaviorState {
 
     /**
      * When the PlayerAI enters the dead state, an event is fired to alert the system
@@ -20,7 +20,7 @@ export default class Dead extends PlayerState {
      * The input handler for the dead state ignores all incoming events to the player. 
      * @param event 
      */
-    handleInput(event: GameEvent): void { }
+    handleInput(event: GameEvent): void {}
 
     /**
      * Similar to the handleInput method, while in the dead state, the PlayerAI doesn't

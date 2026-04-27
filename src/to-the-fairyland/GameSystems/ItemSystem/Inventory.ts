@@ -15,14 +15,14 @@ export default class Inventory implements Unique {
     /** The collection of items in this inventory. */
     protected _inventory: Map<number, InventoryItem>;
 
-    /** Whether the inventory contents changed since last clean(). */
-    protected _dirty: boolean;
+    /** The number of items currently in this inventory. */
+    protected _size: number;
 
     /** The maximum number of items this inventory can hold. */
     protected _capacity: number;
 
-    /** The number of items currently in this inventory. */
-    protected _size: number;
+    /** Whether the inventory contents changed since last clean(). */
+    protected _dirty: boolean;
 
     /** Optional event name to fire when inventory changes are committed. */
     protected _onChange: string | null;
@@ -34,13 +34,13 @@ export default class Inventory implements Unique {
         this.__id = Inventory.NEXT_ID;
         Inventory.NEXT_ID += 1;
 
-        this.inventory = new Map<number, InventoryItem>();
-        this._emitter = new Emitter();
+        this._inventory = new Map<number, InventoryItem>();
 
-        this.size = 0;
-        this.capacity = capacity;
-        this.dirty = false;
-        this.onChange = null;
+        this._size = 0;
+        this._capacity = capacity;
+        this._dirty = false;
+        this._onChange = null;
+        this._emitter = new Emitter();
     }
 
     public get id(): number {

@@ -1,5 +1,5 @@
 import GameEvent from "../../../../Wolfie2D/Events/GameEvent";
-import { TargetableEntity } from "../../../GameSystems/Targeting/TargetableEntity";
+import TargetableEntity from "../../../GameSystems/Targeting/TargetableEntity";
 import NPCAction from "./NPCAction";
 
 /**
@@ -7,7 +7,6 @@ import NPCAction from "./NPCAction";
  * to do nothing.
  */
 export default class IdleAction extends NPCAction {
-
     public performAction(target: TargetableEntity): void {
         this.finished();
     }
@@ -20,5 +19,4 @@ export default class IdleAction extends NPCAction {
             }
         }
     }
-    
 }

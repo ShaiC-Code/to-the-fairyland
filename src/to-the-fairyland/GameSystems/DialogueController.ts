@@ -66,9 +66,9 @@ export default class DialogueController implements Updateable {
       handleDialogueChoiceAction: (option: DialogueChoiceOption) => void,
       options?: UIScreenOptions
     ) {
-        this.player = player;
         this.scene = scene;
         this.viewport = viewport;
+        this.player = player;
         this.handleDialogueCompleteAction = handleDialogueCompleteAction;
         this.handleDialogueChoiceAction = handleDialogueChoiceAction;
 
@@ -88,7 +88,6 @@ export default class DialogueController implements Updateable {
             undefined,
             options
         );
-
         
         this.cutsceneScreen = new CutsceneScreen(
             this.cutsceneLayerName,

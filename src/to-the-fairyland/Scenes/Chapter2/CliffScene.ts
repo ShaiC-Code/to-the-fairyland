@@ -1,14 +1,8 @@
 import RoadSceneBase from "./RoadSceneBase";
 import Road3Scene from "./Road3Scene";
-import {
-    choiceOption,
-    dialogue,
-    dialogueWithChoice
-} from "../../GameSystems/InteractionSystem/InteractionDatabase";
+import { choiceOption, dialogue, dialogueWithChoice } from "../../GameSystems/InteractionSystem/InteractionDatabase";
 import { TiledObject, TiledTilemapData } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData";
 import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
-
-
 
 export default class CliffScene extends RoadSceneBase {
     private cliffJumpLycansSpawned = false;
@@ -48,7 +42,6 @@ export default class CliffScene extends RoadSceneBase {
         this.startAllLycanChases();
         this.cliffJumpLycansSpawned = true;
     }
-    
 
     private startCliffJumpDialogue(): void {
         this.setWorldTimeScale(0.1);
@@ -91,7 +84,7 @@ export default class CliffScene extends RoadSceneBase {
                                         await this.movePlayerOneTileBackwardAsync();
                                         await this.waitSeconds(0.5);
                                         this.setPlayerFacing(Vec2.DOWN);
-                                        
+                                        this.cheatsEnabled = false;
                                     }
                                 }
                             )

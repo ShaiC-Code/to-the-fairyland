@@ -10,7 +10,6 @@ export enum PlayerInput {
     MOVE_DOWN = "MOVE_DOWN",
     MOVE_LEFT = "MOVE_LEFT",
     MOVE_RIGHT = "MOVE_RIGHT",
-    ATTACKING = "ATTACKING",
     INTERACT = "INTERACT",
     INVENTORY = "INVENTORY",
     PAUSE = "PAUSE"
@@ -32,7 +31,6 @@ const AllowedInputsByMode: Record<PlayerControlMode, ReadonlySet<PlayerInput>> =
         PlayerInput.MOVE_DOWN,
         PlayerInput.MOVE_LEFT,
         PlayerInput.MOVE_RIGHT,
-        PlayerInput.ATTACKING,
         PlayerInput.INTERACT,
         PlayerInput.INVENTORY,
         PlayerInput.PAUSE
@@ -46,7 +44,6 @@ const AllowedInputsByMode: Record<PlayerControlMode, ReadonlySet<PlayerInput>> =
     ]),
     [PlayerControlMode.LOCKED]: new Set()
 };
-
 
 /**
  * The PlayerController class handles processing the input recieved from the user and exposes  
@@ -169,23 +166,12 @@ export default class PlayerController {
     public get rotation(): number { return Vec2.UP.angleToCCW(this.faceDir); }
 
     /** 
-     * Checks if the player is attempting to use a held item or not.
-     * @return true if the player is attempting to use a held item; false otherwise
-     */
-    public get useItem(): boolean {
-        return this.controlMode === PlayerControlMode.GAMEPLAY
-            && (Input.isMouseJustPressed() || this.isJustPressed(PlayerInput.INTERACT));
-    }
-    
-
-    /** 
      * Checks if the player is attempting to interact.
      * @return true if the player is attempting to interact; false otherwise.
      */
     public get interacting(): boolean {
         return this.controlMode === PlayerControlMode.GAMEPLAY && this.isJustPressed(PlayerInput.INTERACT);
     }
-
 
     public get tileInput(): Vec2 {
         if (this.controlMode !== PlayerControlMode.GAMEPLAY) {
@@ -200,6 +186,4 @@ export default class PlayerController {
             vertical === "up" ? -1 : vertical === "down" ? 1 : 0
         );
     }
-    
-
 }

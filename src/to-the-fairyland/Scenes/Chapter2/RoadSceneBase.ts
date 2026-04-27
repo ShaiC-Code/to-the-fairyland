@@ -3,8 +3,6 @@ import MappedAdventureChapter2Scene from "./MappedAdventureChapter2Scene";
 import { TiledTilemapData } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData";
 import LycanChaseSceneBase from "../LycanChaseSceneBase";
 
-
-
 export default abstract class RoadSceneBase extends LycanChaseSceneBase {
 
     private pendingLycanSpawnTilemapData: TiledTilemapData | null = null;
@@ -123,5 +121,4 @@ export default abstract class RoadSceneBase extends LycanChaseSceneBase {
         this.pendingLycanSpawnTilemapData = null;
         this.lycanSpawned = true;
     }
-    
 }

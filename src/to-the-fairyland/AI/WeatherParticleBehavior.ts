@@ -3,7 +3,6 @@ import GameEvent from "../../Wolfie2D/Events/GameEvent";
 import Sprite from "../../Wolfie2D/Nodes/Sprites/Sprite";
 import Viewport from "../../Wolfie2D/SceneGraph/Viewport";
 
-
 export type WeatherParticleSettings = Readonly<{
     spawnPadding: number;
     recyclePadding: number;
@@ -19,15 +18,15 @@ export type WeatherParticleSettings = Readonly<{
 }>;
 
 export default class WeatherParticleBehavior implements AI {
-    private owner: Sprite;
-    private viewport: Viewport;
-    private settings: WeatherParticleSettings;
+    private owner!: Sprite;
+    private viewport!: Viewport;
+    private settings!: WeatherParticleSettings;
 
-    private fallSpeed: number;
-    private windSpeed: number;
-    private wobbleAmplitude: number;
-    private wobbleFrequency: number;
-    private phaseOffset: number;
+    private fallSpeed!: number;
+    private windSpeed!: number;
+    private wobbleAmplitude!: number;
+    private wobbleFrequency!: number;
+    private phaseOffset!: number;
     private elapsed = 0;
 
     public initializeAI(owner: Sprite, options: Record<string, any>): void {

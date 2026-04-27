@@ -3,13 +3,11 @@ import AI from "../../../Wolfie2D/DataTypes/Interfaces/AI";
 import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 import GameEvent from "../../../Wolfie2D/Events/GameEvent";
 import PlayerActor from "../../Actors/PlayerActor";
-import { BattlerEvent, ItemEvent } from "../../Events";
+import { BattlerEvent } from "../../Events";
 import Inventory from "../../GameSystems/ItemSystem/Inventory";
-import Item from "../../GameSystems/ItemSystem/Item";
 import PlayerController from "./PlayerController";
 import { Idle, Invincible, Moving, Dead, PlayerStateType } from "./PlayerStates/PlayerBehaviorState";
 import OrthogonalTilemap from "../../../Wolfie2D/Nodes/Tilemaps/OrthogonalTilemap";
-
 
 /**
  * The AI that controls the player. The players AI has been configured as a Finite State Machine (FSM)
@@ -18,13 +16,11 @@ import OrthogonalTilemap from "../../../Wolfie2D/Nodes/Tilemaps/OrthogonalTilema
 export default class PlayerAI extends StateMachineAI implements AI {
 
     /** The GameNode that owns this AI */
-    public owner: PlayerActor;
+    public owner!: PlayerActor;
     /** A set of controls for the player */
-    public controller: PlayerController;
+    public controller!: PlayerController;
     /** The inventory object associated with the player */
-    public inventory: Inventory;
-    /** The players held item */
-    public item: Item | null;
+    public inventory!: Inventory;
 
     public currentTile!: Vec2;
     public targetTile: Vec2 | null = null;
@@ -77,10 +73,6 @@ export default class PlayerAI extends StateMachineAI implements AI {
 
     public handleEvent(event: GameEvent): void {
         switch(event.type) {
-            case ItemEvent.LASERGUN_FIRED: {
-                this.handleLaserFiredEvent(event.data.get("actorId"), event.data.get("to"), event.data.get("from"));
-                break;
-            }
             case BattlerEvent.BATTLER_KILLED: {
                 if (event.data.get("id") === this.owner.id) {
                     this.changeState(PlayerStateType.DEAD);

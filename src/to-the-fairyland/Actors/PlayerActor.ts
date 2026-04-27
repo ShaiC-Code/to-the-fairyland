@@ -5,11 +5,10 @@ import BasicBattler from "../GameSystems/BattleSystem/BasicBattler";
 import Battler from "../GameSystems/BattleSystem/Battler";
 import Inventory from "../GameSystems/ItemSystem/Inventory";
 import BasicTargetable from "../GameSystems/Targeting/BasicTargetable";
-import { TargetableEntity } from "../GameSystems/Targeting/TargetableEntity";
-import { TargetingEntity } from "../GameSystems/Targeting/TargetingEntity";
+import TargetableEntity from "../GameSystems/Targeting/TargetableEntity";
+import TargetingEntity from "../GameSystems/Targeting/TargetingEntity";
 import Vec2 from "../../Wolfie2D/DataTypes/Vec2";
 import { AssetBundle } from "../Scenes/MappedAdventureScene";
-
 
 export default class PlayerActor extends AnimatedSprite implements Battler {
     private assetBundle: AssetBundle = {

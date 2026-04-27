@@ -10,7 +10,6 @@ import Color from "../../Wolfie2D/Utils/Color";
 import Rect from "../../Wolfie2D/Nodes/Graphics/Rect";
 import { GraphicType } from "../../Wolfie2D/Nodes/Graphics/GraphicTypes";
 
-
 type AssetRef = Readonly<{
     key: string;
     path: string;

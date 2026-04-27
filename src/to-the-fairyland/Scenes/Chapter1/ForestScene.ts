@@ -9,6 +9,7 @@ import Sprite from "../../../Wolfie2D/Nodes/Sprites/Sprite";
 import { WeatherType } from "../../GameSystems/WorldSystem/WorldState";
 import Timer from "../../../Wolfie2D/Timing/Timer";
 import NullFunc from "../../../Wolfie2D/DataTypes/Functions/NullFunc";
+import { getBushBerriesDialogue } from "../../GameSystems/InteractionSystem/ObjectInteractions";
 
 export default class ForestScene extends MappedAdventureChapter1Scene {
     protected readonly tilemap = {
@@ -99,6 +100,13 @@ export default class ForestScene extends MappedAdventureChapter1Scene {
     }
 
     protected override handleInteraction(obj: TiledObject): void {
+        if (obj.name === "BushBerries") {
+            const step = this.storyManager.chapter1.getMainQuestStep();
+            const dialogue = getBushBerriesDialogue(step);
+            this.dialogueController.startDialogue(dialogue);
+            return;
+        }
+
         this.tryStartInteractionDialogue(obj);
     }
     
@@ -127,7 +135,7 @@ export default class ForestScene extends MappedAdventureChapter1Scene {
             this.howlEvent = new Timer(0, NullFunc);
         }
 
-        const delay = (Math.random() * 20000) + 5000;
+        const delay = (Math.random() * 20000) + 10000;
         this.howlEvent.start(delay);
     }
 

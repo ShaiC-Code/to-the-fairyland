@@ -9,14 +9,12 @@ import PlayerDeathHitOverlay from "../Overlays/PlayerDeathHitOverlay";
 import GameOverScreenScene from "./GameOverScreenScene";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 
-
 export default abstract class LycanChaseSceneBase extends MappedAdventureChapter2Scene {
     protected lycans: NPCActor[] = [];
     protected lycanDeathHitOverlay!: PlayerDeathHitOverlay;
     private lycanDeathSequencePlaying = false;
 
     protected readonly lycanDeathHitLayerName = "lycanDeathHitLayer";
-
 
     protected readonly lycanMoveDuration = 0.16;
     protected readonly lycanRepathInterval = 0.25;

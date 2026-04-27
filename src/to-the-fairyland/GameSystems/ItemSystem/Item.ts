@@ -1,20 +1,13 @@
 import Unique from "../../../Wolfie2D/DataTypes/Interfaces/Unique";
 import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 import Emitter from "../../../Wolfie2D/Events/Emitter";
-import GameNode from "../../../Wolfie2D/Nodes/GameNode";
 import Sprite from "../../../Wolfie2D/Nodes/Sprites/Sprite";
-import Layer from "../../../Wolfie2D/Scene/Layer";
-import Scene from "../../../Wolfie2D/Scene/Scene";
 import BasicTargetable from "../Targeting/BasicTargetable";
-import BasicTargeting from "../Targeting/BasicTargeting";
-
 import Inventory from "./Inventory";
-import { TargetableEntity } from "../Targeting/TargetableEntity";
-import { TargetingEntity } from "../Targeting/TargetingEntity";
-
+import TargetableEntity from "../Targeting/TargetableEntity";
+import TargetingEntity from "../Targeting/TargetingEntity";
 
 export default abstract class Item implements Unique, TargetableEntity {
-
     protected sprite: Sprite;
     protected emitter: Emitter;
 

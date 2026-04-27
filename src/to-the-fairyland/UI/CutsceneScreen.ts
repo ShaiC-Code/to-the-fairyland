@@ -6,7 +6,6 @@ import Color from "../../Wolfie2D/Utils/Color";
 import UIScreen, { UIScreenOptions } from "./UIScreen";
 import Label from "../../Wolfie2D/Nodes/UIElements/Label";
 
-
 type DialogueChoice = {
     label: string;
     onSelect?: () => void;

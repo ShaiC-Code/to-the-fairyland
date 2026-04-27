@@ -3,11 +3,9 @@ import { TiledObject, TiledTilemapData } from "../../../Wolfie2D/DataTypes/Tiles
 import NPCActor from "../../Actors/NPCActor";
 import IdleBehavior from "../../AI/NPC/NPCBehavior/IdleBehavior";
 import { AssetBundle } from "../MappedAdventureScene";
-import MappedAdventureChapter2Scene from "./MappedAdventureChapter2Scene";
 import RoadScene from "./RoadScene";
 import { dialogue, getNpcInteraction } from "../../GameSystems/InteractionSystem/InteractionDatabase";
 import ScrollingPatternWorldLayer from "../../Overlays/ScrollingPatternWorldLayer";
-import LycanChaseBehavior from "../../AI/NPC/NPCBehavior/LycanChaseBehavior";
 import LycanChaseSceneBase from "../LycanChaseSceneBase";
 import { GameEventType } from "../../../Wolfie2D/Events/GameEventType";
 
@@ -162,23 +160,30 @@ export default class VillageScene extends LycanChaseSceneBase {
 
     private startLycanChase(detectedLycan: NPCActor): void {
         console.log("Detected by Lycan:", detectedLycan.id);
-    
-        this.storyManager.chapter2.markEscapeLycansStarted();
-        this.startAllLycanChases();
+
+        this.startDialogue(
+            dialogue(["<red>RUN"], 
+            {
+                onComplete: () => {
+                    this.startAllLycanChases();
+                    
+                    this.emitter.fireEvent(GameEventType.PLAY_SOUND, {
+                        key: this.assets.sounds.wolvesRunningSFX.key,
+                        loop: true,
+                        holdReference: true
+                    });
+                    this.emitter.fireEvent(GameEventType.PLAY_SFX, {
+                        key: this.assets.sounds.wolvesFerociousSFX.key,
+                        loop: true,
+                        holdReference: true
+                    });
+                }
+            })
+        );
         
-        this.emitter.fireEvent(GameEventType.PLAY_SOUND, {
-            key: this.assets.sounds.wolvesRunningSFX.key,
-            loop: true,
-            holdReference: true
-        });
-        this.emitter.fireEvent(GameEventType.PLAY_SFX, {
-            key: this.assets.sounds.wolvesFerociousSFX.key,
-            loop: true,
-            holdReference: true
-        });
+        this.storyManager.chapter2.markEscapeLycansStarted();
     }
     
-
     protected override tryStartSceneInteractionAtTile(tile: Vec2): boolean {
         const npc = this.findNpcAtTile(tile);
         if (!npc) {
@@ -236,5 +241,4 @@ export default class VillageScene extends LycanChaseSceneBase {
             );
         }
     }
-    
 }

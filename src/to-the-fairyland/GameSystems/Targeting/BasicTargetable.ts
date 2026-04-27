@@ -1,9 +1,7 @@
 import Positioned from "../../../Wolfie2D/DataTypes/Interfaces/Positioned";
-import Unique from "../../../Wolfie2D/DataTypes/Interfaces/Unique";
 import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
-import { TargetableEntity } from "./TargetableEntity";
-import { TargetingEntity } from "./TargetingEntity";
-
+import TargetableEntity from "./TargetableEntity";
+import TargetingEntity from "./TargetingEntity";
 
 export default class BasicTargetable implements TargetableEntity {
     protected owner: Positioned;

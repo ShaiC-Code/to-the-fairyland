@@ -23,7 +23,6 @@ import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 import { TimeOfDay } from "../GameSystems/WorldSystem/WorldState";
 import CliffScene from "./Chapter2/CliffScene";
 
-
 type AssetRef = Readonly<{
     key: string;
     path: string;
@@ -302,7 +301,10 @@ export default class MainMenu extends Scene {
             
                 this.sceneManager.changeToScene(
                     CliffScene,
-                    { spawnName: "RoadStart" },
+                    {
+                        cheatsEnabled: this.cheatsEnabled,
+                        spawnName: "RoadStart"
+                    },
                     undefined,
                     {
                         showLoadingOverlay: true,
