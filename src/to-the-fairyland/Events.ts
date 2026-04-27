@@ -25,4 +25,8 @@ export enum PlayerEvent {
     PLAYER_KILLED = "PLAYER_KILLED"
 }
 
+export enum LycanEvent {
+    PLAYER_CAUGHT = "LYCAN_PLAYER_CAUGHT"
+}
+
 

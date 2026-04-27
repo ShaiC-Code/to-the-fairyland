@@ -6,6 +6,10 @@ import { CustomUIElementType } from "../UI/CustomUIElements/CustomUIElementTypes
 import SplashScreen from "../UI/SplashScreenScreens/SplashScreen";
 import MainMenu from "./MainMenu";
 import { PlayerInput } from "../AI/Player/PlayerController";
+import Color from "../../Wolfie2D/Utils/Color";
+import Rect from "../../Wolfie2D/Nodes/Graphics/Rect";
+import { GraphicType } from "../../Wolfie2D/Nodes/Graphics/GraphicTypes";
+
 
 type AssetRef = Readonly<{
     key: string;
@@ -13,16 +17,19 @@ type AssetRef = Readonly<{
 }>;
 
 export default class GameOverScreenScene extends Scene {
+    private fadeCover!: Rect;
+    private fadeElapsed = 0;
+    private readonly fadeInDuration = 0.8;
 
-	  protected readonly GameOverScreenImage: AssetRef = {
-        key: "game-over-screen-image",
-        path: "/assets/images/game-over-screen-image.png"
-	  };
+    protected readonly GameOverScreenImage: AssetRef = {
+    key: "game-over-screen-image",
+    path: "/assets/images/game-over-screen-image.png"
+    };
 
-	  protected readonly gameOverScreenProceedSFX: AssetRef = {
-        key: "game-over-screen-proceed",
-        path: "/assets/sounds/splash-screen-proceed.ogg"
-	  };
+    protected readonly gameOverScreenProceedSFX: AssetRef = {
+    key: "game-over-screen-proceed",
+    path: "/assets/sounds/splash-screen-proceed.ogg"
+    };
 
     protected gameOverScreen!: SplashScreen;
 
@@ -66,9 +73,28 @@ export default class GameOverScreenScene extends Scene {
             }
         );
         this.gameOverScreen.show();
+        const viewportHalfSize = this.viewport.getHalfSize();
+        const viewportSize = viewportHalfSize.clone().scale(2);
+
+        this.addUILayer("gameOverFadeCover");
+        this.getLayer("gameOverFadeCover").setDepth(10000);
+
+        this.fadeCover = this.add.graphic(GraphicType.RECT, "gameOverFadeCover", {
+            position: viewportHalfSize.clone(),
+            size: viewportSize
+        }) as Rect;
+
+        this.fadeCover.color = new Color(0, 0, 0, 1);
     }
 
     public updateScene(deltaT: number): void {
         this.gameOverScreen.update(deltaT);
+    
+        if (this.fadeCover && this.fadeCover.alpha > 0) {
+            this.fadeElapsed += deltaT;
+    
+            const progress = Math.min(this.fadeElapsed / this.fadeInDuration, 1);
+            this.fadeCover.alpha = 1 - progress;
+        }
     }
 }

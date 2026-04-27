@@ -1,14 +1,18 @@
 import AI from "../../../../Wolfie2D/DataTypes/Interfaces/AI";
 import Vec2 from "../../../../Wolfie2D/DataTypes/Vec2";
+import Emitter from "../../../../Wolfie2D/Events/Emitter";
 import GameEvent from "../../../../Wolfie2D/Events/GameEvent";
 import GameNode from "../../../../Wolfie2D/Nodes/GameNode";
 import OrthogonalTilemap from "../../../../Wolfie2D/Nodes/Tilemaps/OrthogonalTilemap";
 import NPCActor from "../../../Actors/NPCActor";
 import PlayerActor from "../../../Actors/PlayerActor";
+import { LycanEvent } from "../../../Events";
 import PlayerAI from "../../Player/PlayerAI";
 import { findCardinalAStarPath, sameGridTile } from "../../Pathfinding/GridAStar";
 
 export default class LycanChaseBehavior implements AI {
+    private readonly emitter = new Emitter();
+
     private owner!: NPCActor;
     private player!: PlayerActor;
     private ground!: OrthogonalTilemap;
@@ -39,6 +43,9 @@ export default class LycanChaseBehavior implements AI {
     private boostLocksDirection = false;
     private boostDirection: Vec2 | null = null;
 
+    private catchCooldown = 0.8;
+    private catchCooldownTimer = 0;
+
 
     public initializeAI(owner: GameNode, opts: Record<string, any>): void {
         this.owner = owner as NPCActor;
@@ -58,6 +65,8 @@ export default class LycanChaseBehavior implements AI {
 
         this.repathInterval = opts.repathInterval ?? this.repathInterval;
         this.feetOffsetY = opts.feetOffsetY ?? this.feetOffsetY;
+        this.catchCooldown = opts.catchCooldown ?? this.catchCooldown;
+        this.catchCooldownTimer = 0;
 
         const sortTile = this.owner.getSortTile();
 
@@ -72,6 +81,8 @@ export default class LycanChaseBehavior implements AI {
     }
 
     public update(deltaT: number): void {
+        this.catchCooldownTimer = Math.max(0, this.catchCooldownTimer - deltaT);
+
         if (this.targetTile) {
             this.updateMovement(deltaT);
             return;
@@ -82,6 +93,8 @@ export default class LycanChaseBehavior implements AI {
         const goalTile = this.getPlayerGoalTile();
         const playerMovedTile =
             this.lastGoalTile === null || !sameGridTile(goalTile, this.lastGoalTile);
+
+        this.tryEmitCaughtPlayer();
 
         if (playerMovedTile || this.repathTimer <= 0) {
             this.chooseNextStep(goalTile);
@@ -202,6 +215,7 @@ export default class LycanChaseBehavior implements AI {
             const goalTile = this.getPlayerGoalTile();
 
             if (sameGridTile(this.currentTile, goalTile)) {
+                this.tryEmitCaughtPlayer();
                 this.playIdleAnimation();
                 return;
             }
@@ -218,6 +232,26 @@ export default class LycanChaseBehavior implements AI {
     private getPlayerGoalTile(): Vec2 {
         const playerAI = this.player.ai as PlayerAI;
         return (playerAI.targetTile ?? playerAI.currentTile).clone();
+    }
+
+    private tryEmitCaughtPlayer(): void {
+        if (this.catchCooldownTimer > 0 || !this.isTouchingPlayerTile()) {
+            return;
+        }
+
+        this.catchCooldownTimer = this.catchCooldown;
+        this.emitter.fireEvent(LycanEvent.PLAYER_CAUGHT, {
+            lycanId: this.owner.id,
+            playerId: this.player.id,
+            tile: this.currentTile.clone()
+        });
+    }
+
+    private isTouchingPlayerTile(): boolean {
+        const playerAI = this.player.ai as PlayerAI;
+
+        return sameGridTile(this.currentTile, playerAI.currentTile) ||
+            (playerAI.targetTile !== null && sameGridTile(this.currentTile, playerAI.targetTile));
     }
 
     private getSpriteCenterForTile(tile: Vec2): Vec2 {

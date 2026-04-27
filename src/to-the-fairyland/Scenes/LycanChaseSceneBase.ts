@@ -2,11 +2,20 @@ import { TiledObject, TiledTilemapData } from "../../Wolfie2D/DataTypes/Tilesets
 import NPCActor from "../Actors/NPCActor";
 import IdleBehavior from "../AI/NPC/NPCBehavior/IdleBehavior";
 import LycanChaseBehavior from "../AI/NPC/NPCBehavior/LycanChaseBehavior";
+import { LycanEvent } from "../Events";
 import { AssetBundle } from "./MappedAdventureScene";
 import MappedAdventureChapter2Scene from "./Chapter2/MappedAdventureChapter2Scene";
+import PlayerDeathHitOverlay from "../Overlays/PlayerDeathHitOverlay";
+import GameOverScreenScene from "./GameOverScreenScene";
+
 
 export default abstract class LycanChaseSceneBase extends MappedAdventureChapter2Scene {
     protected lycans: NPCActor[] = [];
+    protected lycanDeathHitOverlay!: PlayerDeathHitOverlay;
+    private lycanDeathSequencePlaying = false;
+
+    protected readonly lycanDeathHitLayerName = "lycanDeathHitLayer";
+
 
     protected readonly lycanMoveDuration = 0.16;
     protected readonly lycanRepathInterval = 0.25;
@@ -16,6 +25,8 @@ export default abstract class LycanChaseSceneBase extends MappedAdventureChapter
     protected readonly lycanBoostMinSteps = 2;
     protected readonly lycanBoostMaxSteps = 5;
     protected readonly lycanBoostLocksDirection = true;
+    protected readonly lycanCatchCooldown = 0.8;
+    protected readonly lycanCaughtFlashLayerName = "lycanCaughtFlashLayer";
 
     protected static readonly lycanAssetBundle: AssetBundle = {
         tilemaps: {},
@@ -31,6 +42,38 @@ export default abstract class LycanChaseSceneBase extends MappedAdventureChapter
             super.combinedAssetBundles(),
             LycanChaseSceneBase.lycanAssetBundle
         );
+    }
+
+    public override startScene(): void {
+        super.startScene();
+
+        this.lycanDeathHitOverlay = new PlayerDeathHitOverlay(
+            this.lycanDeathHitLayerName,
+            this,
+            () => this.viewport.getCenter(),
+            () => this.viewport.getHalfSize(),
+            {
+                useUILayer: true,
+                depth: 10000,
+                redFlashDelay: 0.5,
+                redFlashDuration: 0.7,
+                blackAfterFlashDuration: 0.5,
+                maxRedAlpha: 0.85
+            }
+        );
+        
+
+        this.receiver.subscribe(LycanEvent.PLAYER_CAUGHT);
+    }
+
+    public override updateScene(deltaT: number): void {
+        super.updateScene(deltaT);
+        this.handleLycanEvents();
+        this.lycanDeathHitOverlay?.update(deltaT);
+
+        if (this.lycanDeathSequencePlaying) {
+            this.setWorldPaused(true);
+        }
     }
 
     protected resetLycans(): void {
@@ -69,9 +112,45 @@ export default abstract class LycanChaseSceneBase extends MappedAdventureChapter
                 boostChance: this.lycanBoostChance,
                 boostMinSteps: this.lycanBoostMinSteps,
                 boostMaxSteps: this.lycanBoostMaxSteps,
-                boostLocksDirection: this.lycanBoostLocksDirection
+                boostLocksDirection: this.lycanBoostLocksDirection,
+                catchCooldown: this.lycanCatchCooldown
             });
         }
+    }
+
+    private handleLycanEvents(): void {
+        while (this.receiver.hasNextEvent()) {
+            const event = this.receiver.getNextEvent();
+    
+            if (event.type === LycanEvent.PLAYER_CAUGHT) {
+                this.startLycanDeathSequence();
+            }
+        }
+    }
+
+    private startLycanDeathSequence(): void {
+        if (this.lycanDeathSequencePlaying) {
+            return;
+        }
+    
+        this.lycanDeathSequencePlaying = true;
+        this.setWorldPaused(true);
+    
+        this.lycanDeathHitOverlay.play({
+            deathSFXKey: this.assets.sounds.playerDeathSFX?.key,
+            onComplete: () => {
+                this.sceneManager.changeToScene(
+                    GameOverScreenScene,
+                    undefined,
+                    undefined,
+                    {
+                        useFadeTransition: true,
+                        fadeOutMs: 0,
+                        fadeInMs: 0
+                    }
+                );
+            }
+        });
     }
 
     private spawnLycan(obj: TiledObject): void {
