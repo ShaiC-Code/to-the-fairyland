@@ -9,8 +9,7 @@ import { dialogue, getNpcInteraction } from "../../GameSystems/InteractionSystem
 import ScrollingPatternWorldLayer from "../../Overlays/ScrollingPatternWorldLayer";
 import LycanChaseBehavior from "../../AI/NPC/NPCBehavior/LycanChaseBehavior";
 import LycanChaseSceneBase from "../LycanChaseSceneBase";
-
-
+import { GameEventType } from "../../../Wolfie2D/Events/GameEventType";
 
 type NpcRuntime = {
     name: string;
@@ -166,6 +165,17 @@ export default class VillageScene extends LycanChaseSceneBase {
     
         this.storyManager.chapter2.markEscapeLycansStarted();
         this.startAllLycanChases();
+        
+        this.emitter.fireEvent(GameEventType.PLAY_SOUND, {
+            key: this.assets.sounds.wolvesRunningSFX.key,
+            loop: true,
+            holdReference: true
+        });
+        this.emitter.fireEvent(GameEventType.PLAY_SFX, {
+            key: this.assets.sounds.wolvesFerociousSFX.key,
+            loop: true,
+            holdReference: true
+        });
     }
     
 

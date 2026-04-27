@@ -630,14 +630,6 @@ export default abstract class MappedAdventureScene extends Scene {
     protected startDialogue(dialogue: DialogueInteraction, speakerName?: string, options?: DialogueStartOptions): void {
         this.dialogueController.startDialogue(dialogue, speakerName, options);
     }
-
-    public playUIClickSFX(): void {
-        this.emitter.fireEvent(GameEventType.PLAY_SFX, {key: this.assets.sounds.uiClick.key, loop: false, holdReference: false});
-    }
-
-    public playDialogueSFX(): void {
-        return; // Placeholder for now, can be used for dialogue-specific sound effects in the future
-    }
     
     // TEMPORARY function to determine ground type for sfx purposes, ideally this would be determined by properties on the tilemap
     public groundTypeAtTile(tile: Vec2): "snow" | "wood" | "bush" | null {
