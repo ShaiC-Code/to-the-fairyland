@@ -23,7 +23,7 @@ export default class EndOfDemoScreen extends UIScreen {
             "title",
             new Vec2(screenCenter.x, screenCenter.y - 64),
             new Vec2(viewportSize.x - 100, 60),
-            "To The Fairyland: Chapter 2",
+            "To The Fairyland: Chapter 3",
             64,
             { halign: "center", valign: "middle" }
         );

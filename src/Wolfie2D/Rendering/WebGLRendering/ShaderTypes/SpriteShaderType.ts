@@ -114,7 +114,7 @@ export default class SpriteShaderType extends QuadShaderType {
 		let texScale;
 
 		if(sprite instanceof AnimatedSprite){
-			let animationIndex = sprite.animation.getIndexAndAdvanceAnimation();
+			let animationIndex = sprite.animation.getIndex();
 			let offset = sprite.getAnimationOffset(animationIndex);
 			texShift = new Float32Array([offset.x / (sprite.cols * sprite.size.x), offset.y / (sprite.rows * sprite.size.y)]);
 			texScale = new Float32Array([1/(sprite.cols), 1/(sprite.rows)]);

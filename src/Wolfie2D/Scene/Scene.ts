@@ -26,6 +26,8 @@ import Debug from "../Debug/Debug";
 import TimerManager from "../Timing/TimerManager";
 import TweenManager from "../Rendering/Animations/TweenManager";
 import ParticleSystemManager from "../Rendering/Animations/ParticleSystemManager";
+import AnimatedSprite from "../Nodes/Sprites/AnimatedSprite";
+
 
 /**
  * Scenes are the main container in the game engine.
@@ -159,17 +161,26 @@ export default class Scene implements Updateable {
 
     update(deltaT: number): void {
         this.updateScene(deltaT);
+        const simulationDeltaT = deltaT * this.getSimulationTimeScale();
 
         if(!this.isSimulationPaused()){
             // Do time updates
-            TimerManager.getInstance().update(deltaT);
+            TimerManager.getInstance().update(simulationDeltaT);
 
             // Do all AI updates
-            this.aiManager.update(deltaT);
+            this.aiManager.update(simulationDeltaT);
 
             // Update all physics objects
-            this.physicsManager.update(deltaT);
+            this.physicsManager.update(simulationDeltaT);
+
+            // Advance world sprite animations using scaled simulation time
+            this.sceneGraph.getAllNodes().forEach(node => {
+                if (node instanceof AnimatedSprite) {
+                    node.animation.advanceAnimation(simulationDeltaT);
+                }
+            });
         }
+
 
         // Update all canvas objects
         this.sceneGraph.update(deltaT);
@@ -178,15 +189,15 @@ export default class Scene implements Updateable {
             // Update all tilemaps
             this.tilemaps.forEach(tilemap => {
                 if(!tilemap.getLayer().isPaused()){
-                    tilemap.update(deltaT);
+                    tilemap.update(simulationDeltaT);
                 }
             });
 
             // Update all tweens
-            TweenManager.getInstance().update(deltaT);
+            TweenManager.getInstance().update(simulationDeltaT);
 
             // Update all particle systems
-            ParticleSystemManager.getInstance().update(deltaT);
+            ParticleSystemManager.getInstance().update(simulationDeltaT);
         }
 
         // Update viewport
@@ -459,4 +470,9 @@ export default class Scene implements Updateable {
 
         return null;
     }
+
+    protected getSimulationTimeScale(): number {
+        return 1;
+    }
+    
 }

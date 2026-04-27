@@ -21,7 +21,7 @@ import InventoryItem from "../GameSystems/ItemSystem/InventoryItem";
 import { UIScreenActionBindings } from "../UI/UIScreen";
 import WeatherController from "../GameSystems/WorldSystem/WeatherController";
 import SpotlightOverlay from "../UI/CustomUIElements/SpotlightOverlay";
-import DialogueController from "../GameSystems/DialogueController";
+import DialogueController, { DialogueStartOptions } from "../GameSystems/DialogueController";
 import TimeController from "../GameSystems/WorldSystem/TimeController";
 import CameraController from "../GameSystems/CameraController";
 import { ItemUseAction, ItemUseActions, ItemUseResult } from "../GameSystems/ItemSystem/ItemUseActions";
@@ -57,6 +57,7 @@ export type AssetBundle = {
 
 
 export default abstract class MappedAdventureScene extends Scene {
+    protected worldTimeScale = 1;
 
     // The tilemap to load for the scene, pass from sub scenes
     protected abstract readonly tilemap: AssetRef;
@@ -411,6 +412,15 @@ export default abstract class MappedAdventureScene extends Scene {
         }
     }
 
+    protected override getSimulationTimeScale(): number {
+        return this.worldTimeScale;
+    }
+
+    protected setWorldTimeScale(scale: number): void {
+        this.worldTimeScale = Math.max(0, scale);
+    }
+
+
     protected setWorldPaused(paused: boolean): void {
         if (this.worldPaused === paused) {
             return;
@@ -620,8 +630,8 @@ export default abstract class MappedAdventureScene extends Scene {
         return true;
     }
 
-    protected startDialogue(dialogue: DialogueInteraction, speakerName?: string): void {
-        this.dialogueController.startDialogue(dialogue, speakerName);
+    protected startDialogue(dialogue: DialogueInteraction, speakerName?: string, options?: DialogueStartOptions): void {
+        this.dialogueController.startDialogue(dialogue, speakerName, options);
     }
     
     // TEMPORARY function to determine ground type for sfx purposes, ideally this would be determined by properties on the tilemap

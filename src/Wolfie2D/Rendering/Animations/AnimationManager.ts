@@ -94,44 +94,34 @@ export default class AnimationManager {
         return this.currentAnimation === key && this.animationState === AnimationState.PLAYING;
     }
 
-    /**
-     * Retrieves the current animation index and advances the animation frame
-     * @returns The index of the animation frame
-     */
-    getIndexAndAdvanceAnimation(): number {
-        // If we aren't playing, we won't be advancing the animation
-        if(!(this.animationState === AnimationState.PLAYING)){
-            return this.getIndex();
+    public advanceAnimation(deltaT: number): void {
+        if (this.animationState !== AnimationState.PLAYING) {
+            return;
         }
 
-        if(this.animations.has(this.currentAnimation)){
-            let currentAnimation = this.animations.get(this.currentAnimation);
-            let index = currentAnimation.frames[this.currentFrame].index;
+        if (!this.animations.has(this.currentAnimation)) {
+            return;
+        }
 
-            // Advance the animation
-            this.frameProgress += 1;
-            if(this.frameProgress >= currentAnimation.frames[this.currentFrame].duration){
-                // We have been on this frame for its whole duration, go to the next one
-                this.frameProgress = 0;
-                this.currentFrame += 1;
+        const currentAnimation = this.animations.get(this.currentAnimation);
 
-                if(this.currentFrame >= currentAnimation.frames.length){
-                    // We have reached the end of this animation
-                    if(this.loop){
-                        this.currentFrame = 0;
-                        this.frameProgress = 0;
-                    } else {
-                        this.endCurrentAnimation();
-                    }
+        this.frameProgress += deltaT * 60;
+
+        while (
+            this.animationState === AnimationState.PLAYING &&
+            this.frameProgress >= currentAnimation.frames[this.currentFrame].duration
+        ) {
+            this.frameProgress -= currentAnimation.frames[this.currentFrame].duration;
+            this.currentFrame += 1;
+    
+            if (this.currentFrame >= currentAnimation.frames.length) {
+                if (this.loop) {
+                    this.currentFrame = 0;
+                } else {
+                    this.endCurrentAnimation();
+                    break;
                 }
             }
-
-            // Return the current index
-            return index;
-        } else {
-            // No current animation, can't advance. Warn the user
-            console.warn(`Animation index and advance was requested, but the current animation (${this.currentAnimation}) in node with id: ${this.owner.id} was invalid`);
-            return 0;
         }
     }
 

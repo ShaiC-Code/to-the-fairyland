@@ -21,6 +21,8 @@ import SleepingBag from "../GameSystems/ItemSystem/Items/SleepingBag";
 import { Chapter2MainQuestStep } from "../GameSystems/StorySystem/StoryState";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 import { TimeOfDay } from "../GameSystems/WorldSystem/WorldState";
+import CliffScene from "./Chapter2/CliffScene";
+
 
 type AssetRef = Readonly<{
     key: string;
@@ -144,6 +146,8 @@ export default class MainMenu extends Scene {
         this.receiver.subscribe("level2");
         this.receiver.subscribe("level3");
         this.receiver.subscribe("level4");
+        this.receiver.subscribe("level5");
+
     }
 
     public updateScene(deltaT: number){
@@ -285,6 +289,33 @@ export default class MainMenu extends Scene {
                 );
                 break;
             }
+            case "level5": {
+                this.gameSessionManager.startNewChapter2Game();
+                this.gameSessionManager.getWorldState().timeOfDay = TimeOfDay.NIGHT;
+            
+                const chapter2 = this.gameSessionManager.getStoryState().chapter2;
+                if (!chapter2) {
+                    throw new Error("Chapter 2 story state was not initialized.");
+                }
+            
+                chapter2.mainQuestStep = Chapter2MainQuestStep.ESCAPE_LYCANS;
+            
+                this.sceneManager.changeToScene(
+                    CliffScene,
+                    { spawnName: "RoadStart" },
+                    undefined,
+                    {
+                        showLoadingOverlay: true,
+                        useFadeTransition: true,
+                        fadeOutMs: 500,
+                        fadeInMs: 500
+                    }
+                );
+            
+                break;
+            }
+            
+            
         }
     }
 
