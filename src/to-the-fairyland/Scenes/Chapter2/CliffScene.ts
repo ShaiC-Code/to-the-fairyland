@@ -1,8 +1,17 @@
-import { TiledObject } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData";
 import RoadSceneBase from "./RoadSceneBase";
 import Road3Scene from "./Road3Scene";
+import {
+    choiceOption,
+    dialogue,
+    dialogueWithChoice
+} from "../../GameSystems/InteractionSystem/InteractionDatabase";
+import { TiledObject, TiledTilemapData } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData";
+
+
 
 export default class CliffScene extends RoadSceneBase {
+    private cliffJumpLycansSpawned = false;
+
     protected readonly tilemap = {
         key: "cliff",
         path: "/assets/tilemaps/Chapter2/Cliff.json"
@@ -11,8 +20,80 @@ export default class CliffScene extends RoadSceneBase {
     protected override handleAutoTransition(obj: TiledObject): void {
         if (obj.name === "PathToRoad3") {
             this.changeToRoadSection(Road3Scene, "RoadEnd");
-        } else if (obj.name === "Cliff") {
-            this.gotoChapter3();
         }
     }
+
+    protected override handleInteraction(obj: TiledObject): void {
+        if (obj.name === "Cliff_Jump") {
+            this.spawnCliffJumpLycans();
+            this.startCliffJumpDialogue();
+            return;
+        }
+
+        this.tryStartInteractionDialogue(obj);
+    }
+
+    private spawnCliffJumpLycans(): void {
+        if (this.cliffJumpLycansSpawned) {
+            return;
+        }
+    
+        const tilemapData = this.resourceManager.getTilemap(this.tilemap.key) as TiledTilemapData;
+    
+        this.spawnLycansMatching(tilemapData, obj =>
+            obj.name === "Lycan1" || obj.name === "Lycan2"
+        );
+    
+        this.startAllLycanChases();
+        this.cliffJumpLycansSpawned = true;
+    }
+    
+
+    private startCliffJumpDialogue(): void {
+        this.setWorldTimeScale(0.1);
+
+        this.startDialogue(
+            dialogueWithChoice(
+                [
+                    "The cliff drops into darkness.",
+                    "Jump off the cliff?"
+                ],
+                {
+                    lineIndex: 1,
+                    options: [
+                        choiceOption(
+                            "Yes",
+                            dialogue(
+                                [
+                                    "You step forward."
+                                ],
+                                {
+                                    onComplete: () => {
+                                        this.setWorldTimeScale(1);
+                                        this.gotoChapter3();
+                                    }
+                                }
+                            )
+                        ),
+                        choiceOption(
+                            "No",
+                            dialogue(
+                                [
+                                    "You step back from the edge."
+                                ],
+                                {
+                                    onComplete: () => {
+                                        this.setWorldTimeScale(1);
+                                    }
+                                }
+                            )
+                        )
+                    ]
+                }
+            ),
+            undefined,
+            { layoutMode: "topRightQuarter" }
+        );
+    }
 }
+

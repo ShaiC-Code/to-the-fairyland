@@ -15,6 +15,8 @@ type TextHint = {
     color?: "yellow" | "red" | "default";
 };
 
+export type DialogueLayoutMode = "bottom" | "topRightQuarter";
+
 export default class DialogueScreen extends UIScreen {
     private textBox!: TextBox;
     private nameBox!: Label;
@@ -23,6 +25,7 @@ export default class DialogueScreen extends UIScreen {
     private choiceButtonKeys: string[] = [];
     private selectedChoiceIndex = 0;
     private choicesVisible = false;
+    private layoutMode: DialogueLayoutMode = "bottom";
     private onCompleteCallback: (() => void) | null = null;
 
     private readonly nameFontSize = 28;
@@ -33,6 +36,10 @@ export default class DialogueScreen extends UIScreen {
     private readonly choiceSafeZoneTopPadding = 6;
     private readonly choiceSafeZoneBottomPadding = 24;
     private readonly choiceSafeZoneHeight = this.choiceButtonSize.y + this.choiceSafeZoneTopPadding + this.choiceSafeZoneBottomPadding;
+
+    private readonly topRightQuarterMargin = 90;
+    private readonly topRightQuarterWidth = 350;
+    private readonly topRightQuarterHeight = 300;
 
     private readonly selectedButtonBackground = new Color(255, 255, 255, 1);
     private readonly selectedButtonText = new Color(0, 0, 0, 1);
@@ -47,18 +54,9 @@ export default class DialogueScreen extends UIScreen {
     }
 
     protected override initializeUI(): void {
-        const viewportHalfSize = this.getViewportHalfSize();
-        const viewportSize = viewportHalfSize.clone().scale(2);
+        const { boxPos, boxSize } = this.getDialogueBoxLayout();
+        const nameBoxPos = this.getNameBoxPosition(boxPos, boxSize);
 
-        const boxSize = new Vec2(viewportSize.x - 80, 200);
-        const boxPos = new Vec2(viewportHalfSize.x, viewportSize.y - boxSize.y / 2 - 40);
-        const nameBoxGap = 0;
-
-        const nameBoxPos = new Vec2(
-            boxPos.x - boxSize.x / 2 + this.nameBoxSize.x / 2,
-            boxPos.y - boxSize.y / 2 - this.nameBoxSize.y / 2 - nameBoxGap
-        );
-        
         this.addLabel("speakerNameText", nameBoxPos, this.nameBoxSize, "", this.nameFontSize, {
             halign: "center",
             valign: "center"
@@ -69,7 +67,7 @@ export default class DialogueScreen extends UIScreen {
         this.nameBox.borderWidth = 8;
         this.nameBox.borderRadius = 0;
         this.nameBox.textColor = Color.WHITE;
-        this.nameBox.visible = false;      
+        this.nameBox.visible = false;
 
         this.addTextBox("dialogueText", boxPos, boxSize, "", this.dialogueFontSize, {
             halign: "left",
@@ -77,10 +75,8 @@ export default class DialogueScreen extends UIScreen {
             maxLines: 3
         });
         this.textBox = this.getUIElement("dialogueText") as TextBox;
-        this.textBox.font = "Verdana";
 
-        this.configureChoiceSafeZone(boxSize);
-
+        this.layoutDialogueElements();
         this.layer.setHidden(true);
     }
 
@@ -116,15 +112,74 @@ export default class DialogueScreen extends UIScreen {
         }
     }
 
-    private layoutChoiceButtons(): void {
-        const viewportHalfSize = this.getViewportHalfSize();
+    public setLayoutMode(mode: DialogueLayoutMode): void {
+        this.layoutMode = mode;
+        this.layoutDialogueElements();
+        this.layoutChoiceButtons();
+    }
 
+    private getDialogueBoxLayout(): { boxPos: Vec2; boxSize: Vec2 } {
+        const viewportHalfSize = this.getViewportHalfSize();
+        const viewportSize = viewportHalfSize.clone().scale(2);
+    
+        if (this.layoutMode === "topRightQuarter") {
+            const boxSize = new Vec2(
+                this.topRightQuarterWidth,
+                this.topRightQuarterHeight
+            );
+            const boxPos = new Vec2(
+                viewportSize.x - this.topRightQuarterMargin - boxSize.x / 2,
+                this.topRightQuarterMargin + boxSize.y / 2
+            );
+    
+            return { boxPos, boxSize };
+        }
+    
+        const boxSize = new Vec2(viewportSize.x - 80, 200);
+        const boxPos = new Vec2(
+            viewportHalfSize.x,
+            viewportSize.y - boxSize.y / 2 - 40
+        );
+    
+        return { boxPos, boxSize };
+    }
+
+    private getNameBoxPosition(boxPos: Vec2, boxSize: Vec2): Vec2 {
+        const nameBoxGap = 0;
+
+        return new Vec2(
+            boxPos.x - boxSize.x / 2 + this.nameBoxSize.x / 2,
+            boxPos.y - boxSize.y / 2 - this.nameBoxSize.y / 2 - nameBoxGap
+        );
+    }
+    
+    private layoutDialogueElements(): void {
+        const { boxPos, boxSize } = this.getDialogueBoxLayout();
+        const nameBoxPos = this.getNameBoxPosition(boxPos, boxSize);
+    
+        this.nameBox.position.copy(nameBoxPos);
+        this.nameBox.size.copy(this.nameBoxSize);
+    
+        this.textBox.position.copy(boxPos);
+        this.textBox.size.copy(boxSize);
+    
+        this.configureChoiceSafeZone(boxSize);
+    }
+    
+
+    private layoutChoiceButtons(): void {
         const buttonSize = this.choiceButtonSize.clone();
         const buttonGap = 24;
         const bottomY = this.textBox.position.y + this.textBox.size.y / 2;
         const buttonY = bottomY - this.choiceSafeZoneBottomPadding - buttonSize.y / 2;
+        const availableWidth = this.textBox.size.x - 40;
+        const totalGap = (this.choices.length - 1) * buttonGap;
+        const maxButtonWidth = (availableWidth - totalGap) / this.choices.length;
+
+        buttonSize.x = Math.min(buttonSize.x, Math.max(96, maxButtonWidth));
+
         const totalWidth = this.choices.length * buttonSize.x + (this.choices.length - 1) * buttonGap;
-        const startX = viewportHalfSize.x - totalWidth / 2 + buttonSize.x / 2;
+        const startX = this.textBox.position.x - totalWidth / 2 + buttonSize.x / 2;
 
         for (let i = 0; i < this.choiceButtonKeys.length; i++) {
             const button = this.getChoiceButton(i);

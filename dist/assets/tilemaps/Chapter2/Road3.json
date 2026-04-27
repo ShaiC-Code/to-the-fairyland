@@ -1557,6 +1557,19 @@
                 }, 
                 {
                  "height":0,
+                 "id":117,
+                 "name":"ChaseFromCliff_Lycan1",
+                 "opacity":1,
+                 "point":true,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":1440,
+                 "y":224
+                }, 
+                {
+                 "height":0,
                  "id":116,
                  "name":"ChaseFromRoad2_Lycan2",
                  "opacity":1,
@@ -1567,6 +1580,19 @@
                  "width":0,
                  "x":160,
                  "y":1568
+                }, 
+                {
+                 "height":0,
+                 "id":118,
+                 "name":"ChaseFromCliff_Lycan2",
+                 "opacity":1,
+                 "point":true,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":1568,
+                 "y":224
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -1659,7 +1685,7 @@
          "y":0
         }],
  "nextlayerid":11,
- "nextobjectid":117,
+ "nextobjectid":119,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.12.1",
