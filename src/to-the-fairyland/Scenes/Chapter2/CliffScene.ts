@@ -6,6 +6,7 @@ import {
     dialogueWithChoice
 } from "../../GameSystems/InteractionSystem/InteractionDatabase";
 import { TiledObject, TiledTilemapData } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData";
+import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 
 
 
@@ -68,8 +69,10 @@ export default class CliffScene extends RoadSceneBase {
                                     "You step forward."
                                 ],
                                 {
-                                    onComplete: () => {
+                                    onComplete: async () => {
                                         this.setWorldTimeScale(1);
+                                        this.lockPlayerInput();
+                                        await this.movePlayerOneTileForwardAsync({ ignoreCollision: true });
                                         this.gotoChapter3();
                                     }
                                 }
@@ -82,8 +85,13 @@ export default class CliffScene extends RoadSceneBase {
                                     "You step back from the edge."
                                 ],
                                 {
-                                    onComplete: () => {
+                                    onComplete: async () => {
                                         this.setWorldTimeScale(1);
+                                        this.lockPlayerInput();
+                                        await this.movePlayerOneTileBackwardAsync();
+                                        await this.waitSeconds(0.5);
+                                        this.setPlayerFacing(Vec2.DOWN);
+                                        
                                     }
                                 }
                             )

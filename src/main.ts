@@ -17,6 +17,8 @@ import { PlayerInput } from "./to-the-fairyland/AI/Player/PlayerController";
             {name: PlayerInput.MOVE_LEFT, keys: ["a", "arrowleft"]},
             {name: PlayerInput.MOVE_RIGHT, keys: ["d", "arrowright"]},
             {name: PlayerInput.INTERACT, keys: ["j", "e", "z", "enter"]},
+            {name: PlayerInput.INVENTORY, keys: ["c"]},
+            {name: PlayerInput.PAUSE, keys: ["escape"]},
         ],
         useWebGL: false,                        // Tell the game we want to use webgl
         showDebug: false                      // Whether to show debug messages. You can change this to true if you want

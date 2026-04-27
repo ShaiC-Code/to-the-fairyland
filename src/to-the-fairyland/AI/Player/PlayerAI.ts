@@ -129,5 +129,12 @@ export default class PlayerAI extends StateMachineAI implements AI {
         return true;
     }
     
+    public onMoveComplete: (() => void) | null = null;
 
+    public completeMove(): void {
+        const callback = this.onMoveComplete;
+        this.onMoveComplete = null;
+        callback?.();
+    }
+    
 }
