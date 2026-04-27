@@ -11,17 +11,41 @@ export enum PlayerInput {
     MOVE_LEFT = "MOVE_LEFT",
     MOVE_RIGHT = "MOVE_RIGHT",
     ATTACKING = "ATTACKING",
-    INTERACT = "INTERACT"
+    INTERACT = "INTERACT",
+    INVENTORY = "INVENTORY",
+    PAUSE = "PAUSE"
 }
 
 export enum PlayerControlMode {
     GAMEPLAY,
-    DIALOGUE
+    DIALOGUE,
+    LOCKED
 }
 
 type VerticalDirection = "up" | "down";
 type HorizontalDirection = "left" | "right";
 type HeldDirection = VerticalDirection | HorizontalDirection;
+
+const AllowedInputsByMode: Record<PlayerControlMode, ReadonlySet<PlayerInput>> = {
+    [PlayerControlMode.GAMEPLAY]: new Set([
+        PlayerInput.MOVE_UP,
+        PlayerInput.MOVE_DOWN,
+        PlayerInput.MOVE_LEFT,
+        PlayerInput.MOVE_RIGHT,
+        PlayerInput.ATTACKING,
+        PlayerInput.INTERACT,
+        PlayerInput.INVENTORY,
+        PlayerInput.PAUSE
+    ]),
+    [PlayerControlMode.DIALOGUE]: new Set([
+        PlayerInput.MOVE_UP,
+        PlayerInput.MOVE_DOWN,
+        PlayerInput.MOVE_LEFT,
+        PlayerInput.MOVE_RIGHT,
+        PlayerInput.INTERACT
+    ]),
+    [PlayerControlMode.LOCKED]: new Set()
+};
 
 
 /**
@@ -60,11 +84,25 @@ export default class PlayerController {
         }
     }
 
+    public allowsInput(input: PlayerInput): boolean {
+        return AllowedInputsByMode[this.controlMode].has(input);
+    }
+
+    public isPressed(input: PlayerInput): boolean {
+        return this.allowsInput(input) && Input.isPressed(input);
+    }
+
+    public isJustPressed(input: PlayerInput): boolean {
+        return this.allowsInput(input) && Input.isJustPressed(input);
+    }
+
     public update(): void {
-        this.syncDirection("up", Input.isPressed(PlayerInput.MOVE_UP));
-        this.syncDirection("down", Input.isPressed(PlayerInput.MOVE_DOWN));
-        this.syncDirection("left", Input.isPressed(PlayerInput.MOVE_LEFT));
-        this.syncDirection("right", Input.isPressed(PlayerInput.MOVE_RIGHT));
+        const movementEnabled = this.controlMode === PlayerControlMode.GAMEPLAY;
+
+        this.syncDirection("up", movementEnabled && Input.isPressed(PlayerInput.MOVE_UP));
+        this.syncDirection("down", movementEnabled && Input.isPressed(PlayerInput.MOVE_DOWN));
+        this.syncDirection("left", movementEnabled && Input.isPressed(PlayerInput.MOVE_LEFT));
+        this.syncDirection("right", movementEnabled && Input.isPressed(PlayerInput.MOVE_RIGHT));
     }
 
     private syncDirection(direction: HeldDirection, pressed: boolean): void {
@@ -106,6 +144,10 @@ export default class PlayerController {
      * @returns a Vec2 indicating the direction the player should move. 
      */
     public get moveDir(): Vec2 { 
+        if (this.controlMode !== PlayerControlMode.GAMEPLAY) {
+            return Vec2.ZERO;
+        }
+
         let dir: Vec2 = Vec2.ZERO;
         dir.y = (Input.isPressed(PlayerInput.MOVE_UP) ? -1 : 0) + (Input.isPressed(PlayerInput.MOVE_DOWN) ? 1 : 0);
 		dir.x = (Input.isPressed(PlayerInput.MOVE_LEFT) ? -1 : 0) + (Input.isPressed(PlayerInput.MOVE_RIGHT) ? 1 : 0);
@@ -132,7 +174,7 @@ export default class PlayerController {
      */
     public get useItem(): boolean {
         return this.controlMode === PlayerControlMode.GAMEPLAY
-            && (Input.isMouseJustPressed() || Input.isJustPressed(PlayerInput.INTERACT));
+            && (Input.isMouseJustPressed() || this.isJustPressed(PlayerInput.INTERACT));
     }
     
 
@@ -141,7 +183,7 @@ export default class PlayerController {
      * @return true if the player is attempting to interact; false otherwise.
      */
     public get interacting(): boolean {
-        return this.controlMode === PlayerControlMode.GAMEPLAY && Input.isJustPressed(PlayerInput.INTERACT);
+        return this.controlMode === PlayerControlMode.GAMEPLAY && this.isJustPressed(PlayerInput.INTERACT);
     }
 
 

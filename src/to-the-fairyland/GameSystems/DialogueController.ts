@@ -2,7 +2,6 @@ import Updateable from "../../Wolfie2D/DataTypes/Interfaces/Updateable";
 import Emitter from "../../Wolfie2D/Events/Emitter";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 import Receiver from "../../Wolfie2D/Events/Receiver";
-import Input from "../../Wolfie2D/Input/Input";
 import Scene from "../../Wolfie2D/Scene/Scene";
 import Viewport from "../../Wolfie2D/SceneGraph/Viewport";
 import Color from "../../Wolfie2D/Utils/Color";
@@ -73,7 +72,10 @@ export default class DialogueController implements Updateable {
         this.handleDialogueCompleteAction = handleDialogueCompleteAction;
         this.handleDialogueChoiceAction = handleDialogueChoiceAction;
 
-        this.confirm = options?.uiActions?.confirm ?? (() => Input.isJustPressed(PlayerInput.INTERACT));
+        this.confirm = options?.uiActions?.confirm ?? (() => {
+            const ai = this.player.ai as PlayerAI;
+            return ai.controller.isJustPressed(PlayerInput.INTERACT);
+        });
         
         this.reciever = new Receiver();
         this.emitter = new Emitter();
@@ -246,7 +248,10 @@ export default class DialogueController implements Updateable {
             && this.currentDialogueLine >= dialogue.lines.length;
 
         const ai = this.player.ai as PlayerAI;
-        ai.controller.setControlMode(PlayerControlMode.GAMEPLAY);
+        
+        if (ai.controller.controlMode === PlayerControlMode.DIALOGUE) {
+            ai.controller.setControlMode(PlayerControlMode.GAMEPLAY);
+        }
 
         this.activeDialogue = null;
         this.currentDialogueLine = 0;

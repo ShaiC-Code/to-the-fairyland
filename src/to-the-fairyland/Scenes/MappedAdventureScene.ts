@@ -1,7 +1,6 @@
 import Vec2 from "../../Wolfie2D/DataTypes/Vec2";
 import AABB from "../../Wolfie2D/DataTypes/Shapes/AABB";
 import { TiledObject, TiledTilemapData, TiledLayerData} from "../../Wolfie2D/DataTypes/Tilesets/TiledData";
-import Input from "../../Wolfie2D/Input/Input";
 import OrthogonalTilemap from "../../Wolfie2D/Nodes/Tilemaps/OrthogonalTilemap";
 import Scene from "../../Wolfie2D/Scene/Scene";
 import PlayerActor from "../Actors/PlayerActor";
@@ -12,7 +11,7 @@ import MainMenu from "./MainMenu";
 import { CustomUIElementType } from "../UI/CustomUIElements/CustomUIElementTypes";
 import HoverButton from "../UI/CustomUIElements/HoverButton";
 import UIImage from "../UI/CustomUIElements/UIImage";
-import { PlayerInput } from "../AI/Player/PlayerController";
+import { PlayerControlMode, PlayerInput } from "../AI/Player/PlayerController";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 import { DialogueChoiceAction, DialogueChoiceOption, DialogueInteraction, DialogueCompleteAction, getInteractionData } from "../GameSystems/InteractionSystem/InteractionDatabase";
 import PlayerStateManager from "../GameSystems/PlayerSystem/PlayerStateManager";
@@ -37,6 +36,10 @@ export type AssetRef = Readonly<{
 
 type SceneEntranceData = {
     spawnName?: string;
+};
+
+type ScriptedTileMoveOptions = {
+    ignoreCollision?: boolean;
 };
 
 export interface ChapterSceneDefinition {
@@ -247,12 +250,13 @@ export default abstract class MappedAdventureScene extends Scene {
         this.spawnPlayerAt(spawn);
 
         const ai = this.player.ai as PlayerAI;
+        const controller = ai.controller;
         this.playIdleForFacing(ai.facing);
 
         const uiActions: UIScreenActionBindings = {
-            navigatePrevious: () => Input.isJustPressed(PlayerInput.MOVE_LEFT) || Input.isJustPressed(PlayerInput.MOVE_UP),
-            navigateNext: () => Input.isJustPressed(PlayerInput.MOVE_RIGHT) || Input.isJustPressed(PlayerInput.MOVE_DOWN),
-            confirm: () => Input.isJustPressed(PlayerInput.INTERACT)
+            navigatePrevious: () => controller.isJustPressed(PlayerInput.MOVE_LEFT) || controller.isJustPressed(PlayerInput.MOVE_UP),
+            navigateNext: () => controller.isJustPressed(PlayerInput.MOVE_RIGHT) || controller.isJustPressed(PlayerInput.MOVE_DOWN),
+            confirm: () => controller.isJustPressed(PlayerInput.INTERACT)
         };
 
         // Initialize pause and inventory screens with viewport data
@@ -329,6 +333,8 @@ export default abstract class MappedAdventureScene extends Scene {
     }
 
     public override updateScene(deltaT: number): void {
+        const ai = this.player.ai as PlayerAI;
+        const controller = ai.controller;
         const pauseOpen = this.pauseScreen.getIsOpen() || this.pauseControlsScreen.getIsOpen();
         const inventoryOpen = this.inventoryScreen.getIsOpen();
         const dialogueOpen = this.dialogueController.isActive;
@@ -338,7 +344,7 @@ export default abstract class MappedAdventureScene extends Scene {
 
         let menuSafetyFlag = false;
         // Handle pause/resume
-        if(!menuSafetyFlag && !dialogueOpen && Input.isKeyJustPressed("escape")) {
+        if(!menuSafetyFlag && !dialogueOpen && controller.isJustPressed(PlayerInput.PAUSE)) {
             if (pauseOpen) {
                 this.pauseScreen.hide();
                 this.pauseControlsScreen.hide();
@@ -349,7 +355,7 @@ export default abstract class MappedAdventureScene extends Scene {
         }
 
         // Handle inventory
-        if (!menuSafetyFlag && !dialogueOpen && Input.isKeyJustPressed("c")) {
+        if (!menuSafetyFlag && !dialogueOpen && controller.isJustPressed(PlayerInput.INVENTORY)) {
             if (inventoryOpen) {
                 this.inventoryScreen.hide();
             } else if(!pauseOpen) {
@@ -369,9 +375,6 @@ export default abstract class MappedAdventureScene extends Scene {
 
         // Run gameplay interactions only while the world is not simulation-paused.
         if(!menuOpen) {
-            const ai = this.player.ai as PlayerAI;
-            const controller = ai.controller;
-
             if (ai.targetTile) {
                 const entrance = this.findObjectAtTile(this.entrances, ai.targetTile);
                 if (entrance) {
@@ -417,6 +420,15 @@ export default abstract class MappedAdventureScene extends Scene {
         this.worldTimeScale = Math.max(0, scale);
     }
 
+    protected lockPlayerInput(): void {
+        const ai = this.player.ai as PlayerAI;
+        ai.controller.setControlMode(PlayerControlMode.LOCKED);
+    }
+
+    protected unlockPlayerInput(): void {
+        const ai = this.player.ai as PlayerAI;
+        ai.controller.setControlMode(PlayerControlMode.GAMEPLAY);
+    }
 
     protected setWorldPaused(paused: boolean): void {
         if (this.worldPaused === paused) {
@@ -734,8 +746,109 @@ export default abstract class MappedAdventureScene extends Scene {
         this.player.setSortTile(bounceTile);
         ai.changeState(PlayerStateType.MOVING);
     }
+
+    protected movePlayerOneTileForward(options: ScriptedTileMoveOptions = {}): boolean {
+        const ai = this.player.ai as PlayerAI;
+        return this.movePlayerOneTileWithoutChangingFacing(ai.facing.clone(), options);
+    }
+    protected movePlayerOneTileForwardAsync(options: ScriptedTileMoveOptions = {}): Promise<boolean> {
+        const ai = this.player.ai as PlayerAI;
+    
+        return new Promise(resolve => {
+            const started = this.movePlayerOneTileForward(options);
+    
+            if (!started) {
+                resolve(false);
+                return;
+            }
+    
+            ai.onMoveComplete = () => resolve(true);
+        });
+    }
+    
+    protected movePlayerOneTileBackward(options: ScriptedTileMoveOptions = {}): boolean {
+        const ai = this.player.ai as PlayerAI;
+        return this.movePlayerOneTileWithoutChangingFacing(ai.facing.scaled(-1), options);
+    }
+    protected movePlayerOneTileBackwardAsync(options: ScriptedTileMoveOptions = {}): Promise<boolean> {
+        const ai = this.player.ai as PlayerAI;
+    
+        return new Promise(resolve => {
+            const started = this.movePlayerOneTileBackward(options);
+    
+            if (!started) {
+                resolve(false);
+                return;
+            }
+    
+            ai.onMoveComplete = () => resolve(true);
+        });
+    }
+    
+    
+    private movePlayerOneTileWithoutChangingFacing(direction: Vec2, options: ScriptedTileMoveOptions = {}): boolean {
+        const ai = this.player.ai as PlayerAI;
+    
+        if (ai.moving) {
+            return false;
+        }
+    
+        const originalFacing = ai.facing.clone();
+        const startTile = ai.currentTile.clone();
+    
+        if (!options.ignoreCollision && !ai.canMoveToTile(startTile, direction)) {
+            return false;
+        }
+    
+        const targetTile = startTile.clone().add(direction);
+    
+        const startTileCenter = this.ground.getTileCenter(startTile.x, startTile.y);
+        const targetTileCenter = this.ground.getTileCenter(targetTile.x, targetTile.y);
+    
+        const startPosition = this.player.getCenterForFeetPosition(
+            startTileCenter.x,
+            startTileCenter.y
+        );
+    
+        const targetPosition = this.player.getCenterForFeetPosition(
+            targetTileCenter.x,
+            targetTileCenter.y
+        );
+    
+        this.player.position.copy(startPosition);
+    
+        ai.currentTile = startTile;
+        ai.targetTile = targetTile;
+        ai.moveProgress = 0;
+        ai.moveStart = startPosition.clone();
+        ai.moveEnd = targetPosition.clone();
+        ai.currentMoveDuration = ai.moveDuration;
+        ai.moving = true;
+    
+        ai.facing = originalFacing;
+    
+        this.player.setSortTile(targetTile);
+        ai.changeState(PlayerStateType.MOVING);
+    
+        return true;
+    }
+    
+    protected setPlayerFacing(direction: Vec2): void {
+        const ai = this.player.ai as PlayerAI;
+    
+        ai.facing = direction.clone();
+        this.playIdleForFacing(ai.facing);
+    }
+    
     
     protected playItemReceivedSFX(): void {
         this.emitter.fireEvent(GameEventType.PLAY_SFX, {key: this.assets.sounds.itemReceivedSFX.key, loop: false, holdReference: false});
     }
+
+    protected waitSeconds(seconds: number): Promise<void> {
+        return new Promise(resolve => {
+            window.setTimeout(resolve, seconds * 1000);
+        });
+    }
+    
 }

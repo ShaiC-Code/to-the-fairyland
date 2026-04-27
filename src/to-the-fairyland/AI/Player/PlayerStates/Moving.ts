@@ -70,6 +70,7 @@ export default class Moving extends PlayerState {
             this.parent.currentTile = this.parent.targetTile!.clone();
             this.parent.targetTile = null;
             this.parent.moving = false;
+            this.parent.completeMove();
     
              // Check whether the player is still holding a movement direction.
             const dir = this.parent.controller.tileInput;
