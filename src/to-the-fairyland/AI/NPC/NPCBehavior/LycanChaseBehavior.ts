@@ -9,6 +9,7 @@ import PlayerActor from "../../../Actors/PlayerActor";
 import { LycanEvent } from "../../../Events";
 import PlayerAI from "../../Player/PlayerAI";
 import { findCardinalAStarPath, sameGridTile } from "../../Pathfinding/GridAStar";
+import { GameEventType } from "../../../../Wolfie2D/Events/GameEventType";
 
 export default class LycanChaseBehavior implements AI {
     private readonly emitter = new Emitter();
@@ -45,7 +46,6 @@ export default class LycanChaseBehavior implements AI {
 
     private catchCooldown = 0.8;
     private catchCooldownTimer = 0;
-
 
     public initializeAI(owner: GameNode, opts: Record<string, any>): void {
         this.owner = owner as NPCActor;
@@ -168,6 +168,11 @@ export default class LycanChaseBehavior implements AI {
     
         this.boostStepsRemaining = boostStepCount;
         this.boostDirection = direction.clone();
+        this.emitter.fireEvent(GameEventType.PLAY_SFX, {
+            key: this.owner.sceneAssets.sounds.wolvesDashingSFX.key,
+            loop: false,
+            holdReference: false
+        });
     }
        
 
