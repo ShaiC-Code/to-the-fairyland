@@ -114,7 +114,10 @@ export default abstract class MappedAdventureChapter1Scene extends MappedAdventu
         this.storyManager.unlockChapter2();
         this.sceneManager.changeToScene(
             VillageScene,
-            { spawnName: "RoadStart" },
+            {
+                cheatsEnabled: this.cheatsEnabled,
+                spawnName: "RoadStart"
+            },
             undefined,
             {
                 showLoadingOverlay: true,

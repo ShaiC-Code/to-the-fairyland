@@ -51,7 +51,10 @@ export default abstract class RoadSceneBase extends LycanChaseSceneBase {
     protected changeToRoadSection(scene: new (...args: any[]) => MappedAdventureChapter2Scene, spawnName: string): void {
         this.sceneManager.changeToScene(
             scene,
-            { spawnName },
+            {
+                cheatsEnabled: this.cheatsEnabled,
+                spawnName
+            },
             undefined,
             {
                 useFadeTransition: true,
