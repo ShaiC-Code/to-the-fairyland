@@ -15,31 +15,6 @@ import {
  * helper functions so they can branch on quest progress.
  */
 const STATIC_OBJECT_INTERACTIONS: Readonly<Record<string, InteractionData>> = {
-    BushBerries: dialogueWithChoice(
-        [
-            "A bush covered in blue berries pokes through the snow.",
-            "Most of the berries are frozen solid.",
-            "Collect berries?"
-        ],
-        {
-            lineIndex: 2,
-            options: [
-                choiceOption(
-                    "Yes",
-                    dialogue([
-                        "<yellow>[You received Frozen Berries]",
-                        "*You can Press [C] to open your inventory*"
-                    ]),
-                    { choiceAction: DialogueChoiceActions.COLLECT_FROZEN_BERRIES }
-                ),
-                choiceOption(
-                    "No",
-                    dialogue(["You left the bush alone."])
-                )
-            ]
-        }
-    ),
-
     MapItem: dialogueWithChoice(
         [
             "A blood-stained map rests in the snow.",
@@ -78,6 +53,54 @@ const STATIC_OBJECT_INTERACTIONS: Readonly<Record<string, InteractionData>> = {
 // Used by the generic map-object interaction flow in MappedAdventureScene.
 export function getObjectInteraction(interactionId: string): InteractionData | undefined {
     return STATIC_OBJECT_INTERACTIONS[interactionId];
+}
+
+export function getBushBerriesDialogue(step: Chapter1MainQuestStep): DialogueInteraction {
+    switch (step) {
+    case Chapter1MainQuestStep.NEED_FOOD:
+        return dialogueWithChoice(
+            [
+                "A bush covered in blue berries pokes through the snow.",
+                "Most of the berries are frozen solid.",
+                "Collect berries?"
+            ],
+            {
+                lineIndex: 2,
+                options: [
+                    choiceOption(
+                        "Yes",
+                        dialogue([
+                            "<yellow>[You received Frozen Berries]",
+                            "*You can Press [C] to open your inventory*"
+                        ]),
+                        { choiceAction: DialogueChoiceActions.COLLECT_FROZEN_BERRIES }
+                    ),
+                    choiceOption(
+                        "No",
+                        dialogue(["You left the bush alone."])
+                    )
+                ]
+            }
+        );
+    case Chapter1MainQuestStep.NEED_TO_COOK:
+    case Chapter1MainQuestStep.NEED_TO_EAT:
+        return dialogue(
+            [
+                "You've collected enough berries for now.",
+                "*You can Press [C] to open your inventory*"
+            ]
+        );
+
+    case Chapter1MainQuestStep.RETURN_TO_BED:
+    case Chapter1MainQuestStep.SLEPT:
+        return dialogue(["You've collected enough berries for now."]);
+
+    case Chapter1MainQuestStep.MAP_PICKED:
+        return dialogue(["They're cold to the touch..."]);
+
+    default:
+        return dialogue(["..."]);
+    }
 }
 
 // Beds are story-aware, so they are resolved by quest step instead of a static table entry.
@@ -123,8 +146,8 @@ export function getBedDialogue(step: Chapter1MainQuestStep): DialogueInteraction
         return dialogue(
             [
                 "...",
-                "Time is pressing.",
-                "You decide rest can be had later."
+                "You hear distant howling.",
+                "Rest can be had later."
             ],
             { completeAction: DialogueCompleteActions.GOTO_CHAPTER2 }
         );
@@ -169,6 +192,11 @@ export function getPotDialogue(step: Chapter1MainQuestStep): DialogueInteraction
         );
 
     case Chapter1MainQuestStep.NEED_TO_EAT:
+        return dialogue([
+            "The pot is still warm.",
+            "*You can use items by interacting with them in your inventory*"
+        ]);
+
     case Chapter1MainQuestStep.RETURN_TO_BED:
         return dialogue(["The pot is still warm."]);
 

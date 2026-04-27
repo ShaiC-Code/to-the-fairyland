@@ -160,23 +160,30 @@ export default class VillageScene extends LycanChaseSceneBase {
 
     private startLycanChase(detectedLycan: NPCActor): void {
         console.log("Detected by Lycan:", detectedLycan.id);
-    
-        this.storyManager.chapter2.markEscapeLycansStarted();
-        this.startAllLycanChases();
+
+        this.startDialogue(
+            dialogue(["<red>RUN"], 
+            {
+                onComplete: () => {
+                    this.startAllLycanChases();
+                    
+                    this.emitter.fireEvent(GameEventType.PLAY_SOUND, {
+                        key: this.assets.sounds.wolvesRunningSFX.key,
+                        loop: true,
+                        holdReference: true
+                    });
+                    this.emitter.fireEvent(GameEventType.PLAY_SFX, {
+                        key: this.assets.sounds.wolvesFerociousSFX.key,
+                        loop: true,
+                        holdReference: true
+                    });
+                }
+            })
+        );
         
-        this.emitter.fireEvent(GameEventType.PLAY_SOUND, {
-            key: this.assets.sounds.wolvesRunningSFX.key,
-            loop: true,
-            holdReference: true
-        });
-        this.emitter.fireEvent(GameEventType.PLAY_SFX, {
-            key: this.assets.sounds.wolvesFerociousSFX.key,
-            loop: true,
-            holdReference: true
-        });
+        this.storyManager.chapter2.markEscapeLycansStarted();
     }
     
-
     protected override tryStartSceneInteractionAtTile(tile: Vec2): boolean {
         const npc = this.findNpcAtTile(tile);
         if (!npc) {

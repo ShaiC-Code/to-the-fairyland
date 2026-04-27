@@ -16,7 +16,6 @@ export default abstract class LycanChaseSceneBase extends MappedAdventureChapter
 
     protected readonly lycanDeathHitLayerName = "lycanDeathHitLayer";
 
-
     protected readonly lycanMoveDuration = 0.16;
     protected readonly lycanRepathInterval = 0.25;
     protected readonly lycanFeetOffsetY = 15;
