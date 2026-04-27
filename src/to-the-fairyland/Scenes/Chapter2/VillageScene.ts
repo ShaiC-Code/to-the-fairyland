@@ -223,7 +223,10 @@ export default class VillageScene extends LycanChaseSceneBase {
             }
             this.sceneManager.changeToScene(
                 RoadScene,
-                { spawnName: "RoadStart" },
+                {
+                    cheatsEnabled: this.cheatsEnabled,
+                    spawnName: "RoadStart"
+                },
                 undefined,
                 {
                     useFadeTransition: true,

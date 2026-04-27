@@ -1,6 +1,7 @@
 import Scene from "../../../Wolfie2D/Scene/Scene";
 import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 import UIScreen, { UIScreenOptions } from "../UIScreen";
+import Button from "../../../Wolfie2D/Nodes/UIElements/Button";
 
 export default class TestScreen extends UIScreen {
 
@@ -38,11 +39,29 @@ export default class TestScreen extends UIScreen {
 
         this.addLabel(
             "cheatCodesLabel",
-            new Vec2(screenCenter.x, listTop + 300),
-            new Vec2(760, 40),
-            "Cheat Codes: Placeholder...",
+            new Vec2(screenCenter.x - 180, listTop + 300),
+            new Vec2(180, 40),
+            "Cheat Codes:",
             28,
             {"halign": "left", "valign": "center"}
+        );
+
+        const cheatsBtnEnableText = "Enable Cheats";
+        const cheatsBtnDisableText = "Disable Cheats";
+        this.addButton(
+            "activateCheatsBtn",
+            new Vec2(screenCenter.x + 180, listTop + 300),
+            new Vec2(380, 40),
+            cheatsBtnEnableText,
+            {
+                onClickEventId: "activateCheats",
+                onClick: () => {
+                    const btn = this.getUIElement("activateCheatsBtn") as Button | undefined;
+                    if (!btn) return;
+                    const isActivating = btn.text === cheatsBtnEnableText;
+                    btn.setText(isActivating ? cheatsBtnDisableText : cheatsBtnEnableText);
+                }
+            }
         );
 
         const buttonSize = new Vec2(280, 60);
@@ -68,7 +87,8 @@ export default class TestScreen extends UIScreen {
 
         this.setNavigationButtons([
             "goBackBtn",
-            "mainMenuBtn"
+            "mainMenuBtn",
+            "activateCheatsBtn"
         ]);
 
         // Hide by default

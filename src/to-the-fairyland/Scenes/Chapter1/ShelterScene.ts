@@ -81,7 +81,11 @@ export default class ShelterScene extends MappedAdventureChapter1Scene {
         if (obj.name === "DoorToOutside") {
             this.sceneManager.changeToScene(
                 ForestScene, 
-                {spawnName: "Outside", facing: Vec2.DOWN},
+                {
+                    cheatsEnabled: this.cheatsEnabled,
+                    spawnName: "Outside",
+                    facing: Vec2.DOWN
+                },
                 undefined,
                 {
                     useFadeTransition: true,

@@ -53,6 +53,9 @@ export default abstract class LycanChaseSceneBase extends MappedAdventureChapter
     public override unloadScene(): void {
         super.unloadScene();
         this.keepAssets(LycanChaseSceneBase.assetBundle);
+
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: this.assets.sounds.wolvesRunningSFX.key });
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: this.assets.sounds.wolvesFerociousSFX.key });
     }
 
     public override startScene(): void {
@@ -75,6 +78,19 @@ export default abstract class LycanChaseSceneBase extends MappedAdventureChapter
         
 
         this.receiver.subscribe(LycanEvent.PLAYER_CAUGHT);
+
+        if (this.storyManager.chapter2.needsToEscapeLycans()) {
+            this.emitter.fireEvent(GameEventType.PLAY_SOUND, {
+                key: this.assets.sounds.wolvesRunningSFX.key,
+                loop: true,
+                holdReference: true
+            });
+            this.emitter.fireEvent(GameEventType.PLAY_SFX, {
+                key: this.assets.sounds.wolvesFerociousSFX.key,
+                loop: true,
+                holdReference: true
+            });
+        }
     }
 
     public override updateScene(deltaT: number): void {
@@ -141,7 +157,7 @@ export default abstract class LycanChaseSceneBase extends MappedAdventureChapter
     }
 
     private startLycanDeathSequence(): void {
-        if (this.lycanDeathSequencePlaying) {
+        if (this.lycanDeathSequencePlaying || this.cheatsEnabled) {
             return;
         }
     
