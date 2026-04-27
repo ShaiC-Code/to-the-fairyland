@@ -371,7 +371,56 @@
          "draworder":"topdown",
          "id":2,
          "name":"Interactables",
-         "objects":[],
+         "objects":[
+                {
+                 "height":64,
+                 "id":136,
+                 "name":"Cliff_Jump",
+                 "opacity":1,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":448,
+                 "x":640,
+                 "y":1088
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "id":11,
+         "name":"EnemySpawns",
+         "objects":[
+                {
+                 "height":0,
+                 "id":137,
+                 "name":"Lycan1",
+                 "opacity":1,
+                 "point":true,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":608,
+                 "y":1824
+                }, 
+                {
+                 "height":0,
+                 "id":138,
+                 "name":"Lycan2",
+                 "opacity":1,
+                 "point":true,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":1120,
+                 "y":1824
+                }],
          "opacity":1,
          "type":"objectgroup",
          "visible":true,
@@ -431,8 +480,8 @@
          "x":0,
          "y":0
         }],
- "nextlayerid":11,
- "nextobjectid":136,
+ "nextlayerid":12,
+ "nextobjectid":139,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.12.1",

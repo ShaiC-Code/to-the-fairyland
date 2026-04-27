@@ -12,9 +12,13 @@ import { PlayerControlMode, PlayerInput } from "../AI/Player/PlayerController";
 import TintEffectOverlay from "../Overlays/TintEffectOverlay";
 import { AssetBundle } from "../Scenes/MappedAdventureScene";
 import CutsceneScreen from "../UI/CutsceneScreen";
-import DialogueScreen from "../UI/DialogueScreen";
+import DialogueScreen, { DialogueLayoutMode } from "../UI/DialogueScreen";
 import { UIScreenOptions } from "../UI/UIScreen";
 import { DialogueChoiceOption, DialogueInteraction } from "./InteractionSystem/InteractionDatabase";
+
+export type DialogueStartOptions = {
+    layoutMode?: DialogueLayoutMode;
+};
 
 export default class DialogueController implements Updateable {
     private assetBundle: AssetBundle = {
@@ -47,6 +51,7 @@ export default class DialogueController implements Updateable {
     private dialogueChoiceActive: boolean = false;
     private dialogueChoiceResolved: boolean = false;
     private ignoreNextConfirm: boolean = false;
+    private activeStartOptions: DialogueStartOptions = {};
     
     private readonly dialogueLayerName = "dialogueOverlay";
     private readonly cutsceneLayerName = "cutsceneOverlay";
@@ -164,17 +169,19 @@ export default class DialogueController implements Updateable {
         this.playDialogueSpeakingSFX();
     }
 
-    public startDialogue(dialogue: DialogueInteraction, speakerName?: string): void {
+    public startDialogue(dialogue: DialogueInteraction, speakerName?: string, options: DialogueStartOptions = {}): void {
         const ai = this.player.ai as PlayerAI;
         ai.controller.setControlMode(PlayerControlMode.DIALOGUE);
 
         this.activeSpeakerName = speakerName;
+        this.activeStartOptions = { ...options };
 
         this.activeDialogue = dialogue;
         this.currentDialogueLine = 0;
         this.dialogueChoiceActive = false;
         this.dialogueChoiceResolved = false;
         this.ignoreNextConfirm = true;
+        this.dialogueScreen.setLayoutMode(options.layoutMode ?? "bottom");
         this.textDisplay.hideChoices();
         this.textDisplay.setOnCompleteCallback(() => {
             dialogue.onComplete?.();
@@ -220,7 +227,7 @@ export default class DialogueController implements Updateable {
                     this.textDisplay.hideChoices();
                     option.onSelect?.();
                     this.handleDialogueChoiceAction(option);
-                    this.startDialogue(option.interaction, this.activeSpeakerName);
+                    this.startDialogue(option.interaction, this.activeSpeakerName, this.activeStartOptions);
                 }
             }))
         );
@@ -246,6 +253,7 @@ export default class DialogueController implements Updateable {
         this.dialogueChoiceActive = false;
         this.dialogueChoiceResolved = false;
         this.ignoreNextConfirm = false;
+        this.activeStartOptions = {};
         if (!callbackHandledByReadCompletion) {
             this.textDisplay.clearOnCompleteCallback();
         }

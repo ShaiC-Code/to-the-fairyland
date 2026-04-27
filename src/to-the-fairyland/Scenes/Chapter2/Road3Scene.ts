@@ -52,6 +52,11 @@ export default class Road3Scene extends RoadSceneBase {
     
                 return;
             }
+
+            if (this.storyManager.chapter2.needsToEscapeLycans()) {
+                this.changeToRoadSection(CliffScene, "RoadStart");
+                return;
+            }
     
             this.rejectAutoTransitionEntry();
     
@@ -77,10 +82,11 @@ export default class Road3Scene extends RoadSceneBase {
             }
         ));
     }
-    
+      
     protected override getLycanChaseSpawnPrefix(): string | null {
         if (this.spawnName === "RoadStart") return "ChaseFromRoad2";
+        if (this.spawnName === "RoadEnd") return "ChaseFromCliff";
         return null;
-    }    
+    }
     
 }
