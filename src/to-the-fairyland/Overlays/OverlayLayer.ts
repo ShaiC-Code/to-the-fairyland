@@ -12,6 +12,7 @@ import Updateable from "../../Wolfie2D/DataTypes/Interfaces/Updateable";
 
 export type OverlayLayerOptions = {
     depth?: number;
+    useUILayer?: boolean;
 };
 
 export default class OverlayLayer implements Updateable {
@@ -31,7 +32,16 @@ export default class OverlayLayer implements Updateable {
         this.getViewportCenter = getViewportCenter;
         this.getViewportHalfSize = getViewportHalfSize;
         this.layerName = layerName;
-        this.layer = this.scene.addParallaxLayer(layerName, Vec2.ZERO, options?.depth ?? OverlayLayer.defaultDepth);
+        if (options?.useUILayer) {
+            this.layer = this.scene.addUILayer(layerName);
+            this.layer.setDepth(options?.depth ?? OverlayLayer.defaultDepth);
+        } else {
+            this.layer = this.scene.addParallaxLayer(
+                layerName,
+                Vec2.ZERO,
+                options?.depth ?? OverlayLayer.defaultDepth
+            );
+        }
 
         this.elements = new Map();
     }
