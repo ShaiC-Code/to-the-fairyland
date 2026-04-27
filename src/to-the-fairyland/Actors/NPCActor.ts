@@ -13,13 +13,18 @@ import { TargetingEntity } from "../GameSystems/Targeting/TargetingEntity";
 import BasicBattler from "../GameSystems/BattleSystem/BasicBattler";
 import Timer from "../../Wolfie2D/Timing/Timer";
 import Scene from "../../Wolfie2D/Scene/Scene";
+import { AssetBundle } from "../Scenes/MappedAdventureScene";
+import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 
 
 export default class NPCActor extends AnimatedSprite implements Battler, TargetingEntity {
-
-    /** Override the type of the scene to be the Spy Master scene */
-    protected scene: Scene
-
+    private assetBundle: AssetBundle = {
+        tilemaps: {},
+        spritesheets: {},
+        sprites: {},
+        sounds: {}
+    };
+    
     // An invincible timer for our NPCs
     protected invincibleTimer: Timer;
 
@@ -37,8 +42,14 @@ export default class NPCActor extends AnimatedSprite implements Battler, Targeti
         this._battler = new BasicBattler(this);
         this._targeting = new BasicTargeting(this);
         this.invincibleTimer = new Timer(1000);
+    }
+    
+    get sceneAssets() {
+        return this.assetBundle;
+    }
 
-        this.receiver.subscribe("use-hpack");
+    set sceneAssets(value: AssetBundle) {
+        this.assetBundle = value;
     }
 
     /** The TargetingEntity interface */
