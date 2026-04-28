@@ -14,6 +14,9 @@ export default class SpotlightOverlay extends Rect {
     /** The color of the overlay */
     overlayColor: Color;
 
+    private buffer: HTMLCanvasElement | null = null;
+    private dirty = true;
+
     constructor(position: Vec2, size: Vec2, radius: number, innerRadiusRatio: number , overlayColor: Color) {
         super(position, size);
         this.radius = radius;
@@ -30,67 +33,30 @@ export default class SpotlightOverlay extends Rect {
      */
     renderCustom(ctx: CanvasRenderingContext2D) {
         if (this.layer.isHidden() || !this.visible) return;
-        
-        const w = this.size.x;
-        const h = this.size.y;
-
-        const innerRadius = this.innerRadius;
-        const outerRadius = this.radius;
-
-        // --- Create offscreen canvas ---
-        const buffer = document.createElement('canvas');
-        buffer.width = w;
-        buffer.height = h;
-
-        const bctx = buffer.getContext('2d')!;
-
-        // Move origin to center (to match your main ctx)
-        bctx.translate(w / 2, h / 2);
-
-        // --- 1. Fill overlay ---
-        bctx.fillStyle = this.overlayColor.toStringRGBA();
-        bctx.fillRect(-w / 2, -h / 2, w, h);
-
-        // --- 2. Cut gradient hole (SAFE here) ---
-        bctx.globalCompositeOperation = 'destination-out';
-
-        const grad = bctx.createRadialGradient(
-            0, 0, 0,
-            0, 0, outerRadius
-        );
-        
-        grad.addColorStop(0.00, 'rgba(0,0,0,1.00)');
-        grad.addColorStop(0.10, 'rgba(0,0,0,0.98)');
-        grad.addColorStop(0.20, 'rgba(0,0,0,0.94)');
-        grad.addColorStop(0.38, 'rgba(0,0,0,0.88)');
-        grad.addColorStop(0.50, 'rgba(0,0,0,0.78)');
-        grad.addColorStop(0.68, 'rgba(0,0,0,0.58)');
-        grad.addColorStop(0.82, 'rgba(0,0,0,0.28)');
-        grad.addColorStop(1.00, 'rgba(0,0,0,0.00)');
-        
-
-        bctx.fillStyle = grad;
-        bctx.beginPath();
-        bctx.arc(0, 0, outerRadius, 0, Math.PI * 2);
-        bctx.fill();
-
-        // --- 3. Draw result onto main canvas ---
-        ctx.drawImage(buffer, -w / 2, -h / 2);
+    
+        if (this.dirty || !this.buffer) {
+            this.rebuildBuffer();
+        }
+    
+        ctx.drawImage(this.buffer!, -this.size.x / 2, -this.size.y / 2);
     }
+    
 
     /**
      * Set the spotlight radius.
      */
     setRadius(radius: number) {
         this.radius = radius;
+        this.dirty = true;
     }
 
     /**
      * Set the spotlight radius.
      */
     setInnerRadiusRatio(innerRadiusRatio: number) {
-        innerRadiusRatio = Math.max(0, Math.min(innerRadiusRatio, 1)); // Clamp to [0, 1]
+        innerRadiusRatio = Math.max(0, Math.min(innerRadiusRatio, 1));
         this.innerRadius = this.radius * innerRadiusRatio;
+        this.dirty = true;
     }
 
     /**
@@ -98,5 +64,41 @@ export default class SpotlightOverlay extends Rect {
      */
     setOverlayColor(overlayColor: Color) {
         this.overlayColor = overlayColor;
+        this.dirty = true;
     }
+
+    private rebuildBuffer(): void {
+        const w = this.size.x;
+        const h = this.size.y;
+    
+        this.buffer = document.createElement("canvas");
+        this.buffer.width = w;
+        this.buffer.height = h;
+    
+        const bctx = this.buffer.getContext("2d")!;
+        bctx.translate(w / 2, h / 2);
+    
+        bctx.fillStyle = this.overlayColor.toStringRGBA();
+        bctx.fillRect(-w / 2, -h / 2, w, h);
+    
+        bctx.globalCompositeOperation = "destination-out";
+    
+        const grad = bctx.createRadialGradient(0, 0, 0, 0, 0, this.radius);
+        grad.addColorStop(0.00, "rgba(0,0,0,1.00)");
+        grad.addColorStop(0.10, "rgba(0,0,0,0.98)");
+        grad.addColorStop(0.20, "rgba(0,0,0,0.94)");
+        grad.addColorStop(0.38, "rgba(0,0,0,0.88)");
+        grad.addColorStop(0.50, "rgba(0,0,0,0.78)");
+        grad.addColorStop(0.68, "rgba(0,0,0,0.58)");
+        grad.addColorStop(0.82, "rgba(0,0,0,0.28)");
+        grad.addColorStop(1.00, "rgba(0,0,0,0.00)");
+    
+        bctx.fillStyle = grad;
+        bctx.beginPath();
+        bctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+        bctx.fill();
+    
+        this.dirty = false;
+    }
+    
 }
