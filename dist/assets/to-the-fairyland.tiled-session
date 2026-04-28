@@ -1,13 +1,13 @@
 {
-    "activeFile": "tilemaps/Chapter2/Village.json",
+    "activeFile": "tilemaps/Chapter2/Cliff.json",
     "expandedProjectPaths": [
-        "tilemaps/Chapter5",
-        "spritesheets",
         "tilemaps/Chapter6",
-        "tilemaps/Chapter4",
-        "tilemaps",
+        "spritesheets",
         ".",
         "tilemaps/Chapter2",
+        "tilemaps/Chapter5",
+        "tilemaps/Chapter4",
+        "tilemaps",
         "tilemaps/Chapter1"
     ],
     "fileStates": {
@@ -51,13 +51,14 @@
             "expandedObjectLayers": [
                 4,
                 5,
-                3
+                3,
+                2
             ],
-            "scale": 0.5,
-            "selectedLayer": 4,
+            "scale": 1,
+            "selectedLayer": 8,
             "viewCenter": {
-                "x": 720,
-                "y": 1235
+                "x": 908,
+                "y": 1417.5
             }
         },
         "tilemaps/Chapter2/Cliff.json#Chapter2_Village_Tiles": {
@@ -228,7 +229,13 @@
     "map.tileWidth": 64,
     "map.width": 60,
     "openFiles": [
-        "tilemaps/Chapter2/Village.json"
+        "tilemaps/Chapter2/Village.json",
+        "tilemaps/Chapter2/Road.json",
+        "tilemaps/Chapter2/Road1.json",
+        "tilemaps/Chapter2/Road2.json",
+        "tilemaps/Chapter2/Road3.json",
+        "tilemaps/Chapter1/Chapter1.json",
+        "tilemaps/Chapter2/Cliff.json"
     ],
     "project": "to-the-fairyland.tiled-project",
     "recentFiles": [
@@ -237,12 +244,12 @@
         "tilemaps/Chapter2/Road1.json",
         "tilemaps/Chapter2/Road2.json",
         "tilemaps/Chapter2/Road3.json",
+        "tilemaps/Chapter1/Chapter1.json",
         "tilemaps/Chapter2/Cliff.json",
         "tilemaps/Chapter4/CliffBottom.json",
         "tilemaps/Chapter4/DeeperForest.json",
         "tilemaps/Chapter4/GreatTree.json",
         "tilemaps/Chapter4/TreeInner.json",
-        "tilemaps/Chapter1/Chapter1.json",
         "tilemaps/Chapter1/Shelter.json"
     ],
     "resizeMap.removeObjects": false,
