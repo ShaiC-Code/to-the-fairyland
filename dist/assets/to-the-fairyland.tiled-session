@@ -1,14 +1,15 @@
 {
-    "activeFile": "tilemaps/Chapter2/Cliff.json",
+    "activeFile": "tilemaps/Chapter7/EmeraldPond.json",
     "expandedProjectPaths": [
-        "tilemaps/Chapter6",
-        "spritesheets",
         ".",
         "tilemaps/Chapter2",
         "tilemaps/Chapter5",
-        "tilemaps/Chapter4",
+        "tilemaps/Chapter7",
+        "spritesheets",
+        "tilemaps/Chapter1",
         "tilemaps",
-        "tilemaps/Chapter1"
+        "tilemaps/Chapter6",
+        "tilemaps/Chapter4"
     ],
     "fileStates": {
         "": {
@@ -16,8 +17,8 @@
         },
         "tilemaps/Chapter1/Chapter1.json": {
             "expandedObjectLayers": [
-                14,
                 6,
+                14,
                 13
             ],
             "scale": 0.5,
@@ -49,13 +50,13 @@
         },
         "tilemaps/Chapter2/Cliff.json": {
             "expandedObjectLayers": [
-                4,
                 2,
-                3,
-                5
+                5,
+                4,
+                3
             ],
             "scale": 1,
-            "selectedLayer": 8,
+            "selectedLayer": 9,
             "viewCenter": {
                 "x": 973,
                 "y": 1536.5
@@ -66,12 +67,12 @@
         },
         "tilemaps/Chapter2/Road.json": {
             "expandedObjectLayers": [
-                4,
-                8,
                 2,
-                3,
                 5,
-                9
+                9,
+                8,
+                4,
+                3
             ],
             "scale": 1,
             "selectedLayer": 6,
@@ -85,11 +86,11 @@
         },
         "tilemaps/Chapter2/Road1.json": {
             "expandedObjectLayers": [
-                4,
-                8,
-                3,
                 10,
-                5
+                5,
+                8,
+                4,
+                3
             ],
             "scale": 1,
             "selectedLayer": 7,
@@ -103,11 +104,11 @@
         },
         "tilemaps/Chapter2/Road2.json": {
             "expandedObjectLayers": [
-                4,
-                8,
-                3,
                 5,
-                12
+                12,
+                8,
+                4,
+                3
             ],
             "scale": 2,
             "selectedLayer": 7,
@@ -121,17 +122,17 @@
         },
         "tilemaps/Chapter2/Road3.json": {
             "expandedObjectLayers": [
-                4,
-                8,
-                3,
                 10,
-                5
+                5,
+                8,
+                4,
+                3
             ],
             "scale": 0.5,
             "selectedLayer": 8,
             "viewCenter": {
-                "x": 1616,
-                "y": 917
+                "x": 1345,
+                "y": 1312
             }
         },
         "tilemaps/Chapter2/Road3.json#Chapter2_Village_Tiles": {
@@ -140,8 +141,8 @@
         "tilemaps/Chapter2/Village.json": {
             "expandedObjectLayers": [
                 5,
-                7,
-                9
+                9,
+                7
             ],
             "scale": 1,
             "selectedLayer": 6,
@@ -222,18 +223,18 @@
         },
         "tilemaps/Chapter7/EmeraldPond.json": {
             "expandedObjectLayers": [
-                4,
-                5
+                5,
+                4
             ],
-            "scale": 0.75,
-            "selectedLayer": 2,
+            "scale": 1.5,
+            "selectedLayer": 4,
             "viewCenter": {
-                "x": 664,
-                "y": 727.3333333333334
+                "x": 658.6666666666666,
+                "y": 679
             }
         },
         "tilemaps/Chapter7/EmeraldPond.json#EmeraldPond": {
-            "scaleInDock": 1
+            "scaleInDock": 0.5
         },
         "tilemaps/Chapter7/EmeraldPond.tmj": {
             "scale": 0.5,
@@ -258,11 +259,12 @@
         "tilemaps/Chapter2/Road2.json",
         "tilemaps/Chapter2/Road3.json",
         "tilemaps/Chapter1/Chapter1.json",
-        "tilemaps/Chapter2/Cliff.json"
+        "tilemaps/Chapter2/Cliff.json",
+        "tilemaps/Chapter7/EmeraldPond.json"
     ],
     "project": "to-the-fairyland.tiled-project",
+    "property.type": "string",
     "recentFiles": [
-        "tilemaps/Chapter7/EmeraldPond.tmj",
         "tilemaps/Chapter2/Village.json",
         "tilemaps/Chapter2/Road.json",
         "tilemaps/Chapter2/Road1.json",
@@ -270,10 +272,11 @@
         "tilemaps/Chapter2/Road3.json",
         "tilemaps/Chapter1/Chapter1.json",
         "tilemaps/Chapter2/Cliff.json",
+        "tilemaps/Chapter7/EmeraldPond.json",
+        "tilemaps/Chapter7/EmeraldPond.tmj",
         "tilemaps/Chapter4/CliffBottom.json",
         "tilemaps/Chapter4/DeeperForest.json",
-        "tilemaps/Chapter4/GreatTree.json",
-        "tilemaps/Chapter4/TreeInner.json"
+        "tilemaps/Chapter4/GreatTree.json"
     ],
     "resizeMap.removeObjects": false,
     "tileset.embedInMap": true,

@@ -32,14 +32,17 @@ function getCardinalDirectionsTowardGoal(from: Vec2, goal: Vec2): Vec2[] {
 export function findCardinalAStarPath(
     start: Vec2,
     goal: Vec2,
-    tilemap: OrthogonalTilemap
+    tilemap: OrthogonalTilemap,
+    blockedTiles: Vec2[] = []
 ): Vec2[] {
+
     const startTile = normalizeTile(start);
     const goalTile = normalizeTile(goal);
 
     if (!canEnterTile(goalTile, tilemap)) {
         return [];
     }
+    
 
     // String (A,B) for which tile
     const startKey = tileKey(startTile);
@@ -84,6 +87,15 @@ export function findCardinalAStarPath(
             if (!canEnterTile(neighbor, tilemap)) {
                 continue;
             }
+
+            const blockedByDynamicTile =
+                blockedTiles.some(tile => sameGridTile(tile, neighbor)) &&
+                !sameGridTile(neighbor, goalTile);
+
+            if (blockedByDynamicTile) {
+                continue;
+            }
+
 
             const tentativeG = (gScore.get(currentKey) ?? Infinity) + 1;
 

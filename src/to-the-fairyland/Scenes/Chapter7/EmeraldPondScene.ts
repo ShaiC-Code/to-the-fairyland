@@ -4,8 +4,13 @@ import MappedAdventureScene, {
     ChapterSceneDefinition
 } from "../MappedAdventureScene";
 import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
-import PlayerAI from "../../AI/Player/PlayerAI";
 import BubbleParticleBehavior, { BubbleParticleSettings } from "../../AI/BubbleParticleBehavior";
+import AnimatedSprite from "../../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
+import { TiledObject, TiledTilemapData } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData";
+import DolphinPathBehavior from "../../AI/NPC/NPCBehavior/DolphinPathBehavior";
+import MainMenu from "../MainMenu";
+
+
 
 
 export default class EmeraldPondScene extends MappedAdventureScene {
@@ -25,6 +30,13 @@ export default class EmeraldPondScene extends MappedAdventureScene {
     private readonly bubbleBurstPauseMin = 0.25;
     private readonly bubbleBurstPauseMax = 0.75;
     
+    private readonly dolphinPathLayerName = "DolphinPath";
+    private readonly dolphinSpawnName = "Dolphin";
+    private readonly dolphinMoveDuration = 0.2;
+
+
+    private dolphin!: AnimatedSprite;
+
 
     private bubbles: Sprite[] = [];
     private bubbleSpawnTimer = 0;
@@ -67,6 +79,10 @@ export default class EmeraldPondScene extends MappedAdventureScene {
             playerSheet: {
                 key: "fateDrown",
                 path: "/assets/spritesheets/FateDrown.json"
+            },
+            dolphinSheet: {
+                key: "dolphin",
+                path: "/assets/spritesheets/Dolphin.json"
             }
         },
         sprites: {
@@ -114,6 +130,7 @@ export default class EmeraldPondScene extends MappedAdventureScene {
         this.lockPlayerInput();
         this.setupPondDepthBackground();
         this.setupBubblePool();
+        this.setupDolphin();
     }
 
     // =============== Update Scene =======================
@@ -132,6 +149,77 @@ export default class EmeraldPondScene extends MappedAdventureScene {
         }
         this.updateBubbleSpawning(deltaT);
     }
+
+    private setupDolphin(): void {
+        const tilemapData = this.resourceManager.getTilemap(this.tilemap.key) as TiledTilemapData;
+    
+        const spawnLayer = tilemapData.layers.find(layer => layer.name === this.spawnLayerName);
+        const dolphinSpawn = spawnLayer?.objects?.find(obj => obj.name === this.dolphinSpawnName);
+    
+        const pathLayer = tilemapData.layers.find(layer => layer.name === this.dolphinPathLayerName);
+    
+        if (!dolphinSpawn) {
+            throw new Error(`Missing Dolphin spawn point in ${this.spawnLayerName}`);
+        }
+    
+        const dolphinPathWaypoints = (pathLayer?.objects ?? [])
+            .filter(obj => !Number.isNaN(Number(obj.name)))
+            .sort((a, b) => Number(a.name) - Number(b.name))
+            .map(obj => ({
+                tile: this.getObjectTile(obj),
+                facing: this.getFacingFromObject(obj),
+                facingHoldSeconds: this.getFacingHoldSecondsFromObject(obj),
+                action: this.getActionFromObject(obj)
+            }));
+
+        const dolphinStartTile = this.getObjectTile(dolphinSpawn);
+    
+        this.dolphin = this.add.animatedSprite(
+            AnimatedSprite,
+            this.assets.spritesheets.dolphinSheet.key,
+            this.actorLayerName
+        );
+        
+        this.dolphin.setSortOrder(1);
+    
+        this.dolphin.position.copy(
+            this.ground.getTileCenter(dolphinStartTile.x, dolphinStartTile.y)
+        );
+        this.dolphin.animation.play("IDLE_LEFT", true);
+        this.dolphin.addAI(DolphinPathBehavior, {
+            ground: this.ground,
+            collision: this.collision,
+            startTile: dolphinStartTile,
+            pathWaypoints: dolphinPathWaypoints,
+            moveDuration: this.dolphinMoveDuration,
+            player: this.player,
+            onRescueComplete: () => this.transitionToMainMenu()
+        });
+    }
+
+    private getActionFromObject(obj: TiledObject): string | undefined {
+        return obj.properties?.find(prop => prop.name === "action")?.value;
+    }
+    
+
+    private getFacingFromObject(obj: TiledObject): Vec2 | undefined {
+        const facing = obj.properties?.find(prop => prop.name === "facing")?.value;
+
+        if (facing === "up") return Vec2.UP;
+        if (facing === "down") return Vec2.DOWN;
+        if (facing === "left") return Vec2.LEFT;
+        if (facing === "right") return Vec2.RIGHT;
+
+        return undefined;
+    }
+
+    private getFacingHoldSecondsFromObject(obj: TiledObject): number {
+        const value = obj.properties?.find(prop => prop.name === "time_of_facing")?.value;
+        const seconds = Number(value);
+
+        return Number.isFinite(seconds) && seconds > 0 ? seconds : 0;
+    }
+    
 
 
     private setupPondDepthBackground(): void {
@@ -237,12 +325,10 @@ export default class EmeraldPondScene extends MappedAdventureScene {
             return;
         }
     
-        const ai = this.player.ai as PlayerAI;
-        const tileCenter = this.ground.getTileCenter(ai.currentTile.x, ai.currentTile.y);
         const tileSize = this.ground.getScaledTileSize();
 
         const bubbleSpawnOffsetY = -20;
-        const bubbleOrigin = tileCenter.clone();
+        const bubbleOrigin = this.player.position.clone();
         bubbleOrigin.y += bubbleSpawnOffsetY;
 
         const isBackBubble = bubble.getLayer().getName() === this.bubbleBackLayerName;
@@ -269,5 +355,24 @@ export default class EmeraldPondScene extends MappedAdventureScene {
         return min + Math.random() * (max - min);
     }
     
-
+    private transitionToMainMenu(): void {
+        if (this.transitioning) {
+            return;
+        }
+    
+        this.transitioning = true;
+    
+        this.sceneManager.changeToScene(
+            MainMenu,
+            {},
+            undefined,
+            {
+                showLoadingOverlay: true,
+                useFadeTransition: true,
+                fadeOutMs: 1000,
+                fadeInMs: 500
+            }
+        );
+    }
+    
 }
