@@ -22,15 +22,19 @@ export default class LevelSelectionScreen extends UIScreen {
         const verticalOffset = 60;
 
         const levelButtonSize = new Vec2(viewportSize.x, 50);
-        const levelButtons = [
-            { key: "level1Btn", pos: new Vec2(screenCenter.x, listTop), text: "LEVEL 1", eventId: "level1" },
-            { key: "level2Btn", pos: new Vec2(screenCenter.x, listTop + verticalOffset), text: "LEVEL 2", eventId: "level2" },
-            { key: "level3Btn", pos: new Vec2(screenCenter.x, listTop + verticalOffset * 2), text: "LEVEL 3", eventId: "level3" },
-            { key: "level4Btn", pos: new Vec2(screenCenter.x, listTop + verticalOffset * 3), text: "LEVEL 4", eventId: "level4" },
-            { key: "level5Btn", pos: new Vec2(screenCenter.x, listTop + verticalOffset * 4), text: "LEVEL 5", eventId: "level5" },
-            { key: "level6Btn", pos: new Vec2(screenCenter.x, listTop + verticalOffset * 5), text: "LEVEL 6", eventId: "level6" },
-            { key: "backBtn", pos: new Vec2(screenCenter.x, listTop + verticalOffset * 6), text: "BACK", eventId: "backToMain" }
-        ];
+        const levelButtons = Array.from({ length: 10 }, (_, i) => ({
+            key: `level${i + 1}Btn`,
+            pos: new Vec2(screenCenter.x, listTop + verticalOffset * i),
+            text: `LEVEL ${i + 1}`,
+            eventId: `level${i + 1}`
+        }));
+        
+        levelButtons.push({
+            key: "backBtn",
+            pos: new Vec2(screenCenter.x, listTop + verticalOffset * levelButtons.length),
+            text: "BACK",
+            eventId: "backToMain"
+        });
         
         // Add Level Select label
         this.addLabel("levelMenuLabel", new Vec2(screenCenter.x, screenTop), new Vec2(viewportSize.x - 200, 50), "LEVEL SELECT", 48, {"halign": "left", "valign": "center"});

@@ -1,0 +1,26 @@
+{
+  "name": "FateDrown",
+  "spriteSheetImage": "FateDrown.png",
+  "spriteWidth": 128,
+  "spriteHeight": 128,
+  "columns": 4,
+  "rows": 2,
+  "durationType": "time",
+  "animations": [
+    {
+      "name": "Drown",
+      "frames": [
+        { "index": 0, "duration": 12 }
+      ]
+    },
+    {
+      "name": "DrownFlow",
+      "frames": [
+        { "index": 4, "duration": 8 },
+        { "index": 5, "duration": 8 },
+        { "index": 6, "duration": 8 },
+        { "index": 7, "duration": 8 }
+      ]
+    }
+  ]
+}
