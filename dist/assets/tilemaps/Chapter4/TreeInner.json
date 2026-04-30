@@ -144,7 +144,7 @@
                  "value":true
                 }],
          "type":"tilelayer",
-         "visible":true,
+         "visible":false,
          "width":32,
          "x":0,
          "y":0
@@ -937,7 +937,7 @@
                 }],
          "opacity":1,
          "type":"objectgroup",
-         "visible":false,
+         "visible":true,
          "x":0,
          "y":0
         }, 
@@ -968,13 +968,13 @@
  "nextobjectid":145,
  "orientation":"orthogonal",
  "renderorder":"right-down",
- "tiledversion":"1.12.0",
+ "tiledversion":"1.12.1",
  "tileheight":64,
  "tilesets":[
         {
          "columns":32,
          "firstgid":1,
-         "image":"Chapter2_Village_Tiles.png",
+         "image":"Chapter4_Forest_Tiles.png",
          "imageheight":2048,
          "imagewidth":2048,
          "margin":0,

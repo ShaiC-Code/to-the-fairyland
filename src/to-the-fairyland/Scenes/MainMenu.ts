@@ -23,6 +23,7 @@ import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 import { TimeOfDay } from "../GameSystems/WorldSystem/WorldState";
 import CliffScene from "./Chapter2/CliffScene";
 import EmeraldPondScene from "./Chapter7/EmeraldPondScene";
+import CliffBottomScene from "./Chapter4/CliffBottomScene";
 
 
 type AssetRef = Readonly<{
@@ -148,6 +149,8 @@ export default class MainMenu extends Scene {
         this.receiver.subscribe("level3");
         this.receiver.subscribe("level4");
         this.receiver.subscribe("level5");
+        this.receiver.subscribe("level6");
+
         this.receiver.subscribe("level10");
 
     }
@@ -319,6 +322,27 @@ export default class MainMenu extends Scene {
             
                 break;
             }
+            case "level6": {
+                this.gameSessionManager.startNewChapter2Game();
+            
+                this.sceneManager.changeToScene(
+                    CliffBottomScene,
+                    {
+                        cheatsEnabled: this.cheatsEnabled,
+                        spawnName: "RoadStart"
+                    },
+                    undefined,
+                    {
+                        showLoadingOverlay: true,
+                        useFadeTransition: true,
+                        fadeOutMs: 500,
+                        fadeInMs: 500
+                    }
+                );
+            
+                break;
+            }
+            
             case "level10": {
                 this.gameSessionManager.startNewChapter2Game();
             
