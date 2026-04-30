@@ -103,7 +103,7 @@ export default class ForestScene extends MappedAdventureChapter1Scene {
         if (obj.name === "BushBerries") {
             const step = this.storyManager.chapter1.getMainQuestStep();
             const dialogue = getBushBerriesDialogue(step);
-            this.dialogueController.startDialogue(dialogue);
+            this.startDialogue(dialogue);
             return;
         }
 

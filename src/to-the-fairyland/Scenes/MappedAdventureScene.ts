@@ -27,6 +27,8 @@ import { ItemUseAction, ItemUseResult } from "../GameSystems/ItemSystem/ItemUseA
 import { PlayerStateType } from "../AI/Player/PlayerStates/PlayerBehaviorState";
 import { WeatherType } from "../GameSystems/WorldSystem/WorldState";
 import PauseControlsScreen from "../UI/PauseControlsScreen";
+import AnimatedSprite from "../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
+
 
 export type AssetRef = Readonly<{
     readonly key: string;
@@ -60,6 +62,12 @@ export type AssetBundle = {
 
 export default abstract class MappedAdventureScene extends Scene {
     protected worldTimeScale = 1;
+    protected interactIcon!: AnimatedSprite;
+    protected readonly interactIconOffsetX = 5;
+    protected readonly interactIconOffsetY = -60;
+    protected readonly interactIconScale = 1.6;
+    protected readonly interactIconLayerName = "InteractIcon";
+
 
     // The tilemap to load for the scene, pass from sub scenes
     protected abstract readonly tilemap: AssetRef;
@@ -67,7 +75,8 @@ export default abstract class MappedAdventureScene extends Scene {
     protected static readonly assetBundle: AssetBundle = {
         tilemaps: {},
         spritesheets: {
-            playerSheet: { key: "fate", path: "/assets/spritesheets/Fate.json" }
+            playerSheet: { key: "fate", path: "/assets/spritesheets/Fate.json" },
+            interactIcon: { key: "interactIcon", path: "/assets/spritesheets/InteractIcon.json" }
         },
         sprites: {
             snowflake1Sprite: { key: "snowflake1", path: "/assets/sprites/particles/Snowflake1.png" },
@@ -215,6 +224,8 @@ export default abstract class MappedAdventureScene extends Scene {
 
         this.add.tilemap(this.tilemap.key);
         this.addLayer(this.actorLayerName, this.actorLayerDepth);
+        this.addLayer(this.interactIconLayerName, this.actorLayerDepth + 1);
+
 
         this.configureLayers();
 
@@ -250,6 +261,17 @@ export default abstract class MappedAdventureScene extends Scene {
         this.player.health = playerState.health;
 
         this.spawnPlayerAt(spawn);
+
+        this.interactIcon = this.add.animatedSprite(
+            AnimatedSprite,
+            this.assets.spritesheets.interactIcon.key,
+            this.interactIconLayerName
+        );
+        
+        this.interactIcon.animation.play("IDLE", true);
+        this.interactIcon.visible = false;
+        this.interactIcon.scale.set(this.interactIconScale, this.interactIconScale);
+        this.interactIcon.setSortOrder(100);
 
         const ai = this.player.ai as PlayerAI;
         const controller = ai.controller;
@@ -375,6 +397,8 @@ export default abstract class MappedAdventureScene extends Scene {
         this.timeController.update(deltaT);
         this.weatherController.update(deltaT);
 
+        this.updateInteractIcon();
+
         // Run gameplay interactions only while the world is not simulation-paused.
         if(!menuOpen) {
             if (ai.targetTile) {
@@ -413,6 +437,42 @@ export default abstract class MappedAdventureScene extends Scene {
             }
         }
     }
+
+    private updateInteractIcon(): void {
+        // hide when dialogue is active
+        if (this.dialogueController?.isActive) {
+            this.interactIcon.visible = false;
+            return;
+        }
+
+        const ai = this.player.ai as PlayerAI;
+    
+        const facingTile = ai.currentTile.clone().add(ai.facing);
+
+        const shouldShow =
+            !!this.findInteractableAtTile(ai.currentTile) ||
+            !!this.findInteractableAtTile(facingTile) ||
+            (ai.targetTile !== null && !!this.findInteractableAtTile(ai.targetTile));
+        
+    
+        this.interactIcon.visible = shouldShow;
+    
+        if (!shouldShow) {
+            return;
+        }
+    
+        this.interactIcon.position.set(
+            this.player.position.x + this.interactIconOffsetX,
+            this.player.position.y
+                - this.player.size.y / 2
+                - (this.interactIcon.size.y * this.interactIcon.scale.y) / 2
+                - this.interactIconOffsetY
+        );
+    
+        this.interactIcon.setSortTile(this.player.getSortTile());
+        this.interactIcon.setSortOrder(100);
+    }
+    
 
     protected override getSimulationTimeScale(): number {
         return this.worldTimeScale;
@@ -634,6 +694,9 @@ export default abstract class MappedAdventureScene extends Scene {
     }
 
     protected startDialogue(dialogue: DialogueInteraction, speakerName?: string, options?: DialogueStartOptions): void {
+        if (this.interactIcon) {
+            this.interactIcon.visible = false;
+        }
         this.dialogueController.startDialogue(dialogue, speakerName, options);
     }
     
