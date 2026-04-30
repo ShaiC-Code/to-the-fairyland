@@ -63,14 +63,14 @@ export default class ShelterScene extends MappedAdventureChapter1Scene {
         if (obj.name === "Bed") {
             const step = this.storyManager.chapter1.getMainQuestStep();
             const dialogue = getBedDialogue(step);
-            this.dialogueController.startDialogue(dialogue);
+            this.startDialogue(dialogue);
             return;
         }
 
         if (obj.name === "Pot") {
             const step = this.storyManager.chapter1.getMainQuestStep();
             const dialogue = getPotDialogue(step);
-            this.dialogueController.startDialogue(dialogue);
+            this.startDialogue(dialogue);
             return;
         }
 
