@@ -24,6 +24,7 @@ import { TimeOfDay } from "../GameSystems/WorldSystem/WorldState";
 import CliffScene from "./Chapter2/CliffScene";
 import EmeraldPondScene from "./Chapter7/EmeraldPondScene";
 import CliffBottomScene from "./Chapter4/CliffBottomScene";
+import TreeInnerScene from "./Chapter4/TreeInnerScene";
 
 
 type AssetRef = Readonly<{
@@ -150,6 +151,7 @@ export default class MainMenu extends Scene {
         this.receiver.subscribe("level4");
         this.receiver.subscribe("level5");
         this.receiver.subscribe("level6");
+        this.receiver.subscribe("level7");
 
         this.receiver.subscribe("level10");
 
@@ -330,6 +332,26 @@ export default class MainMenu extends Scene {
                     {
                         cheatsEnabled: this.cheatsEnabled,
                         spawnName: "RoadStart"
+                    },
+                    undefined,
+                    {
+                        showLoadingOverlay: true,
+                        useFadeTransition: true,
+                        fadeOutMs: 500,
+                        fadeInMs: 500
+                    }
+                );
+            
+                break;
+            }
+            case "level7": {
+                this.gameSessionManager.startNewChapter2Game();
+            
+                this.sceneManager.changeToScene(
+                    TreeInnerScene,
+                    {
+                        cheatsEnabled: this.cheatsEnabled,
+                        spawnName: "TreeInner"
                     },
                     undefined,
                     {
