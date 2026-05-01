@@ -1,15 +1,15 @@
 {
-    "activeFile": "tilemaps/Chapter7/EmeraldPond.json",
+    "activeFile": "tilemaps/Chapter4/CliffBottom.json",
     "expandedProjectPaths": [
         "tilemaps/Chapter6",
-        "tilemaps",
+        ".",
+        "spritesheets",
+        "tilemaps/Chapter5",
+        "tilemaps/Chapter4",
         "tilemaps/Chapter7",
         "tilemaps/Chapter1",
-        "tilemaps/Chapter4",
-        "tilemaps/Chapter5",
-        "tilemaps/Chapter2",
-        ".",
-        "spritesheets"
+        "tilemaps",
+        "tilemaps/Chapter2"
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
@@ -166,8 +166,8 @@
             "scale": 0.5,
             "selectedLayer": 7,
             "viewCenter": {
-                "x": 1123,
-                "y": 1263
+                "x": 1218,
+                "y": 1355
             }
         },
         "tilemaps/Chapter4/CliffBottom.json#Chapter2_Village_Tiles": {
@@ -176,15 +176,15 @@
         },
         "tilemaps/Chapter4/DeeperForest.json": {
             "expandedObjectLayers": [
+                5,
                 4,
-                8,
-                5
+                8
             ],
-            "scale": 0.5,
+            "scale": 0.25,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 1124,
-                "y": 1141
+                "x": 2244,
+                "y": 1298
             }
         },
         "tilemaps/Chapter4/DeeperForest.json#Chapter2_Village_Tiles": {
@@ -193,30 +193,35 @@
         },
         "tilemaps/Chapter4/GreatTree.json": {
             "expandedObjectLayers": [
+                5,
                 4,
-                5
+                3
             ],
-            "scale": 0.75,
+            "scale": 1,
             "selectedLayer": 7,
             "viewCenter": {
-                "x": 426.66666666666663,
-                "y": 1210
+                "x": 1072,
+                "y": 838.5
             }
         },
         "tilemaps/Chapter4/GreatTree.json#Chapter2_Village_Tiles": {
-            "scaleInDock": 0.75,
+            "scaleInDock": 1,
             "scaleInEditor": 1
         },
         "tilemaps/Chapter4/TreeInner.json": {
-            "scale": 0.75,
-            "selectedLayer": 6,
+            "expandedObjectLayers": [
+                5,
+                4
+            ],
+            "scale": 0.5,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 1374.6666666666667,
-                "y": 682
+                "x": 1188,
+                "y": 1399
             }
         },
         "tilemaps/Chapter4/TreeInner.json#Chapter2_Village_Tiles": {
-            "scaleInDock": 1,
+            "scaleInDock": 0.75,
             "scaleInEditor": 0.75
         },
         "tilemaps/Chapter5/UndergroundTunnel.json": {
@@ -273,25 +278,21 @@
     "map.tileWidth": 64,
     "map.width": 60,
     "openFiles": [
-        "tilemaps/Chapter2/Village.json",
-        "tilemaps/Chapter2/Road.json",
-        "tilemaps/Chapter2/Road1.json",
-        "tilemaps/Chapter2/Road2.json",
-        "tilemaps/Chapter2/Road3.json",
-        "tilemaps/Chapter1/Chapter1.json",
-        "tilemaps/Chapter2/Cliff.json",
-        "tilemaps/Chapter7/EmeraldPond.json"
+        "tilemaps/Chapter4/CliffBottom.json",
+        "tilemaps/Chapter4/DeeperForest.json",
+        "tilemaps/Chapter4/GreatTree.json",
+        "tilemaps/Chapter4/TreeInner.json"
     ],
     "project": "to-the-fairyland.tiled-project",
     "property.type": "string",
     "recentFiles": [
-        "tilemaps/Chapter4/DeeperForest.json",
+        "tilemaps/Chapter4/TreeInner.json",
         "tilemaps/Chapter4/GreatTree.json",
+        "tilemaps/Chapter4/DeeperForest.json",
+        "tilemaps/Chapter4/CliffBottom.json",
         "tilemaps/Chapter2/Village.json",
         "tilemaps/Chapter2/Road.json",
         "tilemaps/Chapter2/Road1.json",
-        "tilemaps/Chapter4/CliffBottom.json",
-        "tilemaps/Chapter4/TreeInner.json",
         "tilemaps/Chapter1/Chapter1.json",
         "tilemaps/Chapter1/Shelter.json",
         "tilemaps/Chapter2/Road2.json",
