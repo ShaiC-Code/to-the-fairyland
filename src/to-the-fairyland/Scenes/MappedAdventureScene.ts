@@ -598,6 +598,31 @@ export default abstract class MappedAdventureScene extends Scene {
         );
     }
 
+    protected getTilesCoveredByObject(obj: TiledObject): Vec2[] {
+        if (obj.width === 0 && obj.height === 0) {
+            return [this.getObjectTile(obj)];
+        }
+
+        const topLeft = this.ground.getTilemapPosition(obj.x, obj.y);
+        const bottomRight = this.ground.getTilemapPosition(
+            obj.x + Math.max(obj.width - 1, 0),
+            obj.y + Math.max(obj.height - 1, 0)
+        );
+        const minCol = Math.min(topLeft.x, bottomRight.x);
+        const maxCol = Math.max(topLeft.x, bottomRight.x);
+        const minRow = Math.min(topLeft.y, bottomRight.y);
+        const maxRow = Math.max(topLeft.y, bottomRight.y);
+        const tiles: Vec2[] = [];
+
+        for (let row = minRow; row <= maxRow; row++) {
+            for (let col = minCol; col <= maxCol; col++) {
+                tiles.push(new Vec2(col, row));
+            }
+        }
+
+        return tiles;
+    }
+
     /**
      * Checks whether a Tiled object occupies the queried tile.
      * Rectangle objects are matched against the tile center point; point objects
