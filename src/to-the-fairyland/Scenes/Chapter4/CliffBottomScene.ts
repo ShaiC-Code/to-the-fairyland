@@ -1,6 +1,6 @@
 import { TiledObject } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData";
 import ForestSceneBase from "../ForestSceneBase";
-import DeeperForestScene from "./DeeperForest";
+import DeeperForestScene from "./DeeperForestScene";
 
 
 export default class CliffBottomScene extends ForestSceneBase {

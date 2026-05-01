@@ -1,7 +1,7 @@
 import { TiledObject } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData";
 import ForestSceneBase from "../ForestSceneBase";
 import CliffBottomScene from "./CliffBottomScene";
-import GreatTreeScene from "./GreatTree";
+import GreatTreeScene from "./GreatTreeScene";
 
 export default class DeeperForestScene extends ForestSceneBase {
     protected readonly tilemap = {
