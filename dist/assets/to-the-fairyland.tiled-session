@@ -142,15 +142,15 @@
         },
         "tilemaps/Chapter2/Village.json": {
             "expandedObjectLayers": [
-                9,
+                5,
                 7,
-                5
+                9
             ],
-            "scale": 0.5,
+            "scale": 0.33,
             "selectedLayer": 6,
             "viewCenter": {
-                "x": 904,
-                "y": 1051
+                "x": 1239.3939393939393,
+                "y": 1595.4545454545455
             }
         },
         "tilemaps/Chapter2/Village.json#Village": {
@@ -180,11 +180,11 @@
                 4,
                 5
             ],
-            "scale": 1,
+            "scale": 0.33,
             "selectedLayer": 6,
             "viewCenter": {
-                "x": 1351,
-                "y": 406.5
+                "x": 1499.9999999999998,
+                "y": 474.242424242424
             }
         },
         "tilemaps/Chapter4/DeeperForest.json#Chapter2_Village_Tiles": {
@@ -194,14 +194,16 @@
         "tilemaps/Chapter4/GreatTree.json": {
             "expandedObjectLayers": [
                 3,
+                8,
+                2,
                 4,
                 5
             ],
-            "scale": 0.75,
-            "selectedLayer": 7,
+            "scale": 2,
+            "selectedLayer": 9,
             "viewCenter": {
-                "x": 977.3333333333333,
-                "y": 1287.3333333333333
+                "x": 1098,
+                "y": 2111.75
             }
         },
         "tilemaps/Chapter4/GreatTree.json#Chapter2_Village_Tiles": {
@@ -210,14 +212,16 @@
         },
         "tilemaps/Chapter4/TreeInner.json": {
             "expandedObjectLayers": [
+                17,
                 4,
+                18,
                 5
             ],
-            "scale": 0.5,
-            "selectedLayer": 10,
+            "scale": 1.5,
+            "selectedLayer": 8,
             "viewCenter": {
-                "x": 1488,
-                "y": 1481
+                "x": 1562,
+                "y": 1814.333333333333
             }
         },
         "tilemaps/Chapter4/TreeInner.json#Chapter2_Village_Tiles": {

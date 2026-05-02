@@ -24,13 +24,14 @@ import { PlayerInput } from "../AI/Player/PlayerController";
 import { UIScreenActionBindings } from "../UI/UIScreen";
 import RoadScene from "./Chapter2/RoadScene";
 import SleepingBag from "../GameSystems/ItemSystem/Items/SleepingBag";
-import { Chapter2MainQuestStep } from "../GameSystems/StorySystem/StoryState";
+import { Chapter2MainQuestStep, Chapter4MainQuestStep } from "../GameSystems/StorySystem/StoryState";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 import { TimeOfDay } from "../GameSystems/WorldSystem/WorldState";
 import CliffScene from "./Chapter2/CliffScene";
 import EmeraldPondScene from "./Chapter7/EmeraldPondScene";
 import CliffBottomScene from "./Chapter4/CliffBottomScene";
 import TreeInnerScene from "./Chapter4/TreeInnerScene";
+import Excalibur from "../GameSystems/ItemSystem/Items/Excalibur";
 
 type AssetRef = Readonly<{
     key: string;
@@ -160,6 +161,7 @@ export default class MainMenu extends Scene {
         this.receiver.subscribe("level5");
         this.receiver.subscribe("level6");
         this.receiver.subscribe("level7");
+        this.receiver.subscribe("level8");
 
         this.receiver.subscribe("level10");
 
@@ -363,6 +365,39 @@ export default class MainMenu extends Scene {
                     {
                         cheatsEnabled: this.cheatsEnabled,
                         spawnName: "TreeInner"
+                    },
+                    undefined,
+                    {
+                        showLoadingOverlay: true,
+                        useFadeTransition: true,
+                        fadeOutMs: 500,
+                        fadeInMs: 500
+                    }
+                );
+
+                break;
+            }
+            case "level8": {
+                this.gameSessionManager.startNewChapter4Game();
+
+                const inventory = this.gameSessionManager.getPlayerState().inventory;
+
+                if (inventory.find(item => item instanceof Excalibur) === null) {
+                    inventory.add(new Excalibur());
+                }
+
+                const chapter4 = this.gameSessionManager.getStoryState().chapter4;
+                if (!chapter4) {
+                    throw new Error("Chapter 4 story state was not initialized.");
+                }
+
+                chapter4.mainQuestStep = Chapter4MainQuestStep.EXCALIBUR_PULLED;
+
+                this.sceneManager.changeToScene(
+                    GreatTreeScene,
+                    {
+                        cheatsEnabled: this.cheatsEnabled,
+                        spawnName: "TreeOuter"
                     },
                     undefined,
                     {
