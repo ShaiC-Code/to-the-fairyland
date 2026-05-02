@@ -74,12 +74,19 @@ export function createInitialChapter2GameSessionState(): GameSessionState {
 }
 
 export function createInitialChapter4GameSessionState(): GameSessionState {
-    return createGameSessionState({
-        activeChapter: ActiveChapter.CHAPTER4,
-        chapter1: createChapter1CompletedState(),
-        chapter2: createInitialChapter2State(),
-        chapter4: createInitialChapter4State()
-    });
+    return createGameSessionState(
+        {
+            activeChapter: ActiveChapter.CHAPTER4,
+            chapter1: createChapter1CompletedState(),
+            chapter2: createInitialChapter2State(),
+            chapter4: createInitialChapter4State()
+        },
+        {
+            sceneId: "Chapter4Scene",
+            spawnName: "Start",
+            cheatsEnabled: false
+        }
+    );
 }
 
 
