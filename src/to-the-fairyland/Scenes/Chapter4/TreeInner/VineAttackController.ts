@@ -69,16 +69,43 @@ export default class VineAttackController implements SwordHitTarget {
     }
 
     public startFromObjects(startObj: TiledObject, endObj: TiledObject, options: VineAttackOptions = {}): void {
+        const attack = this.createAttackFromObjects(startObj, endObj, options);
+
+        if (!attack) {
+            return;
+        }
+
+        this.activeVineAttacks.push(attack);
+    }
+
+    public startCompleteFromObjects(startObj: TiledObject, endObj: TiledObject, options: VineAttackOptions = {}): void {
+        const attack = this.createAttackFromObjects(startObj, endObj, options);
+
+        if (!attack) {
+            return;
+        }
+
+        attack.progress = attack.distance;
+        this.activeVineAttacks.push(attack);
+        this.ensureVinePartCount(attack);
+        this.positionVineParts(attack);
+
+        if (attack.blocksTiles) {
+            this.blockTilesCrossedByVine(attack);
+        }
+    }
+
+    private createAttackFromObjects(startObj: TiledObject, endObj: TiledObject, options: VineAttackOptions = {}): VineAttack | null {
         const start = new Vec2(startObj.x, startObj.y);
         const end = new Vec2(endObj.x, endObj.y);
         const toEnd = start.vecTo(end);
         const distance = toEnd.mag();
 
         if (distance <= 0) {
-            return;
+            return null;
         }
 
-        this.activeVineAttacks.push({
+        return {
             type: options.type ?? "normal",
             start,
             end,
@@ -90,7 +117,7 @@ export default class VineAttackController implements SwordHitTarget {
             parts: [],
             blockedTiles: [],
             blocksTiles: options.blocksTiles ?? false
-        });
+        };
     }
 
     public update(deltaT: number): void {
