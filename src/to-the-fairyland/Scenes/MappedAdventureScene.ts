@@ -28,6 +28,8 @@ import { PlayerStateType } from "../AI/Player/PlayerStates/PlayerBehaviorState";
 import { WeatherType } from "../GameSystems/WorldSystem/WorldState";
 import PauseControlsScreen from "../UI/PauseControlsScreen";
 import AnimatedSprite from "../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
+import Excalibur from "../GameSystems/ItemSystem/Items/Excalibur";
+import PlayerAttackController, { PlayerAttackHitbox } from "../GameSystems/CombatSystem/PlayerAttackController";
 
 export type AssetRef = Readonly<{
     readonly key: string;
@@ -42,6 +44,7 @@ type SceneEntranceData = {
 
 type ScriptedTileMoveOptions = {
     ignoreCollision?: boolean;
+    moveDuration?: number;
 };
 
 export interface ChapterSceneDefinition {
@@ -76,7 +79,8 @@ export default abstract class MappedAdventureScene extends Scene {
         tilemaps: {},
         spritesheets: {
             playerSheet: { key: "fate", path: "/assets/spritesheets/Fate.json" },
-            interactIcon: { key: "interactIcon", path: "/assets/spritesheets/InteractIcon.json" }
+            interactIcon: { key: "interactIcon", path: "/assets/spritesheets/InteractIcon.json" },
+            swordAttack: { key: "swordAttack", path: "/assets/spritesheets/Effects/SwordAttack.json" }
         },
         sprites: {
             snowflake1Sprite: { key: "snowflake1", path: "/assets/sprites/particles/Snowflake1.png" },
@@ -115,6 +119,7 @@ export default abstract class MappedAdventureScene extends Scene {
     protected readonly interactablesLayerName = "Interactables";
     protected readonly actorLayerName = "Actors";
     protected readonly actorLayerDepth = 10;
+    protected readonly combatEffectsLayerName = "CombatEffects";
     protected readonly entranceLayerName = "Entrances";
 
     protected player!: PlayerActor;
@@ -135,6 +140,7 @@ export default abstract class MappedAdventureScene extends Scene {
     protected dialogueController!: DialogueController;
     protected timeController!: TimeController;
     protected weatherController!: WeatherController;
+    protected playerAttackController!: PlayerAttackController;
     
     protected readonly hudLayerName = "HUD";
     protected fromResumeLoad = false;
@@ -229,7 +235,8 @@ export default abstract class MappedAdventureScene extends Scene {
         this.add.tilemap(this.tilemap.key);
         this.addLayer(this.actorLayerName, this.actorLayerDepth);
         this.addLayer(this.interactIconLayerName, this.actorLayerDepth + 1);
-        this.addLayer(this.hudLayerName, this.actorLayerDepth + 2);
+        this.addLayer(this.combatEffectsLayerName, this.actorLayerDepth + 2);
+        this.addLayer(this.hudLayerName, this.actorLayerDepth + 3);
 
 
         this.configureLayers();
@@ -300,6 +307,23 @@ export default abstract class MappedAdventureScene extends Scene {
         }
 
         this.playIdleForFacing(ai.facing);
+
+        this.playerAttackController = new PlayerAttackController({
+            scene: this,
+            player: this.player,
+            ground: this.ground,
+            effectLayerName: this.combatEffectsLayerName,
+            swordAttackSpriteKey: this.assets.spritesheets.swordAttack.key,
+            getHasExcalibur: () =>
+                this.playerStateManager.getPlayerState().inventory.find(item => item instanceof Excalibur) !== null,
+            onHitboxActive: hitbox => this.handlePlayerAttackHitbox(hitbox),
+            canAttack: () =>
+                !this.pauseScreen.getIsOpen()
+                && !this.pauseControlsScreen.getIsOpen()
+                && !this.inventoryScreen.getIsOpen()
+                && !this.dialogueController.isActive
+                && !this.transitioning
+        });
 
         const uiActions: UIScreenActionBindings = {
             navigatePrevious: () => controller.isJustPressed(PlayerInput.MOVE_LEFT) || controller.isJustPressed(PlayerInput.MOVE_UP),
@@ -421,6 +445,7 @@ export default abstract class MappedAdventureScene extends Scene {
         this.dialogueController.update(deltaT);
         this.timeController.update(deltaT);
         this.weatherController.update(deltaT);
+        this.playerAttackController.update(deltaT);
 
         this.updateInteractIcon();
 
@@ -555,6 +580,8 @@ export default abstract class MappedAdventureScene extends Scene {
     protected handleInteraction(_obj: TiledObject): void {}
 
     protected handleAutoTransition(_obj: TiledObject): void {}
+
+    protected handlePlayerAttackHitbox(_hitbox: PlayerAttackHitbox): void {}
 
     /**
      * Retrieves a tile layer by name and throws an error if it is missing.
@@ -909,6 +936,7 @@ export default abstract class MappedAdventureScene extends Scene {
     
         const originalFacing = ai.facing.clone();
         const startTile = ai.currentTile.clone();
+        ai.onMoveComplete = null;
     
         if (!options.ignoreCollision && !ai.canMoveToTile(startTile, direction)) {
             return false;
@@ -936,7 +964,7 @@ export default abstract class MappedAdventureScene extends Scene {
         ai.moveProgress = 0;
         ai.moveStart = startPosition.clone();
         ai.moveEnd = targetPosition.clone();
-        ai.currentMoveDuration = ai.moveDuration;
+        ai.currentMoveDuration = options.moveDuration ?? ai.moveDuration;
         ai.moving = true;
     
         ai.facing = originalFacing;
