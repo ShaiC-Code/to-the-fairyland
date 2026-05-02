@@ -10,7 +10,8 @@ export type InteractionData = DialogueInteraction;
 export const DialogueCompleteActions = {
     GOTO_CHAPTER2: "gotoChapter2",
     GIVE_FLOWER_RING: "giveFlowerRing",
-    GIVE_OBSIDIAN_BOOTS: "giveObsidianBoots"
+    GIVE_OBSIDIAN_BOOTS: "giveObsidianBoots",
+    PULL_EXCALIBUR: "pullExcalibur"
 } as const;
 
 export type DialogueCompleteAction =

@@ -166,8 +166,8 @@
             "scale": 0.5,
             "selectedLayer": 7,
             "viewCenter": {
-                "x": 1089,
-                "y": 1150
+                "x": 1126,
+                "y": 1489
             }
         },
         "tilemaps/Chapter4/CliffBottom.json#Chapter2_Village_Tiles": {
@@ -180,11 +180,11 @@
                 4,
                 5
             ],
-            "scale": 0.25,
-            "selectedLayer": 0,
+            "scale": 1,
+            "selectedLayer": 6,
             "viewCenter": {
-                "x": 1054,
-                "y": 1152
+                "x": 1351,
+                "y": 406.5
             }
         },
         "tilemaps/Chapter4/DeeperForest.json#Chapter2_Village_Tiles": {
@@ -197,11 +197,11 @@
                 4,
                 5
             ],
-            "scale": 1,
+            "scale": 0.75,
             "selectedLayer": 7,
             "viewCenter": {
-                "x": 1024.5,
-                "y": 1152
+                "x": 977.3333333333333,
+                "y": 1287.3333333333333
             }
         },
         "tilemaps/Chapter4/GreatTree.json#Chapter2_Village_Tiles": {
@@ -213,11 +213,11 @@
                 4,
                 5
             ],
-            "scale": 1,
-            "selectedLayer": 11,
+            "scale": 0.5,
+            "selectedLayer": 10,
             "viewCenter": {
-                "x": 1589,
-                "y": 1435.5
+                "x": 1488,
+                "y": 1481
             }
         },
         "tilemaps/Chapter4/TreeInner.json#Chapter2_Village_Tiles": {

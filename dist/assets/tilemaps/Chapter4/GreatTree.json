@@ -830,7 +830,7 @@
                         {
                          "name":"facing",
                          "type":"string",
-                         "value":"up"
+                         "value":"right"
                         }],
                  "rotation":0,
                  "type":"",
@@ -849,7 +849,7 @@
                         {
                          "name":"facing",
                          "type":"string",
-                         "value":"up"
+                         "value":"down"
                         }],
                  "rotation":0,
                  "type":"",

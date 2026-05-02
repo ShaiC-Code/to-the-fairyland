@@ -47,6 +47,29 @@ const STATIC_OBJECT_INTERACTIONS: Readonly<Record<string, InteractionData>> = {
                 )
             ]
         }
+    ),
+
+    Excalibur: dialogueWithChoice(
+        [
+            "A sword is buried in the trunk.",
+            "Pull out Excalibur?"
+        ],
+        {
+            lineIndex: 1,
+            options: [
+                choiceOption(
+                    "Yes",
+                    dialogue(
+                        ["You grip the hilt tightly."],
+                        { completeAction: DialogueCompleteActions.PULL_EXCALIBUR }
+                    )
+                ),
+                choiceOption(
+                    "No",
+                    dialogue(["You leave the sword where it is."])
+                )
+            ]
+        }
     )
 };
 
