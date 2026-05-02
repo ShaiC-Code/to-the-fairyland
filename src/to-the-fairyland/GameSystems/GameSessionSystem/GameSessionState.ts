@@ -10,6 +10,13 @@ import {
 import { WorldState, createInitialWorldState } from "../WorldSystem/WorldState";
 import { getTimeOfDayForStory } from "../StorySystem/StoryRules";
 
+export interface GameSessionResumePoint {
+    sceneId: string;
+    spawnName?: string;
+    cheatsEnabled?: boolean;
+    playerPos?: { x: number; y: number };
+}
+
 /**
  * Root state for one active play session.
  * Grouping player and story here gives the game one cross-scene source of truth.
@@ -18,13 +25,15 @@ export interface GameSessionState {
     player: PlayerState;
     story: StoryState;
     world: WorldState;
+    resumePoint: GameSessionResumePoint;
 }
 
-function createGameSessionState(story: StoryState): GameSessionState {
+function createGameSessionState(story: StoryState, resumePoint: GameSessionResumePoint): GameSessionState {
     return {
         player: createInitialPlayerState(),
         story,
-        world: createInitialWorldState(getTimeOfDayForStory(story))
+        world: createInitialWorldState(getTimeOfDayForStory(story)),
+        resumePoint
     };
 }
 
@@ -32,10 +41,17 @@ function createGameSessionState(story: StoryState): GameSessionState {
  * Creates a fresh game session for a run that starts in Chapter 1.
  */
 export function createInitialChapter1GameSessionState(): GameSessionState {
-    return createGameSessionState({
-        activeChapter: ActiveChapter.CHAPTER1,
-        chapter1: createInitialChapter1State()
-    });
+    return createGameSessionState(
+        {
+            activeChapter: ActiveChapter.CHAPTER1,
+            chapter1: createInitialChapter1State()
+        },
+        {
+            sceneId: "ShelterScene",
+            spawnName: "SideOfBed",
+            cheatsEnabled: false
+        }
+    );
 }
 
 /**
@@ -43,20 +59,34 @@ export function createInitialChapter1GameSessionState(): GameSessionState {
  * Chapter 1 is considered already completed enough to unlock Chapter 2.
  */
 export function createInitialChapter2GameSessionState(): GameSessionState {
-    return createGameSessionState({
-        activeChapter: ActiveChapter.CHAPTER2,
-        chapter1: createChapter1CompletedState(),
-        chapter2: createInitialChapter2State()
-    });
+    return createGameSessionState(
+        {
+            activeChapter: ActiveChapter.CHAPTER2,
+            chapter1: createChapter1CompletedState(),
+            chapter2: createInitialChapter2State()
+        },
+        {
+            sceneId: "VillageScene",
+            spawnName: "RoadStart",
+            cheatsEnabled: false
+        }
+    );
 }
 
 export function createInitialChapter4GameSessionState(): GameSessionState {
-    return createGameSessionState({
-        activeChapter: ActiveChapter.CHAPTER4,
-        chapter1: createChapter1CompletedState(),
-        chapter2: createInitialChapter2State(),
-        chapter4: createInitialChapter4State()
-    });
+    return createGameSessionState(
+        {
+            activeChapter: ActiveChapter.CHAPTER4,
+            chapter1: createChapter1CompletedState(),
+            chapter2: createInitialChapter2State(),
+            chapter4: createInitialChapter4State()
+        },
+        {
+            sceneId: "Chapter4Scene",
+            spawnName: "Start",
+            cheatsEnabled: false
+        }
+    );
 }
 
 

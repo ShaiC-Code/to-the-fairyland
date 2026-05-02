@@ -30,14 +30,26 @@ export default class HoverButton extends Button {
     }
 
     calculateBackgroundColor(): Color {
+        if (!this.enabled) {
+            return new Color(70, 70, 70, 1);
+        }
+
         return (this.isEntered || this.isFocused) ? this.hoverBackgroundColor : this.normalBackgroundColor;
     }
 
     calculateBorderColor(): Color {
+        if (!this.enabled) {
+            return new Color(70, 70, 70, 1);
+        }
+
         return (this.isEntered || this.isFocused) ? this.hoverBorderColor : this.normalBorderColor;
     }
 
     calculateTextColor(): string {
+        if (!this.enabled) {
+            return new Color(190, 190, 190, 1).toStringRGBA();
+        }
+
         return ((this.isEntered || this.isFocused) ? this.hoverTextColor : this.normalTextColor).toStringRGBA();
     }
 }

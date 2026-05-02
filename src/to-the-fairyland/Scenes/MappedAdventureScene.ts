@@ -29,7 +29,6 @@ import { WeatherType } from "../GameSystems/WorldSystem/WorldState";
 import PauseControlsScreen from "../UI/PauseControlsScreen";
 import AnimatedSprite from "../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
 
-
 export type AssetRef = Readonly<{
     readonly key: string;
     readonly path: string;
@@ -38,6 +37,7 @@ export type AssetRef = Readonly<{
 type SceneEntranceData = {
     cheatsEnabled?: boolean;
     spawnName?: string;
+    fromResume?: boolean;
 };
 
 type ScriptedTileMoveOptions = {
@@ -136,10 +136,14 @@ export default abstract class MappedAdventureScene extends Scene {
     protected timeController!: TimeController;
     protected weatherController!: WeatherController;
     
+    protected readonly hudLayerName = "HUD";
+    protected fromResumeLoad = false;
+    
     // lets the scene receive data, ex: {spawnName: "Door1"}
     public override initScene(init: SceneEntranceData = {}): void {
         this.cheatsEnabled = init?.cheatsEnabled ?? false;
         this.spawnName = init?.spawnName;
+        this.fromResumeLoad = init?.fromResume ?? false;
         this.assets = this.combinedAssetBundles();
     }
 
@@ -225,6 +229,7 @@ export default abstract class MappedAdventureScene extends Scene {
         this.add.tilemap(this.tilemap.key);
         this.addLayer(this.actorLayerName, this.actorLayerDepth);
         this.addLayer(this.interactIconLayerName, this.actorLayerDepth + 1);
+        this.addLayer(this.hudLayerName, this.actorLayerDepth + 2);
 
 
         this.configureLayers();
@@ -275,6 +280,25 @@ export default abstract class MappedAdventureScene extends Scene {
 
         const ai = this.player.ai as PlayerAI;
         const controller = ai.controller;
+
+        const resumePoint = this.fromResumeLoad ? this.gameSessionManager.getResumePoint() : null;
+        if (resumePoint?.playerPos) {
+            const restoredTile = this.restoreSavedPlayerTile(resumePoint.playerPos);
+            const restoredTileCenter = this.ground.getTileCenter(restoredTile.x, restoredTile.y);
+            const restoredPlayerPosition = this.player.getCenterForFeetPosition(restoredTileCenter.x, restoredTileCenter.y);
+
+            this.player.position.copy(restoredPlayerPosition);
+            this.player.setSortTile(restoredTile);
+
+            ai.currentTile = restoredTile.clone();
+            ai.targetTile = null;
+            ai.moving = false;
+            ai.moveProgress = 0;
+            ai.currentMoveDuration = ai.moveDuration;
+            ai.moveStart = restoredPlayerPosition.clone();
+            ai.moveEnd = restoredPlayerPosition.clone();
+        }
+
         this.playIdleForFacing(ai.facing);
 
         const uiActions: UIScreenActionBindings = {
@@ -290,6 +314,7 @@ export default abstract class MappedAdventureScene extends Scene {
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize(),
             () => { this.pauseScreen?.hide(); this.pauseControlsScreen?.show() },
+            () => this.saveGameWithFeedback(),
             () => this.sceneManager.changeToScene(MainMenu),
             {
                 onEnterSFXKey: this.assets.sounds.uiHoverSFX.key,
@@ -499,8 +524,15 @@ export default abstract class MappedAdventureScene extends Scene {
 
         this.worldPaused = paused;
 
+        const uiLayersThatMustKeepUpdating = new Set<string>([
+            "pauseOverlay",
+            "pauseControlsOverlay",
+            "inventoryOverlay"
+        ]);
+
         this.layers.forEach((name: string) => {
-            this.layers.get(name).setPaused(paused);
+            const shouldPauseLayer = paused && !uiLayersThatMustKeepUpdating.has(name);
+            this.layers.get(name).setPaused(shouldPauseLayer);
         });
 
         this.parallaxLayers.forEach((name: string) => {
@@ -931,6 +963,28 @@ export default abstract class MappedAdventureScene extends Scene {
         return new Promise(resolve => {
             window.setTimeout(resolve, seconds * 1000);
         });
+    }
+
+    protected saveGameWithFeedback(): void {
+        const ai = this.player.ai as PlayerAI;
+        const playerTile = ai.currentTile.clone();
+
+        this.gameSessionManager.setResumePoint(
+            this.constructor.name,
+            this.spawnName,
+            this.cheatsEnabled,
+            { x: playerTile.x, y: playerTile.y }
+        );
+
+        this.gameSessionManager.saveCurrentSession();
+        this.emitter.fireEvent(GameEventType.PLAY_SFX, {key: this.assets.sounds.itemReceivedSFX.key, loop: false, holdReference: false});
+    }
+
+    protected restoreSavedPlayerTile(savedPos: { x: number; y: number }): Vec2 {
+        const dimensions = this.ground.getDimensions();
+        const clampedX = Math.max(0, Math.min(dimensions.x - 1, Math.floor(savedPos.x)));
+        const clampedY = Math.max(0, Math.min(dimensions.y - 1, Math.floor(savedPos.y)));
+        return new Vec2(clampedX, clampedY);
     }
     
 }
