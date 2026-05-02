@@ -2,6 +2,7 @@ import Scene from "../../../Wolfie2D/Scene/Scene";
 import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 import UIScreen, { UIScreenOptions } from "../UIScreen";
 import HoverButton from "../CustomUIElements/HoverButton";
+import Button from "../../../Wolfie2D/Nodes/UIElements/Button";
 
 export default class MainScreen extends UIScreen {
     private mainMenuImageKey: string;
@@ -50,5 +51,15 @@ export default class MainScreen extends UIScreen {
 
         // Hide by default
         this.layer.setHidden(true);
+    }
+
+    public setResumeEnabled(enabled: boolean): void {
+        const resumeButton = this.getUIElement("resumeBtn") as Button | undefined;
+
+        if (!resumeButton) {
+            return;
+        }
+
+        resumeButton.setEnabled(enabled);
     }
 }

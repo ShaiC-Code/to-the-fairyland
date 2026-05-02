@@ -2,6 +2,7 @@ import Scene from "../../../Wolfie2D/Scene/Scene";
 import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 import UIScreen, { UIScreenOptions } from "../UIScreen";
 import Button from "../../../Wolfie2D/Nodes/UIElements/Button";
+import GameSessionManager from "../../GameSystems/GameSessionSystem/GameSessionManager";
 
 export default class TestScreen extends UIScreen {
 
@@ -64,8 +65,21 @@ export default class TestScreen extends UIScreen {
             }
         );
 
+        this.addButton(
+            "clearDataBtn",
+            new Vec2(screenCenter.x + 180, listTop + 380),
+            new Vec2(380, 40),
+            "Clear Saved Data",
+            {
+                onClickEventId: "clearSavedData",
+                onClick: () => {
+                    GameSessionManager.getInstance().clearSession();
+                }
+            }
+        );
+
         const buttonSize = new Vec2(280, 60);
-        const buttonsY = listTop + 380;
+        const buttonsY = listTop + 460;
         const buttonsGap = 40;
         const buttonOffsetX = (buttonSize.x / 2) + (buttonsGap / 2);
 
@@ -86,9 +100,10 @@ export default class TestScreen extends UIScreen {
         );
 
         this.setNavigationButtons([
+            "activateCheatsBtn",
+            "clearDataBtn",
             "goBackBtn",
-            "mainMenuBtn",
-            "activateCheatsBtn"
+            "mainMenuBtn"
         ]);
 
         // Hide by default

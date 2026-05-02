@@ -43,6 +43,8 @@ export default abstract class UIElement extends CanvasNode {
 	protected isEntered: boolean;
 	/** Whether or not this UIElement is being kept highlighted by keyboard/controller focus */
 	protected isFocused: boolean;
+	/** Whether or not this UIElement should respond to input. */
+	protected enabled: boolean;
 	/** Suppresses mouse hover highlight until the mouse position changes */
 	protected suppressHoverUntilMouseMove: boolean;
 	private suppressedMousePosition: Vec2 | null;
@@ -70,8 +72,22 @@ export default abstract class UIElement extends CanvasNode {
 		this.isClicked = false;
 		this.isEntered = false;
 		this.isFocused = false;
+		this.enabled = true;
 		this.suppressHoverUntilMouseMove = false;
 		this.suppressedMousePosition = null;
+	}
+
+	setEnabled(enabled: boolean): void {
+		this.enabled = enabled;
+		if (!enabled) {
+			this.isClicked = false;
+			this.isEntered = false;
+			this.isFocused = false;
+		}
+	}
+
+	getEnabled(): boolean {
+		return this.enabled;
 	}
 
 	public suppressHoverUntilMouseMoves(): void {
@@ -112,6 +128,13 @@ export default abstract class UIElement extends CanvasNode {
 	update(deltaT: number): void {
 		super.update(deltaT);
 
+		if (!this.enabled) {
+			this.isClicked = false;
+			this.isEntered = false;
+			this.isFocused = false;
+			return;
+		}
+
 		// See of this object was just clicked
 		if(Input.isMouseJustPressed()){
 			let clickPos = Input.getMousePressPosition();
@@ -136,7 +159,7 @@ export default abstract class UIElement extends CanvasNode {
 		}
 
 		// Check if the mouse is hovering over this element
-		let mousePos = Input.getMousePosition();
+		let mousePos: Vec2 | null = Input.getMousePosition();
 
 		if (this.suppressHoverUntilMouseMove) {
 			if (mousePos !== null && this.hasMouseMovedFromSuppressedPosition(mousePos)) {

@@ -10,6 +10,7 @@ import Line from "../../Wolfie2D/Nodes/Graphics/Line";
 import CanvasNode from "../../Wolfie2D/Nodes/CanvasNode";
 import TextBox from "../../Wolfie2D/Nodes/UIElements/TextBox";
 import Button from "../../Wolfie2D/Nodes/UIElements/Button";
+import UIElement from "../../Wolfie2D/Nodes/UIElement";
 import Receiver from "../../Wolfie2D/Events/Receiver";
 import Emitter from "../../Wolfie2D/Events/Emitter";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
@@ -104,6 +105,16 @@ export default class UIScreen implements Updateable {
 
     public getUIElement(key: string): CanvasNode | undefined {
         return this.elements.get(key);
+    }
+
+    public setUIElementEnabled(key: string, enabled: boolean): void {
+        const element = this.getUIElement(key) as UIElement | undefined;
+
+        if (!element || typeof element.setEnabled !== "function") {
+            return;
+        }
+
+        element.setEnabled(enabled);
     }
 
     public update(deltaT: number): void {
@@ -377,7 +388,7 @@ export default class UIScreen implements Updateable {
     protected confirmNavigationButton(): void {
         const button = this.getNavigationButton(this.navigationButtonIndex);
 
-        if (!button || button.visible === false) {
+        if (!button || button.visible === false || !(button as UIElement).getEnabled()) {
             return;
         }
 
@@ -510,7 +521,7 @@ export default class UIScreen implements Updateable {
         for (let attempt = 0; attempt < length; attempt++) {
             const button = this.getNavigationButton(index);
 
-            if (button && button.visible !== false) {
+            if (button && button.visible !== false && (button as UIElement).getEnabled()) {
                 return index;
             }
 

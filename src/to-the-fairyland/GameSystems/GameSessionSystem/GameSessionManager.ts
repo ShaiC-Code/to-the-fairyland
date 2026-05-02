@@ -6,6 +6,7 @@ import {
 import { PlayerState } from "../PlayerSystem/PlayerState";
 import { StoryState } from "../StorySystem/StoryState";
 import { WorldState } from "../WorldSystem/WorldState";
+import { CookieStorage } from "./CookieStorage";
 
 /**
  * Owns the live game session for the current run.
@@ -32,10 +33,13 @@ export default class GameSessionManager {
 
     /**
      * Returns the shared session manager.
+     * On first access, automatically restores any saved session from cookies.
+     * If no saved session exists, starts a new game.
      */
     public static getInstance(): GameSessionManager {
         if (!GameSessionManager.instance) {
             GameSessionManager.instance = new GameSessionManager();
+            GameSessionManager.instance.restoreSessionFromCookie();
         }
 
         return GameSessionManager.instance;
@@ -44,6 +48,7 @@ export default class GameSessionManager {
     /**
      * Starts a brand-new run with fresh player and story data.
      * Call this when the user presses "New Game".
+     * Session is automatically persisted to cookies.
      */
     public startNewGame(): void {
         this.startNewChapter1Game();
@@ -60,17 +65,42 @@ export default class GameSessionManager {
     /**
      * Replaces the current session with loaded data.
      * This is useful later for save/load support.
+     * Session is automatically persisted to cookies.
      */
     public loadSession(session: GameSessionState): void {
         this.currentSession = session;
     }
 
+    public saveCurrentSession(): void {
+        this.persistSessionToCookie();
+    }
+
+    public hasSavedSession(): boolean {
+        return CookieStorage.loadSession() !== null;
+    }
+
+    public setResumePoint(sceneId: string, spawnName?: string, cheatsEnabled?: boolean, playerPos?: { x: number; y: number }): void {
+        const session = this.requireCurrentSession();
+        session.resumePoint = {
+            sceneId,
+            spawnName,
+            cheatsEnabled: cheatsEnabled ?? session.resumePoint.cheatsEnabled ?? false,
+            playerPos
+        };
+    }
+
+    public getResumePoint(): GameSessionState["resumePoint"] | null {
+        return this.currentSession?.resumePoint ?? null;
+    }
+
     /**
      * Clears the active session entirely.
      * Useful when quitting back to title or abandoning a run.
+     * Removes session from cookies as well.
      */
     public clearSession(): void {
         this.currentSession = null;
+        CookieStorage.clearSession();
     }
 
     /**
@@ -119,5 +149,36 @@ export default class GameSessionManager {
      */
     public getWorldState(): WorldState {
         return this.requireCurrentSession().world;
+    }
+
+    /**
+     * Attempts to restore the game session from cookies.
+     * Called on initialization to support session persistence across page refreshes.
+     * Returns true if a session was successfully restored.
+     */
+    public restoreSessionFromCookie(): boolean {
+        try {
+            const saved = CookieStorage.loadSession();
+            if (saved && typeof saved === "object") {
+                this.currentSession = saved;
+                return true;
+            }
+
+            this.currentSession = null;
+        } catch (error) {
+            console.error("Failed to restore session from cookie:", error);
+            this.currentSession = null;
+        }
+        return false;
+    }
+
+    /**
+     * Persists the current session to cookies.
+     * Called whenever the session is created or modified.
+     */
+    private persistSessionToCookie(): void {
+        if (this.currentSession) {
+            CookieStorage.saveSession(this.currentSession);
+        }
     }
 }
