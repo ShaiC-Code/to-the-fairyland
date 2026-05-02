@@ -5,6 +5,7 @@ import {
     createInitialChapter1State,
     createChapter1CompletedState,
     createInitialChapter2State,
+    createChapter2CompletedState,
     createInitialChapter4State
 } from "../StorySystem/StoryState";
 import { WorldState, createInitialWorldState } from "../WorldSystem/WorldState";
@@ -78,7 +79,7 @@ export function createInitialChapter4GameSessionState(): GameSessionState {
         {
             activeChapter: ActiveChapter.CHAPTER4,
             chapter1: createChapter1CompletedState(),
-            chapter2: createInitialChapter2State(),
+            chapter2: createChapter2CompletedState(),
             chapter4: createInitialChapter4State()
         },
         {

@@ -9,6 +9,7 @@ import ObsidianBoots from "../ItemSystem/Items/ObsidianBoots";
 import WorldMap from "../ItemSystem/Items/WorldMap";
 import FrozenBerries from "../ItemSystem/Items/FrozenBerries";
 import CookedBerries from "../ItemSystem/Items/CookedBerries";
+import Excalibur from "../ItemSystem/Items/Excalibur";
 
 /**
  * Utility for managing game session data in browser cookies.
@@ -160,6 +161,8 @@ export class CookieStorage {
                 return new FrozenBerries();
             case "CookedBerries":
                 return new CookedBerries();
+            case "Excalibur":
+                return new Excalibur();
             default:
                 return null;
         }

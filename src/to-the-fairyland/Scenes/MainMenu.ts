@@ -428,6 +428,7 @@ export default class MainMenu extends Scene {
         };
 
         switch (resumePoint.sceneId) {
+            // Chapter 1
             case "ShelterScene":
                 this.sceneManager.changeToScene(ShelterScene, { ...initData, facing: Vec2.DOWN }, undefined, {
                     showLoadingOverlay: true,
@@ -444,6 +445,7 @@ export default class MainMenu extends Scene {
                     fadeInMs: 500
                 });
                 break;
+            // Chapter 2
             case "VillageScene":
                 this.sceneManager.changeToScene(VillageScene, initData, undefined, {
                     showLoadingOverlay: true,
@@ -484,22 +486,6 @@ export default class MainMenu extends Scene {
                     fadeInMs: 500
                 });
                 break;
-            case "GreatTreeScene":
-                this.sceneManager.changeToScene(GreatTreeScene, initData, undefined, {
-                    showLoadingOverlay: true,
-                    useFadeTransition: true,
-                    fadeOutMs: 500,
-                    fadeInMs: 500
-                });
-                break;
-            case "DeeperForestScene":
-                this.sceneManager.changeToScene(DeeperForestScene, initData, undefined, {
-                    showLoadingOverlay: true,
-                    useFadeTransition: true,
-                    fadeOutMs: 500,
-                    fadeInMs: 500
-                });
-                break;
             case "CliffScene":
                 this.sceneManager.changeToScene(CliffScene, initData, undefined, {
                     showLoadingOverlay: true,
@@ -508,8 +494,25 @@ export default class MainMenu extends Scene {
                     fadeInMs: 500
                 });
                 break;
+            // Chapter 4
             case "CliffBottomScene":
                 this.sceneManager.changeToScene(CliffBottomScene, initData, undefined, {
+                    showLoadingOverlay: true,
+                    useFadeTransition: true,
+                    fadeOutMs: 500,
+                    fadeInMs: 500
+                });
+                break;  
+            case "DeeperForestScene":
+                this.sceneManager.changeToScene(DeeperForestScene, initData, undefined, {
+                    showLoadingOverlay: true,
+                    useFadeTransition: true,
+                    fadeOutMs: 500,
+                    fadeInMs: 500
+                });
+                break;
+            case "GreatTreeScene":
+                this.sceneManager.changeToScene(GreatTreeScene, initData, undefined, {
                     showLoadingOverlay: true,
                     useFadeTransition: true,
                     fadeOutMs: 500,
@@ -524,6 +527,7 @@ export default class MainMenu extends Scene {
                     fadeInMs: 500
                 });
                 break;
+            // Chapter 7
             case "EmeraldPondScene":
                 this.sceneManager.changeToScene(EmeraldPondScene, initData, undefined, {
                     showLoadingOverlay: true,

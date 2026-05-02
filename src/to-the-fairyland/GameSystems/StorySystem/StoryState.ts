@@ -89,6 +89,19 @@ export function createInitialChapter2State(): Chapter2StoryState {
         }
     };
 }
+export function createChapter2CompletedState(): Chapter2StoryState {
+    return {
+        mainQuestStep: Chapter2MainQuestStep.ESCAPE_LYCANS,
+        villageItems: {
+            [Chapter2VillageItem.FRESH_PRETTY_TOOTH]: true,
+            [Chapter2VillageItem.FLOWER_RING]: true,
+            [Chapter2VillageItem.LOFTY_BREAD]: true,
+            [Chapter2VillageItem.SLEEPING_BAG]: true,
+            [Chapter2VillageItem.OBSIDIAN_BOOTS]: true
+        }
+    };
+}
+
 
 export function createInitialChapter4State(): Chapter4StoryState {
     return {
