@@ -4,7 +4,8 @@ import {
     StoryState,
     createInitialChapter1State,
     createChapter1CompletedState,
-    createInitialChapter2State
+    createInitialChapter2State,
+    createInitialChapter4State
 } from "../StorySystem/StoryState";
 import { WorldState, createInitialWorldState } from "../WorldSystem/WorldState";
 import { getTimeOfDayForStory } from "../StorySystem/StoryRules";
@@ -70,6 +71,15 @@ export function createInitialChapter2GameSessionState(): GameSessionState {
             cheatsEnabled: false
         }
     );
+}
+
+export function createInitialChapter4GameSessionState(): GameSessionState {
+    return createGameSessionState({
+        activeChapter: ActiveChapter.CHAPTER4,
+        chapter1: createChapter1CompletedState(),
+        chapter2: createInitialChapter2State(),
+        chapter4: createInitialChapter4State()
+    });
 }
 
 

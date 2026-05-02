@@ -1,10 +1,10 @@
 export enum ActiveChapter {
     CHAPTER1 = "CHAPTER1",
-    CHAPTER2 = "CHAPTER2"
+    CHAPTER2 = "CHAPTER2",
+    CHAPTER4 = "CHAPTER4"
 }
 
 //======================== Chapter1 =================================
-
 export enum Chapter1MainQuestStep {
     NEED_FOOD = "NEED_FOOD",
     NEED_TO_COOK = "NEED_TO_COOK",
@@ -47,12 +47,23 @@ export interface Chapter2StoryState {
     mainQuestStep: Chapter2MainQuestStep;
     villageItems: Record<Chapter2VillageItem, boolean>;
 }
+//======================== Chapter4 =================================
+export enum Chapter4MainQuestStep {
+    NEED_EXCALIBUR = "NEED_EXCALIBUR",
+    EXCALIBUR_PULLED = "EXCALIBUR_PULLED",
+    VINE_EXIT_CLOSED = "VINE_EXIT_CLOSED",
+    VINE_EXIT_OPEN = "VINE_EXIT_OPEN"
+}
+export interface Chapter4StoryState {
+    mainQuestStep: Chapter4MainQuestStep;
+}
 // =================================================================
 
 export interface StoryState {
     activeChapter: ActiveChapter;
     chapter1: Chapter1StoryState;
     chapter2?: Chapter2StoryState;
+    chapter4?: Chapter4StoryState;
 }
 
 export function createInitialChapter1State(): Chapter1StoryState {
@@ -78,4 +89,11 @@ export function createInitialChapter2State(): Chapter2StoryState {
         }
     };
 }
+
+export function createInitialChapter4State(): Chapter4StoryState {
+    return {
+        mainQuestStep: Chapter4MainQuestStep.NEED_EXCALIBUR
+    };
+}
+
 

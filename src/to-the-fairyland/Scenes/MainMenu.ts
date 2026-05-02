@@ -356,8 +356,8 @@ export default class MainMenu extends Scene {
                 break;
             }
             case "level7": {
-                this.gameSessionManager.startNewChapter2Game();
-
+                this.gameSessionManager.startNewChapter4Game();
+            
                 this.sceneManager.changeToScene(
                     TreeInnerScene,
                     {
