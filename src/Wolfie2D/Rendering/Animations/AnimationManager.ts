@@ -28,6 +28,9 @@ export default class AnimationManager {
     /** Whether the current animation is looping or not */
     protected loop: boolean;
 
+    /** Whether a completed non-looping animation should hold on its final frame */
+    protected holdFinalFrameOnEnd: boolean;
+
     /** The map of animations */
     protected animations: Map<AnimationData>;
 
@@ -57,6 +60,7 @@ export default class AnimationManager {
         this.currentFrame = 0;
         this.frameProgress = 0;
         this.loop = false;
+        this.holdFinalFrameOnEnd = false;
         this.animations = new Map();
         this.onEndEvent = null;
         this.emitter = new Emitter();
@@ -127,7 +131,10 @@ export default class AnimationManager {
 
     /** Ends the current animation and fires any necessary events, as well as starting any new animations */
     protected endCurrentAnimation(): void {
-        this.currentFrame = 0;
+        const currentAnimation = this.animations.get(this.currentAnimation);
+        this.currentFrame = this.holdFinalFrameOnEnd
+            ? Math.max(0, currentAnimation.frames.length - 1)
+            : 0;
         this.animationState = AnimationState.STOPPED;
 
         if(this.onEndEvent !== null){
@@ -163,6 +170,7 @@ export default class AnimationManager {
         this.currentFrame = 0;
         this.frameProgress = 0;
         this.animationState = AnimationState.PLAYING;
+        this.holdFinalFrameOnEnd = false;
 
         // If loop arg was provided, use that
         if(loop !== undefined){
@@ -180,6 +188,18 @@ export default class AnimationManager {
 
         // Reset pending animation
         this.pendingAnimation = null;
+    }
+
+    /**
+     * Plays the specified animation and keeps it on its final frame when it naturally ends.
+     * Useful for one-shot effects that are hidden by an animation-end event.
+     * @param animation The name of the animation to play
+     * @param loop Whether or not to loop the animation. False by default
+     * @param onEnd The name of an event to send when this animation naturally stops playing. This only matters if loop is false.
+     */
+    playAndHoldFinalFrame(animation: string, loop?: boolean, onEnd?: string): void {
+        this.play(animation, loop, onEnd);
+        this.holdFinalFrameOnEnd = true;
     }
 
     /**

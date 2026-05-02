@@ -159,9 +159,9 @@
         },
         "tilemaps/Chapter4/CliffBottom.json": {
             "expandedObjectLayers": [
-                4,
                 3,
-                10
+                10,
+                4
             ],
             "scale": 0.5,
             "selectedLayer": 7,
@@ -176,9 +176,9 @@
         },
         "tilemaps/Chapter4/DeeperForest.json": {
             "expandedObjectLayers": [
+                8,
                 4,
-                5,
-                8
+                5
             ],
             "scale": 0.25,
             "selectedLayer": 0,
@@ -193,15 +193,15 @@
         },
         "tilemaps/Chapter4/GreatTree.json": {
             "expandedObjectLayers": [
-                4,
                 3,
+                4,
                 5
             ],
             "scale": 1,
             "selectedLayer": 7,
             "viewCenter": {
-                "x": 1072,
-                "y": 838.5
+                "x": 1024.5,
+                "y": 1152
             }
         },
         "tilemaps/Chapter4/GreatTree.json#Chapter2_Village_Tiles": {

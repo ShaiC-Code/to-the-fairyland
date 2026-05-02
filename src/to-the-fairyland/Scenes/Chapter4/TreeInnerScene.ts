@@ -33,7 +33,6 @@ export default class TreeInnerScene extends ForestSceneBase {
     private vineTrapObjects: TiledObject[] = [];
     private vineTrapTiles: Map<string, TiledObject> = new Map();
     private triggeredVineTraps: Set<string> = new Set();
-    private lastChapter4QuestStep: Chapter4MainQuestStep | null = null;
 
     private vineAttackController!: VineAttackController;
     private vineShooterWaveController!: VineShooterWaveController;
@@ -73,6 +72,14 @@ export default class TreeInnerScene extends ForestSceneBase {
     protected override combinedAssetBundles(): AssetBundle {
         return this.mergeAssetBundles(super.combinedAssetBundles(), TreeInnerScene.assetBundle);
     }
+
+    public override startScene(): void {
+        super.startScene();
+
+        if (this.hasExcaliburBeenPulled()) {
+            this.removeExcaliburInteractable();
+        }
+    }
     
     protected override configureLayers(): void {
         this.getLayer("Ground").setDepth(2);
@@ -92,7 +99,6 @@ export default class TreeInnerScene extends ForestSceneBase {
     
     public override updateScene(deltaT: number): void {
         super.updateScene(deltaT);
-        this.destroyExitVinesWhenExitOpens();
         this.checkVineTrapTriggers();
         this.vineShooterWaveController.update(deltaT);
         this.updateExcaliburPull(deltaT);
@@ -103,7 +109,6 @@ export default class TreeInnerScene extends ForestSceneBase {
     
     protected override spawnMapObjects(tilemapData: TiledTilemapData): void {
         super.spawnMapObjects(tilemapData);
-        this.lastChapter4QuestStep = this.storyManager.chapter4.getMainQuestStep();
 
         this.vineAttackController = new VineAttackController({
             scene: this,
@@ -112,6 +117,8 @@ export default class TreeInnerScene extends ForestSceneBase {
             layerName: this.vineLayerName,
             defaultSpriteKey: this.assets.sprites.vinePartSprite.key
         });
+
+        this.swordHitDispatcher.register(this.vineAttackController);
 
         this.vineShooterWaveController = new VineShooterWaveController({
             scene: this,
@@ -124,7 +131,9 @@ export default class TreeInnerScene extends ForestSceneBase {
             getTilesCrossedByWorldSegment: (start, end) => this.vineAttackController.getTilesCrossedByWorldSegment(start, end),
             startVineAttack: (startObj, endObj, options) => this.vineAttackController.startFromObjects(startObj, endObj, options),
             vineSpriteKey: this.assets.sprites.vinePartSprite.key,
-            indicatorStyle: "line"
+            indicatorStyle: "line",
+            onAllWavesComplete: () => this.openVineExit()
+
         });
 
         this.vineExitCollisionTemplate = this.getRequiredTilemap(this.vineExitCollisionLayerName);
@@ -137,7 +146,7 @@ export default class TreeInnerScene extends ForestSceneBase {
         const interactLayer = tilemapData.layers.find(layer => layer.name === "Interactables");
         const excaliburPoint = interactLayer?.objects.find(obj => obj.name === "Excalibur");
     
-        if (excaliburPoint) {
+        if (excaliburPoint && !this.hasExcaliburBeenPulled()) {
             const excalibur = this.add.sprite(
                 this.assets.sprites.excaliburSprite.key,
                 "Interactables"
@@ -196,8 +205,35 @@ export default class TreeInnerScene extends ForestSceneBase {
         }
     }
 
+    private openVineExit(): void {
+        this.storyManager.chapter4.markVineExitOpened();
+        this.clearVineExitCollision();
+        this.vineAttackController.destroyMatching(attack => attack.type === "exit");
+    }
+
+    private hasExcaliburBeenPulled(): boolean {
+        return this.storyManager.chapter4.hasReachedStep(Chapter4MainQuestStep.EXCALIBUR_PULLED);
+    }
+
+    private closeVineExit(): void {
+        this.applyVineExitCollision();
+        this.storyManager.chapter4.markVineExitClosed();
+    }
+    
 
     private applyVineExitCollision(): void {
+        this.forEachVineExitCollisionTile((col, row, tile) => {
+            this.collision.setTile(col, row, tile);
+        });
+    }
+
+    private clearVineExitCollision(): void {
+        this.forEachVineExitCollisionTile((col, row) => {
+            this.collision.setTile(col, row, 0);
+        });
+    }
+
+    private forEachVineExitCollisionTile(callback: (col: number, row: number, tile: number) => void): void {
         const size = this.vineExitCollisionTemplate.getDimensions();
     
         for (let row = 0; row < size.y; row++) {
@@ -208,7 +244,7 @@ export default class TreeInnerScene extends ForestSceneBase {
                     continue;
                 }
     
-                this.collision.setTile(col, row, tile);
+                callback(col, row, tile);
             }
         }
     }
@@ -316,11 +352,9 @@ export default class TreeInnerScene extends ForestSceneBase {
     
     // remove excalibur from scene after given to player
     private removeExcaliburInteractable(): void {
-        if (!this.excaliburObject) {
-            return;
-        }
-    
-        this.interactables = this.interactables.filter(obj => obj !== this.excaliburObject);
+        this.interactables = this.interactables.filter(obj =>
+            obj !== this.excaliburObject && obj.name !== "Excalibur"
+        );
         this.excaliburObject = null;
     }
     
@@ -424,27 +458,12 @@ export default class TreeInnerScene extends ForestSceneBase {
     
         await this.movePlayerOneTileBackwardAsync({ ignoreCollision: true });
     
-        this.applyVineExitCollision();
-        this.storyManager.chapter4.markVineExitClosed();
+        this.closeVineExit();
         this.vineShooterWaveController.setCooldown(this.vineShooterWaveController.getInitialCooldown());
 
         this.startDialogue(dialogue([
             "The Vines blocked the way out..."
         ]));
-    }
-
-    private destroyExitVinesWhenExitOpens(): void {
-        const currentStep = this.storyManager.chapter4.getMainQuestStep();
-
-        if (this.lastChapter4QuestStep === currentStep) {
-            return;
-        }
-
-        this.lastChapter4QuestStep = currentStep;
-
-        if (currentStep === Chapter4MainQuestStep.VINE_EXIT_OPEN) {
-            this.vineAttackController.destroyMatching(attack => attack.type === "exit");
-        }
     }
 
     private tileKey(tile: Vec2): string {

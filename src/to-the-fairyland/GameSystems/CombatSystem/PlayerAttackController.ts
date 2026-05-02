@@ -7,7 +7,8 @@ import PlayerAI from "../../AI/Player/PlayerAI";
 import { PlayerControlMode } from "../../AI/Player/PlayerController";
 import { PlayerStateType } from "../../AI/Player/PlayerStates/PlayerBehaviorState";
 import AnimatedSprite from "../../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
-
+import Receiver from "../../../Wolfie2D/Events/Receiver";
+import GameEvent from "../../../Wolfie2D/Events/GameEvent";
 
 export type PlayerAttackHitbox = {
     weapon: "excalibur";
@@ -43,15 +44,21 @@ export default class PlayerAttackController {
     private readonly dashDuration = 0.14;
     private readonly startupDuration = 0.04;
     private readonly recoveryDuration = 0.08;
-    private readonly effectDuration = 0.32;
+    private readonly minimumAttackDuration = 0.32;
     private readonly effectForwardOffsetTiles = 1;
     private readonly damage = 1;
+    private readonly swordAttackEndEvent = "SwordAttackEnd";
 
     private readonly effectRightOffset = new Vec2(0, 20);
     private readonly effectLeftOffset = new Vec2(0, 20);
     private readonly effectUpOffset = new Vec2(0, 20);
     private readonly effectDownOffset = new Vec2(0, 20);
+    private readonly effectUpRightOffset = new Vec2(-10, 40);
+    private readonly effectUpLeftOffset = new Vec2(10, 40);
+    private readonly effectDownRightOffset = new Vec2(-25, 10);
+    private readonly effectDownLeftOffset = new Vec2(25, 15);
 
+    private readonly animationReceiver = new Receiver();
 
     private attacking = false;
     private attackElapsed = 0;
@@ -74,6 +81,7 @@ export default class PlayerAttackController {
         this.getHasExcalibur = options.getHasExcalibur;
         this.onHitboxActive = options.onHitboxActive;
         this.canAttack = options.canAttack ?? (() => true);
+        this.animationReceiver.subscribe(this.swordAttackEndEvent);
     }
 
     public update(deltaT: number): void {
@@ -82,6 +90,8 @@ export default class PlayerAttackController {
         if (!this.attacking && this.canAttack() && this.getHasExcalibur() && ai.controller.attacking) {
             this.startExcaliburAttack();
         }
+
+        this.handleAnimationEvents();
 
         if (!this.attacking) {
             return;
@@ -96,10 +106,6 @@ export default class PlayerAttackController {
             this.onHitboxActive?.(this.createHitbox());
         }
 
-        if (this.attackElapsed >= this.effectDuration) {
-            this.hideAttackEffect();
-        }
-
         if (this.attackElapsed >= this.getTotalAttackDuration()) {
             this.finishAttack();
         }
@@ -111,10 +117,6 @@ export default class PlayerAttackController {
         }
 
         const ai = this.getPlayerAI();
-
-        if (ai.moving && ai.facing.x !== 0 && ai.facing.y !== 0) {
-            return;
-        }
 
         this.attacking = true;
         this.attackElapsed = 0;
@@ -210,62 +212,98 @@ export default class PlayerAttackController {
                 this.swordAttackSpriteKey,
                 this.effectLayerName
             );
-    
+
             this.attackEffect.setSortOrder(30);
         }
-    
+
         this.attackEffect.visible = true;
         this.attackEffect.alpha = 1;
         this.attackEffect.rotation = Vec2.UP.angleToCCW(this.activeDirection);
-        this.attackEffect.animation.play("Attack", false);
-    
+        this.attackEffect.animation.playAndHoldFinalFrame("Attack", false, this.swordAttackEndEvent);
+
         this.updateAttackEffect();
     }
-    
 
     private updateAttackEffect(): void {
         if (!this.attackEffect || !this.attackEffect.visible) {
             return;
         }
-    
+
         const tileSize = this.ground.getScaledTileSize();
         const forwardOffset = Math.max(tileSize.x, tileSize.y) * this.effectForwardOffsetTiles;
         const effectPosition = this.player.position.clone()
             .add(this.activeDirection.clone().scale(forwardOffset))
             .add(this.getEffectDirectionOffset(this.activeDirection));
-    
+
         this.attackEffect.position.copy(effectPosition);
         this.attackEffect.setSortTile(this.ground.getTilemapPosition(effectPosition.x, effectPosition.y));
     }
-    
+
     private getEffectDirectionOffset(direction: Vec2): Vec2 {
+        if (direction.x > 0 && direction.y < 0) {
+            return this.effectUpRightOffset.clone();
+        }
+
+        if (direction.x < 0 && direction.y < 0) {
+            return this.effectUpLeftOffset.clone();
+        }
+
+        if (direction.x > 0 && direction.y > 0) {
+            return this.effectDownRightOffset.clone();
+        }
+
+        if (direction.x < 0 && direction.y > 0) {
+            return this.effectDownLeftOffset.clone();
+        }
+
         if (direction.x > 0 && direction.y === 0) {
             return this.effectRightOffset.clone();
         }
-    
+
         if (direction.x < 0 && direction.y === 0) {
             return this.effectLeftOffset.clone();
         }
-    
+
         if (direction.y < 0 && direction.x === 0) {
             return this.effectUpOffset.clone();
         }
-    
+
         if (direction.y > 0 && direction.x === 0) {
             return this.effectDownOffset.clone();
         }
-    
+
         return Vec2.ZERO;
     }
-    
 
     private hideAttackEffect(): void {
         if (!this.attackEffect) {
             return;
         }
-    
+
         this.attackEffect.visible = false;
         this.attackEffect.animation.stop();
+    }
+
+    private handleAnimationEvents(): void {
+        while (this.animationReceiver.hasNextEvent()) {
+            const event = this.animationReceiver.getNextEvent();
+
+            if (event.type === this.swordAttackEndEvent) {
+                this.handleSwordAttackAnimationEnd(event);
+            }
+        }
+    }
+
+    private handleSwordAttackAnimationEnd(event: GameEvent): void {
+        if (!this.attackEffect) {
+            return;
+        }
+
+        if (event.data.get("owner") !== this.attackEffect.id) {
+            return;
+        }
+
+        this.hideAttackEffect();
     }
 
     private createHitbox(): PlayerAttackHitbox {
@@ -302,27 +340,25 @@ export default class PlayerAttackController {
         const ai = this.getPlayerAI();
         const tiles: Vec2[] = [];
         let cursor = originTile.clone();
-    
-        const bonusDashTile = ai.moving && ai.moveProgress > 0.5 ? 1 : 0;
+
+        const isDiagonal = direction.x !== 0 && direction.y !== 0;
+        const bonusDashTile = ai.moving && ai.moveProgress > 0.5 && !isDiagonal ? 1 : 0;
         const maxDashTiles = this.dashTileCount + bonusDashTile;
-    
+
         for (let i = 0; i < maxDashTiles; i++) {
             if (!ai.canMoveToTile(cursor, direction)) {
                 break;
             }
-    
+
             cursor = cursor.clone().add(direction);
             tiles.push(cursor.clone());
         }
-    
+
         return tiles;
     }
-    
-    
-    
 
     private getTotalAttackDuration(): number {
-        return Math.max(this.dashDuration, this.effectDuration) + this.recoveryDuration;
+        return Math.max(this.dashDuration, this.minimumAttackDuration) + this.recoveryDuration;
     }
 
     private getPlayerAI(): PlayerAI {

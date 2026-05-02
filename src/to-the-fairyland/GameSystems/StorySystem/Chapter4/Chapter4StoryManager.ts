@@ -1,4 +1,9 @@
-import { Chapter4MainQuestStep, Chapter4StoryState, StoryState } from "../StoryState";
+import {
+    CHAPTER4_MAIN_QUEST_ORDER,
+    Chapter4MainQuestStep,
+    Chapter4StoryState,
+    StoryState
+} from "../StoryState";
 
 type GetStoryState = () => StoryState;
 type SyncWorldState = () => void;
@@ -11,6 +16,13 @@ export default class Chapter4StoryManager {
 
     public getMainQuestStep(): Chapter4MainQuestStep {
         return this.getState().mainQuestStep;
+    }
+
+    public hasReachedStep(step: Chapter4MainQuestStep): boolean {
+        const currentIndex = CHAPTER4_MAIN_QUEST_ORDER.indexOf(this.getState().mainQuestStep);
+        const targetIndex = CHAPTER4_MAIN_QUEST_ORDER.indexOf(step);
+
+        return currentIndex !== -1 && targetIndex !== -1 && currentIndex >= targetIndex;
     }
 
     public markExcaliburPulled(): void {
