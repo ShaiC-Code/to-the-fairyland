@@ -3,6 +3,8 @@ import { TiledObject } from "../../../../Wolfie2D/DataTypes/Tilesets/TiledData";
 import OrthogonalTilemap from "../../../../Wolfie2D/Nodes/Tilemaps/OrthogonalTilemap";
 import Sprite from "../../../../Wolfie2D/Nodes/Sprites/Sprite";
 import Scene from "../../../../Wolfie2D/Scene/Scene";
+import type { PlayerAttackHitbox } from "../../../GameSystems/CombatSystem/PlayerAttackController";
+import type { SwordHitTarget } from "../../../GameSystems/CombatSystem/SwordHitDispatcher";
 
 export type VineAttackType = "normal" | "exit";
 
@@ -39,7 +41,8 @@ type VineAttackControllerOptions = {
     dynamicCollisionTileId?: number;
 };
 
-export default class VineAttackController {
+export default class VineAttackController implements SwordHitTarget {
+
     private activeVineAttacks: VineAttack[] = [];
     private dynamicCollisionTiles: Map<string, { tile: Vec2; previousTile: number; count: number }> = new Map();
 
@@ -128,7 +131,40 @@ export default class VineAttackController {
 
         this.activeVineAttacks = remainingAttacks;
     }
-
+    
+    public handleSwordHit(hitbox: PlayerAttackHitbox): void {
+        const playerHitTiles = this.getPlayerAttackPathTileSet(hitbox);
+    
+        this.destroyMatching(attack =>
+            attack.type === "normal" &&
+            attack.progress > 0 &&
+            this.currentVineTouchesAnyTile(attack, playerHitTiles)
+        );
+    }
+    
+    private getPlayerAttackPathTileSet(hitbox: PlayerAttackHitbox): Set<string> {
+        const endTile = hitbox.tiles[hitbox.tiles.length - 1] ?? hitbox.originTile;
+    
+        const start = this.ground.getTileCenter(hitbox.originTile.x, hitbox.originTile.y);
+        const end = this.ground.getTileCenter(endTile.x, endTile.y);
+    
+        return new Set(
+            this.getTilesCrossedByWorldSegment(start, end)
+                .map(tile => this.tileKey(tile))
+        );
+    }
+    
+    private currentVineTouchesAnyTile(attack: VineAttack, hitTiles: Set<string>): boolean {
+        const currentTip = new Vec2(
+            attack.start.x + attack.direction.x * attack.progress,
+            attack.start.y + attack.direction.y * attack.progress
+        );
+    
+        const vineTiles = this.getTilesCrossedByWorldSegment(attack.start, currentTip);
+    
+        return vineTiles.some(tile => hitTiles.has(this.tileKey(tile)));
+    }
+    
     public getTilesCrossedByWorldSegment(start: Vec2, end: Vec2): Vec2[] {
         const distance = start.distanceTo(end);
         const tileSize = this.ground.getScaledTileSize();

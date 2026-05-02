@@ -46,6 +46,8 @@ type VineShooterWaveControllerOptions = {
     startVineAttack: (startObj: TiledObject, endObj: TiledObject, options: VineAttackOptions) => void;
     vineSpriteKey: string;
     indicatorStyle?: VineIndicatorStyle;
+    onAllWavesComplete?: () => void;
+
 };
 
 export default class VineShooterWaveController {
@@ -69,12 +71,14 @@ export default class VineShooterWaveController {
     private readonly indicatorStyle: VineIndicatorStyle;
     private readonly indicatorAlpha = 0.55;
     private readonly indicatorLineThickness = 9;
+    private readonly onAllWavesComplete?: () => void;
+
 
     private readonly wavePhases: VineWavePhase[] = [
         {
             title: "THE VINES STARTED MOVING",
             titleDuration: 1,
-            duration: 10,
+            duration: 15,
             endFadeDuration: 2.5,
             endSpeedMultiplier: 0.35,
             spawnDelayMin: 0.45,
@@ -85,7 +89,7 @@ export default class VineShooterWaveController {
         {
             title: "THE TREE HAS GONE MAD!!!",
             titleDuration: 1,
-            duration: 20,
+            duration: 25,
             endFadeDuration: 4,
             endSpeedMultiplier: 0.35,
             spawnDelayMin: 0.12,
@@ -96,7 +100,7 @@ export default class VineShooterWaveController {
         {
             title: "THE TREE IS WEAKENING...",
             titleDuration: 1,
-            duration: 7,
+            duration: 12,
             endFadeDuration: 2,
             endSpeedMultiplier: 0.35,
             spawnDelayMin: 0.5,
@@ -122,6 +126,8 @@ export default class VineShooterWaveController {
         this.startVineAttack = options.startVineAttack;
         this.vineSpriteKey = options.vineSpriteKey;
         this.indicatorStyle = options.indicatorStyle ?? "line";
+        this.onAllWavesComplete = options.onAllWavesComplete;
+
     }
 
     public setVineShooterPoints(points: TiledObject[]): void {
@@ -208,10 +214,7 @@ export default class VineShooterWaveController {
         }
     
         this.vineWaveActive = false;
-        this.vineWaveCooldown = this.randomBetween(
-            this.waveCooldownMin,
-            this.waveCooldownMax
-        );
+        this.onAllWavesComplete?.();
     }
 
     private tryStartNormalVineShooterAttackWithSpeed(speed: number): void {

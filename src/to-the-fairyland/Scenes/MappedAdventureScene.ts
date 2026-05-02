@@ -30,6 +30,7 @@ import PauseControlsScreen from "../UI/PauseControlsScreen";
 import AnimatedSprite from "../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
 import Excalibur from "../GameSystems/ItemSystem/Items/Excalibur";
 import PlayerAttackController, { PlayerAttackHitbox } from "../GameSystems/CombatSystem/PlayerAttackController";
+import SwordHitDispatcher from "../GameSystems/CombatSystem/SwordHitDispatcher";
 
 export type AssetRef = Readonly<{
     readonly key: string;
@@ -141,6 +142,8 @@ export default abstract class MappedAdventureScene extends Scene {
     protected timeController!: TimeController;
     protected weatherController!: WeatherController;
     protected playerAttackController!: PlayerAttackController;
+    protected readonly swordHitDispatcher = new SwordHitDispatcher();
+
     
     protected readonly hudLayerName = "HUD";
     protected fromResumeLoad = false;
@@ -581,7 +584,10 @@ export default abstract class MappedAdventureScene extends Scene {
 
     protected handleAutoTransition(_obj: TiledObject): void {}
 
-    protected handlePlayerAttackHitbox(_hitbox: PlayerAttackHitbox): void {}
+    protected handlePlayerAttackHitbox(hitbox: PlayerAttackHitbox): void {
+        this.swordHitDispatcher.emit(hitbox);
+    }
+    
 
     /**
      * Retrieves a tile layer by name and throws an error if it is missing.

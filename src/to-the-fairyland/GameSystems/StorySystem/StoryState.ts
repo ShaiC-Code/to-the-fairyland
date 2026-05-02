@@ -54,6 +54,9 @@ export enum Chapter4MainQuestStep {
     VINE_EXIT_CLOSED = "VINE_EXIT_CLOSED",
     VINE_EXIT_OPEN = "VINE_EXIT_OPEN"
 }
+
+export const CHAPTER4_MAIN_QUEST_ORDER = Object.values(Chapter4MainQuestStep);
+
 export interface Chapter4StoryState {
     mainQuestStep: Chapter4MainQuestStep;
 }
