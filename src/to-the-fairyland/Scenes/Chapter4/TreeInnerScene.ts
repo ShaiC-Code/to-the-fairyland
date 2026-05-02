@@ -35,7 +35,7 @@ type VineAttackOptions = {
     spriteKey?: string;
 };
 
-export default class TreeInner extends ForestSceneBase {
+export default class TreeInnerScene extends ForestSceneBase {
     private readonly storyManager = StoryManager.getInstance();
 
     private excaliburSprite: Sprite | null = null;
@@ -91,7 +91,7 @@ export default class TreeInner extends ForestSceneBase {
     };
     
     protected override combinedAssetBundles(): AssetBundle {
-        return this.mergeAssetBundles(super.combinedAssetBundles(), TreeInner.assetBundle);
+        return this.mergeAssetBundles(super.combinedAssetBundles(), TreeInnerScene.assetBundle);
     }
     
     protected override configureLayers(): void {
