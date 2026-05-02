@@ -16,7 +16,7 @@ import VineShooterWaveController, { VINE_INDICATOR_LAYER_NAME } from "./TreeInne
 import TitleOverlay from "../../Overlays/TitleOverlay";
 
 
-export default class TreeInner extends ForestSceneBase {
+export default class TreeInnerScene extends ForestSceneBase {
     private readonly storyManager = StoryManager.getInstance();
 
     private excaliburSprite: Sprite | null = null;
@@ -71,7 +71,7 @@ export default class TreeInner extends ForestSceneBase {
     };
     
     protected override combinedAssetBundles(): AssetBundle {
-        return this.mergeAssetBundles(super.combinedAssetBundles(), TreeInner.assetBundle);
+        return this.mergeAssetBundles(super.combinedAssetBundles(), TreeInnerScene.assetBundle);
     }
     
     protected override configureLayers(): void {
