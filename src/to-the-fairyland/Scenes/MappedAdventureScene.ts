@@ -131,6 +131,7 @@ export default abstract class MappedAdventureScene extends Scene {
     protected spawnName?: string;
     protected entrances: TiledObject[] = [];
     protected transitioning = false;
+    private pendingDashAutoTransition: TiledObject | null = null;
 
     protected pauseScreen!: PauseScreen;
     protected pauseControlsScreen!: PauseControlsScreen;
@@ -320,12 +321,17 @@ export default abstract class MappedAdventureScene extends Scene {
             getHasExcalibur: () =>
                 this.playerStateManager.getPlayerState().inventory.find(item => item instanceof Excalibur) !== null,
             onHitboxActive: hitbox => this.handlePlayerAttackHitbox(hitbox),
+            onDashComplete: () => this.handlePlayerAttackDashComplete(),
+            clampDashTiles: (tiles, originTile, direction) =>
+                this.clampPlayerAttackDashTiles(tiles, originTile, direction),
             canAttack: () =>
                 !this.pauseScreen.getIsOpen()
                 && !this.pauseControlsScreen.getIsOpen()
                 && !this.inventoryScreen.getIsOpen()
                 && !this.dialogueController.isActive
                 && !this.transitioning
+                && !this.shouldPauseWorldForScene()
+                && this.canPlayerAttack()
         });
 
         const uiActions: UIScreenActionBindings = {
@@ -414,8 +420,9 @@ export default abstract class MappedAdventureScene extends Scene {
         const pauseOpen = this.pauseScreen.getIsOpen() || this.pauseControlsScreen.getIsOpen();
         const inventoryOpen = this.inventoryScreen.getIsOpen();
         const dialogueOpen = this.dialogueController.isActive;
-        const menuOpen = pauseOpen || inventoryOpen || dialogueOpen;
-        const shouldPauseWorld = pauseOpen || inventoryOpen;
+        const scenePauseOpen = this.shouldPauseWorldForScene();
+        const menuOpen = pauseOpen || inventoryOpen || dialogueOpen || scenePauseOpen;
+        const shouldPauseWorld = pauseOpen || inventoryOpen || scenePauseOpen;
         this.setWorldPaused(shouldPauseWorld);
 
         let menuSafetyFlag = false;
@@ -555,7 +562,8 @@ export default abstract class MappedAdventureScene extends Scene {
         const uiLayersThatMustKeepUpdating = new Set<string>([
             "pauseOverlay",
             "pauseControlsOverlay",
-            "inventoryOverlay"
+            "inventoryOverlay",
+            ...this.getWorldPauseLayerExceptions()
         ]);
 
         this.layers.forEach((name: string) => {
@@ -576,6 +584,14 @@ export default abstract class MappedAdventureScene extends Scene {
         return this.worldPaused;
     }
 
+    protected shouldPauseWorldForScene(): boolean {
+        return false;
+    }
+
+    protected getWorldPauseLayerExceptions(): ReadonlyArray<string> {
+        return [];
+    }
+
     protected configureLayers(): void {}
 
     protected spawnMapObjects(_tilemapData: TiledTilemapData): void {}
@@ -586,6 +602,72 @@ export default abstract class MappedAdventureScene extends Scene {
 
     protected handlePlayerAttackHitbox(hitbox: PlayerAttackHitbox): void {
         this.swordHitDispatcher.emit(hitbox);
+    }
+
+    protected handlePlayerAttackDashComplete(): void {
+        const entrance = this.pendingDashAutoTransition;
+        this.pendingDashAutoTransition = null;
+
+        if (!entrance || this.transitioning) {
+            return;
+        }
+
+        this.transitioning = true;
+        this.handleAutoTransition(entrance);
+    }
+
+    protected canPlayerAttack(): boolean {
+        return true;
+    }
+
+    protected clampPlayerAttackDashTiles(
+        tiles: Vec2[],
+        originTile: Vec2,
+        direction: Vec2
+    ): Vec2[] {
+        this.pendingDashAutoTransition = null;
+
+        const autoTransitionHit = this.findFirstDashAutoTransitionHit(tiles);
+        const sceneStopIndex = this.getScenePlayerAttackDashStopTileIndex(tiles, originTile, direction);
+        const autoTransitionStopIndex = autoTransitionHit?.index ?? -1;
+        const stopIndex = this.getFirstValidDashStopIndex(sceneStopIndex, autoTransitionStopIndex);
+
+        if (stopIndex === -1) {
+            return tiles;
+        }
+
+        if (stopIndex === autoTransitionStopIndex && autoTransitionHit) {
+            this.pendingDashAutoTransition = autoTransitionHit.entrance;
+        }
+
+        return tiles.slice(0, stopIndex + 1);
+    }
+
+    protected getScenePlayerAttackDashStopTileIndex(
+        _tiles: Vec2[],
+        _originTile: Vec2,
+        _direction: Vec2
+    ): number {
+        return -1;
+    }
+
+    private findFirstDashAutoTransitionHit(
+        tiles: Vec2[]
+    ): { index: number; entrance: TiledObject } | null {
+        for (let i = 0; i < tiles.length; i++) {
+            const entrance = this.findObjectAtTile(this.entrances, tiles[i]);
+
+            if (entrance) {
+                return { index: i, entrance };
+            }
+        }
+
+        return null;
+    }
+
+    private getFirstValidDashStopIndex(...indices: number[]): number {
+        const validIndices = indices.filter(index => index >= 0);
+        return validIndices.length === 0 ? -1 : Math.min(...validIndices);
     }
     
 

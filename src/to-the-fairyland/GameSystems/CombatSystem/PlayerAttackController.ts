@@ -27,7 +27,9 @@ type PlayerAttackControllerOptions = {
     swordAttackSpriteKey: string;
     getHasExcalibur: () => boolean;
     onHitboxActive?: (hitbox: PlayerAttackHitbox) => void;
+    onDashComplete?: (endTile: Vec2, tiles: Vec2[]) => void;
     canAttack?: () => boolean;
+    clampDashTiles?: (tiles: Vec2[], originTile: Vec2, direction: Vec2) => Vec2[];
 };
 
 export default class PlayerAttackController {
@@ -38,7 +40,9 @@ export default class PlayerAttackController {
     private readonly swordAttackSpriteKey: string;
     private readonly getHasExcalibur: () => boolean;
     private readonly onHitboxActive?: (hitbox: PlayerAttackHitbox) => void;
+    private readonly onDashComplete?: (endTile: Vec2, tiles: Vec2[]) => void;
     private readonly canAttack: () => boolean;
+    private readonly clampDashTiles: (tiles: Vec2[], originTile: Vec2, direction: Vec2) => Vec2[];
 
     private readonly dashTileCount = 2;
     private readonly dashDuration = 0.14;
@@ -80,8 +84,14 @@ export default class PlayerAttackController {
         this.swordAttackSpriteKey = options.swordAttackSpriteKey;
         this.getHasExcalibur = options.getHasExcalibur;
         this.onHitboxActive = options.onHitboxActive;
+        this.onDashComplete = options.onDashComplete;
         this.canAttack = options.canAttack ?? (() => true);
+        this.clampDashTiles = options.clampDashTiles ?? ((tiles) => tiles);
         this.animationReceiver.subscribe(this.swordAttackEndEvent);
+    }
+
+    public isAttacking(): boolean {
+        return this.attacking;
     }
 
     public update(deltaT: number): void {
@@ -123,7 +133,13 @@ export default class PlayerAttackController {
         this.hitboxStarted = false;
         this.activeDirection = ai.facing.clone();
         this.attackOriginTile = ai.currentTile.clone();
-        this.attackTiles = this.getReachableDashTiles(this.attackOriginTile, this.activeDirection);
+        const reachableDashTiles = this.getReachableDashTiles(this.attackOriginTile, this.activeDirection);
+
+        this.attackTiles = this.clampDashTiles(
+            reachableDashTiles.map(tile => tile.clone()),
+            this.attackOriginTile.clone(),
+            this.activeDirection.clone()
+        ).map(tile => tile.clone());
 
         ai.controller.setControlMode(PlayerControlMode.LOCKED);
         this.beginDash();
@@ -143,13 +159,13 @@ export default class PlayerAttackController {
         );
 
         ai.onMoveComplete = null;
+        ai.changeState(PlayerStateType.IDLE);
         ai.targetTile = null;
         ai.moving = false;
         ai.moveProgress = 0;
         ai.moveStart = this.dashStartPosition.clone();
         ai.moveEnd = this.dashEndPosition.clone();
         ai.currentMoveDuration = this.dashDuration;
-        ai.changeState(PlayerStateType.IDLE);
 
         this.dashActive = true;
     }
@@ -182,12 +198,15 @@ export default class PlayerAttackController {
         this.player.setSortTile(this.dashEndTile);
 
         ai.currentTile = this.dashEndTile.clone();
+        ai.changeState(PlayerStateType.IDLE);
         ai.targetTile = null;
         ai.moveStart = this.dashEndPosition.clone();
         ai.moveEnd = this.dashEndPosition.clone();
         ai.moveProgress = 0;
         ai.currentMoveDuration = ai.moveDuration;
         ai.moving = false;
+
+        this.onDashComplete?.(this.dashEndTile.clone(), this.getAttackTiles());
     }
 
     private finishAttack(): void {

@@ -1512,7 +1512,7 @@
                         {
                          "name":"facing",
                          "type":"string",
-                         "value":"up"
+                         "value":"down"
                         }],
                  "rotation":0,
                  "type":"",
@@ -1531,7 +1531,7 @@
                         {
                          "name":"facing",
                          "type":"string",
-                         "value":"up"
+                         "value":"left"
                         }],
                  "rotation":0,
                  "type":"",

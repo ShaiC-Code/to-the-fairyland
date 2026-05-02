@@ -921,7 +921,7 @@
                         {
                          "name":"facing",
                          "type":"string",
-                         "value":"up"
+                         "value":"down"
                         }],
                  "rotation":0,
                  "type":"",
@@ -936,6 +936,12 @@
                  "name":"RoadEnd",
                  "opacity":1,
                  "point":true,
+                 "properties":[
+                        {
+                         "name":"facing",
+                         "type":"string",
+                         "value":"up"
+                        }],
                  "rotation":0,
                  "type":"",
                  "visible":true,

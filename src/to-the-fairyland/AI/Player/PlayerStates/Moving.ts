@@ -59,6 +59,15 @@ export default class Moving extends PlayerBehaviorState {
     public override update(deltaT: number): void {
         super.update(deltaT);
 
+        if (!this.parent.targetTile) {
+            this.parent.moving = false;
+            this.parent.moveProgress = 0;
+            this.parent.moveStart = this.owner.position.clone();
+            this.parent.moveEnd = this.owner.position.clone();
+            this.finished(PlayerStateType.IDLE);
+            return;
+        }
+
         this.parent.moveProgress += deltaT / this.parent.currentMoveDuration;
 
         // A single frame can sometimes finish a step and still have a little

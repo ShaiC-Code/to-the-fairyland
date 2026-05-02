@@ -52,7 +52,7 @@ export default class ControlsScreen extends UIScreen {
             },
 
             {
-              left: { key: "row6left", pos: new Vec2(controlsTableLeftX, listTop + verticalOffset * 5), text: "Cancel" },
+              left: { key: "row6left", pos: new Vec2(controlsTableLeftX, listTop + verticalOffset * 5), text: "Attack" },
               right: { key: "row6right", pos: new Vec2(controlsTableRightX, listTop + verticalOffset * 5), text: "X, K" }
             },
 
