@@ -26,8 +26,8 @@ export default class SpotlightEffectOverlay extends OverlayLayer {
         const viewportHalfSize = this.getViewportHalfSize();
         const viewportSize = viewportHalfSize.clone().scale(2);
         const screenCenter = viewportHalfSize.clone();
-        const paddingX = viewportSize.x;
-        const paddingY = viewportSize.y;
+        const paddingX = viewportSize.x * 1.25;
+        const paddingY = viewportSize.y * 1.25;
 
 
         if (this.player) {
