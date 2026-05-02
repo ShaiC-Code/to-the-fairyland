@@ -11,6 +11,7 @@ export enum PlayerInput {
     MOVE_LEFT = "MOVE_LEFT",
     MOVE_RIGHT = "MOVE_RIGHT",
     INTERACT = "INTERACT",
+    ATTACK = "ATTACK",
     INVENTORY = "INVENTORY",
     PAUSE = "PAUSE"
 }
@@ -32,6 +33,7 @@ const AllowedInputsByMode: Record<PlayerControlMode, ReadonlySet<PlayerInput>> =
         PlayerInput.MOVE_LEFT,
         PlayerInput.MOVE_RIGHT,
         PlayerInput.INTERACT,
+        PlayerInput.ATTACK,
         PlayerInput.INVENTORY,
         PlayerInput.PAUSE
     ]),
@@ -171,6 +173,10 @@ export default class PlayerController {
      */
     public get interacting(): boolean {
         return this.controlMode === PlayerControlMode.GAMEPLAY && this.isJustPressed(PlayerInput.INTERACT);
+    }
+
+    public get attacking(): boolean {
+        return this.controlMode === PlayerControlMode.GAMEPLAY && this.isJustPressed(PlayerInput.ATTACK);
     }
 
     public get tileInput(): Vec2 {

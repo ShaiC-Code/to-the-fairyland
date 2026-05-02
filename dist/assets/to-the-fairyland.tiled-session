@@ -1,15 +1,15 @@
 {
     "activeFile": "tilemaps/Chapter4/TreeInner.json",
     "expandedProjectPaths": [
-        "tilemaps/Chapter7",
-        "tilemaps/Chapter6",
         "tilemaps/Chapter1",
-        "tilemaps/Chapter2",
-        "spritesheets",
-        ".",
+        "tilemaps/Chapter6",
         "tilemaps/Chapter4",
+        "tilemaps/Chapter5",
+        "tilemaps/Chapter7",
+        ".",
         "tilemaps",
-        "tilemaps/Chapter5"
+        "spritesheets",
+        "tilemaps/Chapter2"
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
@@ -213,15 +213,15 @@
                 4,
                 5
             ],
-            "scale": 8,
-            "selectedLayer": 3,
+            "scale": 1,
+            "selectedLayer": 11,
             "viewCenter": {
-                "x": 1558.625,
-                "y": 1396.6875
+                "x": 1589,
+                "y": 1435.5
             }
         },
         "tilemaps/Chapter4/TreeInner.json#Chapter2_Village_Tiles": {
-            "scaleInDock": 1,
+            "scaleInDock": 0.25,
             "scaleInEditor": 0.75
         },
         "tilemaps/Chapter5/UndergroundTunnel.json": {
