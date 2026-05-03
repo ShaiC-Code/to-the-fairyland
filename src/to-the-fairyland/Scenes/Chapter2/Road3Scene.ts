@@ -3,7 +3,7 @@ import RoadSceneBase from "./RoadSceneBase";
 import Road2Scene from "./Road2Scene";
 import CliffScene from "./CliffScene";
 import { dialogue } from "../../GameSystems/InteractionSystem/InteractionDatabase";
-import { GameEventType } from "../../../Wolfie2D/Events/GameEventType";
+import AudioController from "../../GameSystems/AudioController";
 
 export default class Road3Scene extends RoadSceneBase {
     protected readonly tilemap = {
@@ -68,7 +68,7 @@ export default class Road3Scene extends RoadSceneBase {
     private triggerVillageShake(): void {
         this.storyManager.chapter2.markVillageShakeStarted();
 
-        this.audioController.playSFX(this.assets.sounds.somethingBigSFX.key, false, false);
+        AudioController.getInstance().playSFX(this.assets.sounds.somethingBigSFX.key);
         this.cameraController.shake(2200, 40);
     
         this.startDialogue(dialogue(

@@ -25,7 +25,6 @@ export default class SplashScreenScene extends Scene {
     };
 
     protected splashScreen!: SplashScreen;
-    protected audioController!: AudioController;
 
 	  public loadScene(): void {
         this.load.image(this.splashScreenImage.key, this.splashScreenImage.path);
@@ -40,15 +39,12 @@ export default class SplashScreenScene extends Scene {
         });
     }
 
-    public startScene(): void {
-        this.audioController = new AudioController();
-        
+    public startScene(): void {        
         this.splashScreen = new SplashScreen(
             "splashScreen",
             this,
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize(),
-            this.audioController,
             this.splashScreenImage.key,
             () => this.sceneManager.changeToScene(
                 MainMenu,

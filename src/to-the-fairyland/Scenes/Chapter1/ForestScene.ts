@@ -9,6 +9,7 @@ import { WeatherType } from "../../GameSystems/WorldSystem/WorldState";
 import Timer from "../../../Wolfie2D/Timing/Timer";
 import NullFunc from "../../../Wolfie2D/DataTypes/Functions/NullFunc";
 import { getBushBerriesDialogue } from "../../GameSystems/InteractionSystem/ObjectInteractions";
+import AudioController from "../../GameSystems/AudioController";
 
 export default class ForestScene extends MappedAdventureChapter1Scene {
     protected readonly tilemap = {
@@ -42,7 +43,7 @@ export default class ForestScene extends MappedAdventureChapter1Scene {
         super.startScene();
         this.weatherController.setWeather(WeatherType.SNOWSTORM, 50);
         this.howlEvent = new Timer(0, () => {
-            this.audioController.playSFX(this.assets.sounds.wolvesHowlingSFX.key, false, false);
+            AudioController.getInstance().playSFX(this.assets.sounds.wolvesHowlingSFX.key);
             this.setHowlEventTimer();
         });
         this.setHowlEventTimer();
@@ -126,7 +127,7 @@ export default class ForestScene extends MappedAdventureChapter1Scene {
                     fadeInMs: 300
                 }
             );
-            this.audioController.playSFX(this.assets.sounds.woodenDoorSFX.key, false, false);
+            AudioController.getInstance().playSFX(this.assets.sounds.woodenDoorSFX.key);
         }
     }
 

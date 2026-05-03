@@ -5,6 +5,7 @@ import Sprite from "../../../../Wolfie2D/Nodes/Sprites/Sprite";
 import Scene from "../../../../Wolfie2D/Scene/Scene";
 import type { PlayerAttackHitbox } from "../../../GameSystems/CombatSystem/PlayerAttackController";
 import type { SwordHitTarget } from "../../../GameSystems/CombatSystem/SwordHitDispatcher";
+import AudioController from "../../../GameSystems/AudioController";
 
 export type VineAttackType = "normal" | "exit";
 
@@ -39,10 +40,10 @@ type VineAttackControllerOptions = {
     partSpacing?: number;
     partRotationOffset?: number;
     dynamicCollisionTileId?: number;
+    swordAttackHitSFXKey?: string;
 };
 
 export default class VineAttackController implements SwordHitTarget {
-
     private activeVineAttacks: VineAttack[] = [];
     private dynamicCollisionTiles: Map<string, { tile: Vec2; previousTile: number; count: number }> = new Map();
 
@@ -55,6 +56,7 @@ export default class VineAttackController implements SwordHitTarget {
     private readonly partSpacing: number;
     private readonly partRotationOffset: number;
     private readonly dynamicCollisionTileId: number;
+    private readonly swordAttackHitSFXKey?: string;
 
     public constructor(options: VineAttackControllerOptions) {
         this.scene = options.scene;
@@ -66,6 +68,7 @@ export default class VineAttackController implements SwordHitTarget {
         this.partSpacing = options.partSpacing ?? 30;
         this.partRotationOffset = options.partRotationOffset ?? 0;
         this.dynamicCollisionTileId = options.dynamicCollisionTileId ?? 1;
+        this.swordAttackHitSFXKey = options.swordAttackHitSFXKey;
     }
 
     public startFromObjects(startObj: TiledObject, endObj: TiledObject, options: VineAttackOptions = {}): void {
@@ -161,12 +164,20 @@ export default class VineAttackController implements SwordHitTarget {
     
     public handleSwordHit(hitbox: PlayerAttackHitbox): void {
         const playerHitTiles = this.getPlayerAttackPathTileSet(hitbox);
-    
-        this.destroyMatching(attack =>
+
+        const vinesHit = this.activeVineAttacks.filter(attack =>
             attack.type === "normal" &&
             attack.progress > 0 &&
             this.currentVineTouchesAnyTile(attack, playerHitTiles)
         );
+
+        if (vinesHit.length > 0) {
+            if (this.swordAttackHitSFXKey) {
+                AudioController.getInstance().playSFX(this.swordAttackHitSFXKey);
+            }
+        }
+    
+        this.destroyMatching(attack => vinesHit.includes(attack));
     }
     
     private getPlayerAttackPathTileSet(hitbox: PlayerAttackHitbox): Set<string> {

@@ -4,12 +4,20 @@ import Receiver from "../../Wolfie2D/Events/Receiver";
 import AudioManager, { AudioChannelType } from "../../Wolfie2D/Sound/AudioManager";
 
 export default class AudioController {  
+    private static instance: AudioController;
     protected reciever: Receiver;
     protected emitter: Emitter;
 
-    constructor() {
+    private constructor() {
         this.reciever = new Receiver();
         this.emitter = new Emitter();
+    }
+
+    public static getInstance(): AudioController {
+        if (!AudioController.instance) {
+            AudioController.instance = new AudioController();
+        }
+        return AudioController.instance;
     }
 
     public playSound(key: string, loop: boolean = false, holdReference: boolean = false, channel?: AudioChannelType, fadeSeconds?: number): void {

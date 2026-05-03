@@ -35,7 +35,6 @@ export default class UIScreen implements Updateable {
     protected scene: Scene;
     protected getViewportCenter: () => Vec2;
     protected getViewportHalfSize: () => Vec2;
-    protected audioController: AudioController;
 
     protected reciever: Receiver;
     protected emitter: Emitter;
@@ -62,11 +61,10 @@ export default class UIScreen implements Updateable {
         confirm: () => false
     };
 
-    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, audioController: AudioController, options?: UIScreenOptions) {
+    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, options?: UIScreenOptions) {
         this.scene = scene;
         this.getViewportCenter = getViewportCenter;
         this.getViewportHalfSize = getViewportHalfSize;
-        this.audioController = audioController;
         this.layerName = layerName;
         this.layer = this.scene.addUILayer(layerName);
 
@@ -312,7 +310,7 @@ export default class UIScreen implements Updateable {
 
     protected playSFX(key?: string): void {
         if (key) {
-            this.audioController.playSFX(key);
+            AudioController.getInstance().playSFX(key);
         }
     }
 

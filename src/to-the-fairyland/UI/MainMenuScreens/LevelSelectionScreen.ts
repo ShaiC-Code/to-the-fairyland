@@ -1,11 +1,10 @@
 import Scene from "../../../Wolfie2D/Scene/Scene";
 import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 import UIScreen, { UIScreenOptions } from "../UIScreen";
-import AudioController from "../../GameSystems/AudioController";
 
 export default class LevelSelectionScreen extends UIScreen {
-    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, audioController: AudioController, options?: UIScreenOptions) {
-        super(layerName, scene, getViewportCenter, getViewportHalfSize, audioController, options);
+    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, options?: UIScreenOptions) {
+        super(layerName, scene, getViewportCenter, getViewportHalfSize, options);
         this.initializeUI();
     }
 

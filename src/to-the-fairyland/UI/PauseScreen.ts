@@ -4,7 +4,6 @@ import UIScreen, { UIScreenOptions } from "./UIScreen";
 import Color from "../../Wolfie2D/Utils/Color";
 import Label from "../../Wolfie2D/Nodes/UIElements/Label";
 import EaseFunctions from "../../Wolfie2D/Utils/EaseFunctions";
-import AudioController from "../GameSystems/AudioController";
 
 export default class PauseScreen extends UIScreen {
     private onControls: () => void;
@@ -18,8 +17,8 @@ export default class PauseScreen extends UIScreen {
     private readonly saveHoldDuration = 0.5;
     private readonly saveFadeDuration = 0.3;
 
-    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, audioController: AudioController, onControls: () => void, onSave: () => void, onQuit: () => void, options?: UIScreenOptions) {
-        super(layerName, scene, getViewportCenter, getViewportHalfSize, audioController, options);
+    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, onControls: () => void, onSave: () => void, onQuit: () => void, options?: UIScreenOptions) {
+        super(layerName, scene, getViewportCenter, getViewportHalfSize, options);
         this.onControls = onControls;
         this.onSave = onSave;
         this.onQuit = onQuit;

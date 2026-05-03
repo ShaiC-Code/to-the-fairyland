@@ -4,11 +4,8 @@ import MainMenu from "../MainMenu";
 import EndOfDemoScreen from "../../UI/EndOfDemoScreenScreens/EndOfDemoScreen";
 import ClickableOverlay from "../../UI/CustomUIElements/ClickableOverlay";
 import { CustomUIElementType } from "../../UI/CustomUIElements/CustomUIElementTypes";
-import AudioController from "../../GameSystems/AudioController";
 
-export default class EndOfDemoScene extends Scene {
-    protected audioController!: AudioController;
-    
+export default class EndOfDemoScene extends Scene {    
     private transitioned = false;
     private endOfDemoScreen!: EndOfDemoScreen;
     private previewTimer!: Timer;
@@ -24,14 +21,11 @@ export default class EndOfDemoScene extends Scene {
     }
 
     public startScene(): void {
-        this.audioController = new AudioController();
-
         this.endOfDemoScreen = new EndOfDemoScreen(
             "endOfDemoScreen",
             this,
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize(),
-            this.audioController,
             () => this.proceedToMainMenu()
         );
         this.endOfDemoScreen.show();

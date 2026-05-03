@@ -14,6 +14,7 @@ import VineAttackController, { VineAttackOptions } from "./TreeInner/VineAttackC
 import VineShooterWaveController, { VINE_INDICATOR_LAYER_NAME } from "./TreeInner/VineShooterWaveController";
 import TitleOverlay from "../../Overlays/TitleOverlay";
 import { AssetBundle, ChapterSceneDefinition } from "../MappedAdventureScene";
+import AudioController from "../../GameSystems/AudioController";
 
 export default class TreeInnerScene extends ForestSceneBase {
     protected readonly tilemap = {
@@ -30,7 +31,10 @@ export default class TreeInnerScene extends ForestSceneBase {
             vinePartSprite: { key: "vinePart", path: "/assets/sprites/VinePart.png" },
             vinePartExitSprite: { key: "vinePartExit", path: "/assets/sprites/VinePartExit.png" }
         },
-        sounds: {},
+        sounds: {
+            swordPullSFX: { key: "sword-pull", path: "/assets/sounds/sword-pull.ogg" },
+            excaliburReceivedSFX: { key: "excalibur-received", path: "/assets/sounds/excalibur-received.ogg" },
+        },
         images: {}
     };
     
@@ -142,7 +146,8 @@ export default class TreeInnerScene extends ForestSceneBase {
             ground: this.ground,
             collision: this.collision,
             layerName: this.vineLayerName,
-            defaultSpriteKey: this.assets.sprites.vinePartSprite.key
+            defaultSpriteKey: this.assets.sprites.vinePartSprite.key,
+            swordAttackHitSFXKey: this.assets.sounds.swordAttackHitSFX.key
         });
 
         this.swordHitDispatcher.register(this.vineAttackController);
@@ -291,6 +296,8 @@ export default class TreeInnerScene extends ForestSceneBase {
         if (this.pullingExcalibur || !this.excaliburSprite) {
             return;
         }
+
+        AudioController.getInstance().playSFX(this.assets.sounds.swordPullSFX.key);
     
         this.pullingExcalibur = true;
         this.excaliburPullElapsed = 0;
@@ -368,8 +375,12 @@ export default class TreeInnerScene extends ForestSceneBase {
         const addedItem = inventory.add(new Excalibur());
     
         if (addedItem !== null) {
-            this.playItemReceivedSFX();
+            this.playExcaliburReceivedSFX();
         }
+    }
+
+    protected playExcaliburReceivedSFX(): void {
+        AudioController.getInstance().playSFX(this.assets.sounds.excaliburReceivedSFX.key);
     }
     
     private startVineAttack(startName: string, endName: string, options: VineAttackOptions = {}): void {

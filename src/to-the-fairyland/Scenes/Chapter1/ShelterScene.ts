@@ -5,6 +5,7 @@ import { AssetBundle } from "../MappedAdventureScene";
 import MappedAdventureChapter1Scene from "./MappedAdventureChapter1Scene";
 import { getBedDialogue, getPotDialogue } from "../../GameSystems/InteractionSystem/InteractionDatabase";
 import { WeatherType } from "../../GameSystems/WorldSystem/WorldState";
+import AudioController from "../../GameSystems/AudioController";
 
 export default class ShelterScene extends MappedAdventureChapter1Scene {
     protected readonly tilemap = {
@@ -93,7 +94,7 @@ export default class ShelterScene extends MappedAdventureChapter1Scene {
                     fadeInMs: 300
                 }
             );
-            this.audioController.playSFX(this.assets.sounds.woodenDoorSFX.key, false, false);
+            AudioController.getInstance().playSFX(this.assets.sounds.woodenDoorSFX.key);
         }
     }
 }

@@ -5,6 +5,7 @@ import FrozenBerries from "../../GameSystems/ItemSystem/Items/FrozenBerries";
 import CookedBerries from "../../GameSystems/ItemSystem/Items/CookedBerries";
 import WorldMap from "../../GameSystems/ItemSystem/Items/WorldMap";
 import VillageScene from "../Chapter2/VillageScene";
+import AudioController from "../../GameSystems/AudioController";
 
 export default abstract class MappedAdventureChapter1Scene extends MappedAdventureScene {
     protected static readonly assetBundle: AssetBundle = {
@@ -48,9 +49,9 @@ export default abstract class MappedAdventureChapter1Scene extends MappedAdventu
         this.keepAssets(MappedAdventureChapter1Scene.assetBundle);
 
         // Stop sfx when changing scenes
-        this.audioController.stopSound(this.assets.sounds.walkingWoodSFX.key);
-        this.audioController.stopSound(this.assets.sounds.walkingSnowSFX.key);
-        this.audioController.stopSound(this.assets.sounds.walkingSnowBushSFX.key);
+        AudioController.getInstance().stopSound(this.assets.sounds.walkingWoodSFX.key);
+        AudioController.getInstance().stopSound(this.assets.sounds.walkingSnowSFX.key);
+        AudioController.getInstance().stopSound(this.assets.sounds.walkingSnowBushSFX.key);
     }
 
     protected onMapPickedUp(): void {}

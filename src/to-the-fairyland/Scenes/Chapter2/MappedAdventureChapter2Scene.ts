@@ -10,6 +10,7 @@ import SleepingBag from "../../GameSystems/ItemSystem/Items/SleepingBag";
 import ObsidianBoots from "../../GameSystems/ItemSystem/Items/ObsidianBoots";
 import { ItemUseAction, ItemUseActions, ItemUseResult } from "../../GameSystems/ItemSystem/ItemUseActions";
 import { TimeOfDay } from "../../GameSystems/WorldSystem/WorldState";
+import AudioController from "../../GameSystems/AudioController";
 
 export default abstract class MappedAdventureChapter2Scene extends MappedAdventureScene {
     protected static readonly assetBundle: AssetBundle = {
@@ -49,9 +50,9 @@ export default abstract class MappedAdventureChapter2Scene extends MappedAdventu
         this.keepAssets(MappedAdventureChapter2Scene.assetBundle);
     
         // Stop sfx when changing scenes
-        this.audioController.stopSound(this.assets.sounds.walkingWoodSFX.key);
-        this.audioController.stopSound(this.assets.sounds.walkingSnowSFX.key);
-        this.audioController.stopSound(this.assets.sounds.walkingSnowBushSFX.key);
+        AudioController.getInstance().stopSound(this.assets.sounds.walkingWoodSFX.key);
+        AudioController.getInstance().stopSound(this.assets.sounds.walkingSnowSFX.key);
+        AudioController.getInstance().stopSound(this.assets.sounds.walkingSnowBushSFX.key);
     }
     
 

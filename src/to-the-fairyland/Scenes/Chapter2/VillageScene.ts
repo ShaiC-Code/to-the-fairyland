@@ -7,6 +7,7 @@ import RoadScene from "./RoadScene";
 import { dialogue, getNpcInteraction } from "../../GameSystems/InteractionSystem/InteractionDatabase";
 import ScrollingPatternWorldLayer from "../../Overlays/ScrollingPatternWorldLayer";
 import LycanChaseSceneBase from "../LycanChaseSceneBase";
+import AudioController from "../../GameSystems/AudioController";
 
 type NpcRuntime = {
     name: string;
@@ -166,8 +167,8 @@ export default class VillageScene extends LycanChaseSceneBase {
             {
                 onComplete: () => {
                     this.startAllLycanChases();
-                    this.audioController.playSFX(this.assets.sounds.wolvesRunningSFX.key, true, true);
-                    this.audioController.playSFX(this.assets.sounds.wolvesFerociousSFX.key, true, true);
+                    AudioController.getInstance().playSFX(this.assets.sounds.wolvesRunningSFX.key, true, true);
+                    AudioController.getInstance().playSFX(this.assets.sounds.wolvesFerociousSFX.key, true, true);
                 }
             })
         );

@@ -9,6 +9,7 @@ import { PlayerStateType } from "../../AI/Player/PlayerStates/PlayerBehaviorStat
 import AnimatedSprite from "../../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
 import Receiver from "../../../Wolfie2D/Events/Receiver";
 import GameEvent from "../../../Wolfie2D/Events/GameEvent";
+import AudioController from "../AudioController";
 
 export type PlayerAttackHitbox = {
     weapon: "excalibur";
@@ -30,6 +31,7 @@ type PlayerAttackControllerOptions = {
     onDashComplete?: (endTile: Vec2, tiles: Vec2[]) => void;
     canAttack?: () => boolean;
     clampDashTiles?: (tiles: Vec2[], originTile: Vec2, direction: Vec2) => Vec2[];
+    swordAttackSFXKey?: string;
 };
 
 export default class PlayerAttackController {
@@ -43,6 +45,7 @@ export default class PlayerAttackController {
     private readonly onDashComplete?: (endTile: Vec2, tiles: Vec2[]) => void;
     private readonly canAttack: () => boolean;
     private readonly clampDashTiles: (tiles: Vec2[], originTile: Vec2, direction: Vec2) => Vec2[];
+    protected swordAttackSFXKey?: string;
 
     private readonly dashTileCount = 2;
     private readonly dashDuration = 0.14;
@@ -87,6 +90,7 @@ export default class PlayerAttackController {
         this.onDashComplete = options.onDashComplete;
         this.canAttack = options.canAttack ?? (() => true);
         this.clampDashTiles = options.clampDashTiles ?? ((tiles) => tiles);
+        this.swordAttackSFXKey = options.swordAttackSFXKey;
         this.animationReceiver.subscribe(this.swordAttackEndEvent);
     }
 
@@ -124,6 +128,10 @@ export default class PlayerAttackController {
     private startExcaliburAttack(): void {
         if (this.attacking) {
             return;
+        }
+
+        if (this.swordAttackSFXKey) {
+            AudioController.getInstance().playSFX(this.swordAttackSFXKey);
         }
 
         const ai = this.getPlayerAI();

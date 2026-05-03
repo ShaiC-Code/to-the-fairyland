@@ -80,8 +80,6 @@ export default class MainMenu extends Scene {
     private helpMenu!: HelpScreen;
     private testMenu!: TestScreen;
 
-    protected audioController!: AudioController;
-
     private cheatsEnabled = false;
 
     public override initScene(): void {
@@ -102,7 +100,7 @@ export default class MainMenu extends Scene {
 
     public unloadScene(): void {
         this.keepAssets(MainMenu.assetBundle);
-        this.audioController.stopSound(this.assets.sounds.mainScreenMusic.key);
+        AudioController.getInstance().stopSound(this.assets.sounds.mainScreenMusic.key);
     }
 
     protected mergeAssetBundles(parent: AssetBundle, child: AssetBundle): AssetBundle {
@@ -172,15 +170,13 @@ export default class MainMenu extends Scene {
             uiActions
         };
 
-        this.audioController = new AudioController();
-        this.audioController.playMusic(this.assets.sounds.mainScreenMusic.key, true, true);
+        AudioController.getInstance().playMusic(this.assets.sounds.mainScreenMusic.key, true, true);
 
         this.mainMenu = new MainScreen(
             "mainMenu",
             this,
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize(),
-            this.audioController,
             this.assets.images.mainScreenImage.key,
             uiOptions
         );
@@ -192,7 +188,6 @@ export default class MainMenu extends Scene {
             this,
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize(),
-            this.audioController,
             uiOptions
         );
 
@@ -201,7 +196,6 @@ export default class MainMenu extends Scene {
             this,
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize(),
-            this.audioController,
             uiOptions
         );
 
@@ -210,7 +204,6 @@ export default class MainMenu extends Scene {
             this,
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize(),
-            this.audioController,
             uiOptions
         );
 
@@ -219,7 +212,6 @@ export default class MainMenu extends Scene {
             this,
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize(),
-            this.audioController,
             uiOptions
         );
 
