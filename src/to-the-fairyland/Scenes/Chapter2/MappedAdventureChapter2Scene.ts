@@ -10,7 +10,6 @@ import SleepingBag from "../../GameSystems/ItemSystem/Items/SleepingBag";
 import ObsidianBoots from "../../GameSystems/ItemSystem/Items/ObsidianBoots";
 import { ItemUseAction, ItemUseActions, ItemUseResult } from "../../GameSystems/ItemSystem/ItemUseActions";
 import { TimeOfDay } from "../../GameSystems/WorldSystem/WorldState";
-import { GameEventType } from "../../../Wolfie2D/Events/GameEventType";
 
 export default abstract class MappedAdventureChapter2Scene extends MappedAdventureScene {
     protected static readonly assetBundle: AssetBundle = {
@@ -22,7 +21,8 @@ export default abstract class MappedAdventureChapter2Scene extends MappedAdventu
             walkingWoodSFX: { key: "walking-wood", path: "/assets/sounds/walking-wood.ogg" },
             walkingSnowBushSFX: { key: "walking-snow-bush", path: "/assets/sounds/walking-snow-bush.ogg" },
             somethingBigSFX: { key: "something-big", path: "/assets/sounds/something-big.ogg" }
-        }
+        },
+        images: {}
     };
 
     protected readonly chapterDefinition: ChapterSceneDefinition = {
@@ -48,9 +48,10 @@ export default abstract class MappedAdventureChapter2Scene extends MappedAdventu
         super.unloadScene();
         this.keepAssets(MappedAdventureChapter2Scene.assetBundle);
     
-        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: this.assets.sounds.walkingWoodSFX.key });
-        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: this.assets.sounds.walkingSnowSFX.key });
-        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: this.assets.sounds.walkingSnowBushSFX.key });
+        // Stop sfx when changing scenes
+        this.audioController.stopSound(this.assets.sounds.walkingWoodSFX.key);
+        this.audioController.stopSound(this.assets.sounds.walkingSnowSFX.key);
+        this.audioController.stopSound(this.assets.sounds.walkingSnowBushSFX.key);
     }
     
 

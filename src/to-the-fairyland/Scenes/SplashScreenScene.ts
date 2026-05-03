@@ -6,25 +6,26 @@ import { CustomUIElementType } from "../UI/CustomUIElements/CustomUIElementTypes
 import SplashScreen from "../UI/SplashScreenScreens/SplashScreen";
 import MainMenu from "./MainMenu";
 import { PlayerInput } from "../AI/Player/PlayerController";
+import AudioController from "../GameSystems/AudioController";
 
 type AssetRef = Readonly<{
-    key: string;
-    path: string;
+    readonly key: string;
+    readonly path: string;
 }>;
 
 export default class SplashScreenScene extends Scene {
-
-	  protected readonly splashScreenImage: AssetRef = {
+    protected readonly splashScreenImage: AssetRef = {
         key: "splash-screen-image",
         path: "/assets/images/splash-screen-image.png"
-	  };
+    };
 
-	  protected readonly splashScreenProceedSFX: AssetRef = {
+    protected readonly splashScreenProceedSFX: AssetRef = {
         key: "splash-screen-proceed",
         path: "/assets/sounds/splash-screen-proceed.ogg"
-	  };
+    };
 
     protected splashScreen!: SplashScreen;
+    protected audioController!: AudioController;
 
 	  public loadScene(): void {
         this.load.image(this.splashScreenImage.key, this.splashScreenImage.path);
@@ -40,11 +41,14 @@ export default class SplashScreenScene extends Scene {
     }
 
     public startScene(): void {
+        this.audioController = new AudioController();
+        
         this.splashScreen = new SplashScreen(
             "splashScreen",
             this,
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize(),
+            this.audioController,
             this.splashScreenImage.key,
             () => this.sceneManager.changeToScene(
                 MainMenu,

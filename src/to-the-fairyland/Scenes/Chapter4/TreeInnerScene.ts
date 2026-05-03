@@ -3,7 +3,7 @@ import ForestSceneBase from "../ForestSceneBase";
 import GreatTreeScene from "./GreatTreeScene";
 import Sprite from "../../../Wolfie2D/Nodes/Sprites/Sprite";
 import Timer from "../../../Wolfie2D/Timing/Timer";
-import { choiceOption, dialogue, dialogueWithChoice, DialogueCompleteActions } from "../../GameSystems/InteractionSystem/InteractionDatabase";
+import { dialogue, DialogueCompleteActions } from "../../GameSystems/InteractionSystem/InteractionDatabase";
 import Excalibur from "../../GameSystems/ItemSystem/Items/Excalibur";
 import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 import PlayerAI from "../../AI/Player/PlayerAI";
@@ -15,8 +15,25 @@ import VineShooterWaveController, { VINE_INDICATOR_LAYER_NAME } from "./TreeInne
 import TitleOverlay from "../../Overlays/TitleOverlay";
 import { AssetBundle, ChapterSceneDefinition } from "../MappedAdventureScene";
 
-
 export default class TreeInnerScene extends ForestSceneBase {
+    protected readonly tilemap = {
+        key: "treeInner",
+        path: "/assets/tilemaps/Chapter4/TreeInner.json"
+    };
+
+    protected static readonly assetBundle: AssetBundle = {
+        tilemaps: {},
+        spritesheets: {},
+        sprites: {
+            excaliburSprite: { key: "excalibur", path: "/assets/sprites/Excalibur.png" },
+            trunkFrontSprite: { key: "trunkFront", path: "/assets/sprites/TrunkFront.png" },
+            vinePartSprite: { key: "vinePart", path: "/assets/sprites/VinePart.png" },
+            vinePartExitSprite: { key: "vinePartExit", path: "/assets/sprites/VinePartExit.png" }
+        },
+        sounds: {},
+        images: {}
+    };
+    
     private readonly storyManager = StoryManager.getInstance();
 
     private excaliburSprite: Sprite | null = null;
@@ -50,24 +67,6 @@ export default class TreeInnerScene extends ForestSceneBase {
     private vineExitCollisionTemplate!: OrthogonalTilemap;
     private readonly vineExitCollisionLayerName = "VineExitCollisions";
     private vineExitCloseCutsceneActive = false;
-
-
-    protected readonly tilemap = {
-        key: "treeInner",
-        path: "/assets/tilemaps/Chapter4/TreeInner.json"
-    };
-
-    protected static readonly assetBundle: AssetBundle = {
-        tilemaps: {},
-        spritesheets: {},
-        sprites: {
-            excaliburSprite: { key: "excalibur", path: "/assets/sprites/Excalibur.png" },
-            trunkFrontSprite: { key: "trunkFront", path: "/assets/sprites/TrunkFront.png" },
-            vinePartSprite: { key: "vinePart", path: "/assets/sprites/VinePart.png" },
-            vinePartExitSprite: { key: "vinePartExit", path: "/assets/sprites/VinePartExit.png" }
-        },
-        sounds: {}
-    };
     
     protected override combinedAssetBundles(): AssetBundle {
         return this.mergeAssetBundles(super.combinedAssetBundles(), TreeInnerScene.assetBundle);

@@ -10,59 +10,7 @@ import { TiledObject, TiledTilemapData } from "../../../Wolfie2D/DataTypes/Tiles
 import DolphinPathBehavior from "../../AI/NPC/NPCBehavior/DolphinPathBehavior";
 import MainMenu from "../MainMenu";
 
-
-
-
 export default class EmeraldPondScene extends MappedAdventureScene {
-
-    private readonly bubbleBackLayerName = "BubblesBack";
-    private readonly bubbleFrontLayerName = "BubblesFront";
-    private readonly bubblePoolSize = 12;
-    private readonly bubbleSpawnIntervalMin = 0.035;
-    private readonly bubbleSpawnIntervalMax = 0.075;
-    private readonly drownFlowDepthThreshold = 0;
-
-    private bubbleBurstRemaining = 0;
-    private bubbleBurstPauseTimer = 0;
-
-    private readonly bubbleBurstSizeMin = 4;
-    private readonly bubbleBurstSizeMax = 9;
-    private readonly bubbleBurstPauseMin = 0.25;
-    private readonly bubbleBurstPauseMax = 0.75;
-    
-    private readonly dolphinPathLayerName = "DolphinPath";
-    private readonly dolphinSpawnName = "Dolphin";
-    private readonly dolphinMoveDuration = 0.2;
-
-
-    private dolphin!: AnimatedSprite;
-
-
-    private bubbles: Sprite[] = [];
-    private bubbleSpawnTimer = 0;
-    private bubbleFlowStarted = false;
-
-    private readonly bubbleSettings: BubbleParticleSettings = {
-        lifetimeMin: 1.1,
-        lifetimeMax: 2.2,
-        fadeInSeconds: 0.18,
-        fadeOutSeconds: 0.45,
-        riseSpeedMin: 35,
-        riseSpeedMax: 85,
-        fanSpeedMin: 4,
-        fanSpeedMax: 22,
-        fanAccelerationMin: 8,
-        fanAccelerationMax: 32,
-        wobbleAmplitudeMin: 4,
-        wobbleAmplitudeMax: 14,
-        wobbleFrequencyMin: 4,
-        wobbleFrequencyMax: 9,
-        scaleMin: 0.35,
-        scaleMax: 0.75,
-        scaleGrowth: 0.25
-    };
-
-
     protected readonly tilemap = {
         key: "emeraldPond",
         path: "/assets/tilemaps/Chapter7/EmeraldPond.json"
@@ -95,9 +43,55 @@ export default class EmeraldPondScene extends MappedAdventureScene {
             bubble3: { key: "bubble3", path: "/assets/sprites/particles/Bubble3.png" }
 
         },
-        sounds: {}
+        sounds: {},
+        images: {}
     };
+
+    private readonly bubbleBackLayerName = "BubblesBack";
+    private readonly bubbleFrontLayerName = "BubblesFront";
+    private readonly bubblePoolSize = 12;
+    private readonly bubbleSpawnIntervalMin = 0.035;
+    private readonly bubbleSpawnIntervalMax = 0.075;
+    private readonly drownFlowDepthThreshold = 0;
+
+    private bubbleBurstRemaining = 0;
+    private bubbleBurstPauseTimer = 0;
+
+    private readonly bubbleBurstSizeMin = 4;
+    private readonly bubbleBurstSizeMax = 9;
+    private readonly bubbleBurstPauseMin = 0.25;
+    private readonly bubbleBurstPauseMax = 0.75;
     
+    private readonly dolphinPathLayerName = "DolphinPath";
+    private readonly dolphinSpawnName = "Dolphin";
+    private readonly dolphinMoveDuration = 0.2;
+
+    private dolphin!: AnimatedSprite;
+
+    private bubbles: Sprite[] = [];
+    private bubbleSpawnTimer = 0;
+    private bubbleFlowStarted = false;
+
+    private readonly bubbleSettings: BubbleParticleSettings = {
+        lifetimeMin: 1.1,
+        lifetimeMax: 2.2,
+        fadeInSeconds: 0.18,
+        fadeOutSeconds: 0.45,
+        riseSpeedMin: 35,
+        riseSpeedMax: 85,
+        fanSpeedMin: 4,
+        fanSpeedMax: 22,
+        fanAccelerationMin: 8,
+        fanAccelerationMax: 32,
+        wobbleAmplitudeMin: 4,
+        wobbleAmplitudeMax: 14,
+        wobbleFrequencyMin: 4,
+        wobbleFrequencyMax: 9,
+        scaleMin: 0.35,
+        scaleMax: 0.75,
+        scaleGrowth: 0.25
+    };
+
     protected override playIdleForFacing(_facing: Vec2): void {
         this.player.animation.play("Drown", true);
     }    
@@ -115,7 +109,6 @@ export default class EmeraldPondScene extends MappedAdventureScene {
     private currentDepth = 0;
     private readonly sinkSpeed = 30;
 
-    
     protected override combinedAssetBundles(): AssetBundle {
         return this.mergeAssetBundles(super.combinedAssetBundles(), EmeraldPondScene.assetBundle);
     }

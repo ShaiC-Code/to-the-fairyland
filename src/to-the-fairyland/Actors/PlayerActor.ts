@@ -15,7 +15,8 @@ export default class PlayerActor extends AnimatedSprite implements Battler {
         tilemaps: {},
         spritesheets: {},
         sprites: {},
-        sounds: {}
+        sounds: {},
+        images: {}
     };
 
     /** Give the player a battler compoonent */

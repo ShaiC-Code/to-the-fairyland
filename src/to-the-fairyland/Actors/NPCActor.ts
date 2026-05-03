@@ -18,7 +18,8 @@ export default class NPCActor extends AnimatedSprite implements Battler, Targeti
         tilemaps: {},
         spritesheets: {},
         sprites: {},
-        sounds: {}
+        sounds: {},
+        images: {}
     };
     
     // An invincible timer for our NPCs

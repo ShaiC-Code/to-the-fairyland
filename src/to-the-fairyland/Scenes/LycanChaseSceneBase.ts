@@ -7,7 +7,6 @@ import { AssetBundle } from "./MappedAdventureScene";
 import MappedAdventureChapter2Scene from "./Chapter2/MappedAdventureChapter2Scene";
 import PlayerDeathHitOverlay from "../Overlays/PlayerDeathHitOverlay";
 import GameOverScreenScene from "./GameOverScreenScene";
-import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 
 export default abstract class LycanChaseSceneBase extends MappedAdventureChapter2Scene {
     protected lycans: NPCActor[] = [];
@@ -38,7 +37,8 @@ export default abstract class LycanChaseSceneBase extends MappedAdventureChapter
             wolvesDashingSFX: { key: "wolves-dashing", path: "/assets/sounds/wolves-dashing.ogg" },
             wolvesBitingSFX: { key: "wolves-biting", path: "/assets/sounds/wolves-biting.ogg" },
             wolvesFerociousSFX: { key: "wolves-ferocious", path: "/assets/sounds/wolves-ferocious.ogg" },
-        }
+        },
+        images: {}
     };
 
     protected override combinedAssetBundles(): AssetBundle {
@@ -52,8 +52,8 @@ export default abstract class LycanChaseSceneBase extends MappedAdventureChapter
         super.unloadScene();
         this.keepAssets(LycanChaseSceneBase.assetBundle);
 
-        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: this.assets.sounds.wolvesRunningSFX.key });
-        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: this.assets.sounds.wolvesFerociousSFX.key });
+        this.audioController.stopSound(this.assets.sounds.wolvesRunningSFX.key);
+        this.audioController.stopSound(this.assets.sounds.wolvesFerociousSFX.key);
     }
 
     public override startScene(): void {
@@ -78,16 +78,8 @@ export default abstract class LycanChaseSceneBase extends MappedAdventureChapter
         this.receiver.subscribe(LycanEvent.PLAYER_CAUGHT);
 
         if (this.storyManager.chapter2.needsToEscapeLycans()) {
-            this.emitter.fireEvent(GameEventType.PLAY_SOUND, {
-                key: this.assets.sounds.wolvesRunningSFX.key,
-                loop: true,
-                holdReference: true
-            });
-            this.emitter.fireEvent(GameEventType.PLAY_SFX, {
-                key: this.assets.sounds.wolvesFerociousSFX.key,
-                loop: true,
-                holdReference: true
-            });
+            this.audioController.playSFX(this.assets.sounds.wolvesRunningSFX.key, true, true);
+            this.audioController.playSFX(this.assets.sounds.wolvesFerociousSFX.key, true, true);
         }
     }
 
@@ -162,13 +154,9 @@ export default abstract class LycanChaseSceneBase extends MappedAdventureChapter
         this.lycanDeathSequencePlaying = true;
         this.setWorldPaused(true);
 
-        this.emitter.fireEvent(GameEventType.PLAY_SFX, {
-            key: this.assets.sounds.wolvesBitingSFX.key,
-            loop: false,
-            holdReference: false
-        });
-        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: this.assets.sounds.wolvesRunningSFX.key });
-        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: this.assets.sounds.wolvesFerociousSFX.key });
+        this.audioController.playSFX(this.assets.sounds.wolvesBitingSFX.key, false, false);
+        this.audioController.stopSound(this.assets.sounds.wolvesRunningSFX.key);
+        this.audioController.stopSound(this.assets.sounds.wolvesFerociousSFX.key);
     
         this.lycanDeathHitOverlay.play({
             deathSFXKey: this.assets.sounds.playerDeathSFX?.key,

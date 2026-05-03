@@ -11,7 +11,7 @@
     "build:benchmark3": "gulp build --benchmark=benchmark3 --commit=benchmark3",
     "watch": "gulp dev",
     "serve": "live-server dist",
-    "dev": "npm run build && concurrently -k -n BUILD,SERVE \"npm:watch\" \"npm:serve\""
+    "dev": "npm run build && npm run serve"
   },
   "author": "Richard McKenna, Joe Weaver, Zachary Grandison, Peter Walsh, Andrew Ojeda",
   "license": "ISC",

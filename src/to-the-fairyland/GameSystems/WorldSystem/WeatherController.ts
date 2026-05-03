@@ -1,7 +1,4 @@
 import Updateable from "../../../Wolfie2D/DataTypes/Interfaces/Updateable";
-import Emitter from "../../../Wolfie2D/Events/Emitter";
-import { GameEventType } from "../../../Wolfie2D/Events/GameEventType";
-import Receiver from "../../../Wolfie2D/Events/Receiver";
 import Sprite from "../../../Wolfie2D/Nodes/Sprites/Sprite";
 import Scene from "../../../Wolfie2D/Scene/Scene";
 import Viewport from "../../../Wolfie2D/SceneGraph/Viewport";
@@ -10,6 +7,7 @@ import Color from "../../../Wolfie2D/Utils/Color";
 import WeatherParticleBehavior, { WeatherParticleSettings } from "../../AI/WeatherParticleBehavior";
 import TintEffectOverlay from "../../Overlays/TintEffectOverlay";
 import { AssetBundle } from "../../Scenes/MappedAdventureScene";
+import AudioController from "../AudioController";
 import { WeatherType } from "./WorldState";
 
 type WeatherParticlePreset = Readonly<{
@@ -25,14 +23,13 @@ export default class WeatherController implements Updateable {
         tilemaps: {},
         spritesheets: {},
         sprites: {},
-        sounds: {}
+        sounds: {},
+        images: {}
     };
 
     protected scene: Scene;
     protected viewport: Viewport;
-    
-    protected reciever: Receiver;
-    protected emitter: Emitter;
+    protected audioController: AudioController;
 
     private currentWeather: WeatherType = WeatherType.NONE;
     private weatherParticles: Sprite[] = [];
@@ -49,11 +46,10 @@ export default class WeatherController implements Updateable {
     private readonly weatherTintLayerName = "weatherTintLayer";
     private readonly weatherLayerName = "weather";
 
-    constructor(scene: Scene, viewport: Viewport) {
+    constructor(scene: Scene, viewport: Viewport, audioController: AudioController) {
         this.scene = scene;
         this.viewport = viewport;
-        this.reciever = new Receiver();
-        this.emitter = new Emitter();
+        this.audioController = audioController;
 
         this.weatherTintOverlay = new TintEffectOverlay(
             this.weatherTintLayerName,
@@ -88,18 +84,17 @@ export default class WeatherController implements Updateable {
             return;
         }
 
-        this.emitter.fireEvent(GameEventType.PLAY_SOUND, {
-            key: this.getWeatherAmbianceKey(this.currentWeather),
-            loop: true,
-            holdReference: true,
-            channel: this.weatherAmbienceChannel,
-            fadeInSeconds: this.weatherAmbienceFadeSeconds
-        });
-        
+        this.audioController.playSound(
+            this.getWeatherAmbianceKey(this.currentWeather),
+            true,
+            true,
+            this.weatherAmbienceChannel,
+            this.weatherAmbienceFadeSeconds
+        );
     }
 
     private stopWeatherAmbience(): void {
-        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: this.getWeatherAmbianceKey(this.currentWeather)});
+        this.audioController.stopSound(this.getWeatherAmbianceKey(this.currentWeather));
     }
 
     

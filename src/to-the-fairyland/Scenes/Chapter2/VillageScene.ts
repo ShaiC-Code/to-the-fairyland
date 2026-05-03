@@ -7,7 +7,6 @@ import RoadScene from "./RoadScene";
 import { dialogue, getNpcInteraction } from "../../GameSystems/InteractionSystem/InteractionDatabase";
 import ScrollingPatternWorldLayer from "../../Overlays/ScrollingPatternWorldLayer";
 import LycanChaseSceneBase from "../LycanChaseSceneBase";
-import { GameEventType } from "../../../Wolfie2D/Events/GameEventType";
 
 type NpcRuntime = {
     name: string;
@@ -15,10 +14,6 @@ type NpcRuntime = {
 };
 
 export default class VillageScene extends LycanChaseSceneBase {
-    private npcs: NpcRuntime[] = [];
-
-    private readonly lycanDetectionRadius = 400;
-    
     protected readonly tilemap = {
         key: "village",
         path: "/assets/tilemaps/Chapter2/Village.json"
@@ -38,8 +33,13 @@ export default class VillageScene extends LycanChaseSceneBase {
         sprites: {
             bloodMist: { key: "bloodMist", path: "/assets/sprites/overlays/bloodmist.png" }
         },
-        sounds: {}
+        sounds: {},
+        images: {}
     };
+    
+    private npcs: NpcRuntime[] = [];
+
+    private readonly lycanDetectionRadius = 400;
  
     protected readonly bloodMistEffectLayerName = "bloodMistTintLayer";
     protected bloodMistEffectLayer!: ScrollingPatternWorldLayer;
@@ -166,17 +166,8 @@ export default class VillageScene extends LycanChaseSceneBase {
             {
                 onComplete: () => {
                     this.startAllLycanChases();
-                    
-                    this.emitter.fireEvent(GameEventType.PLAY_SOUND, {
-                        key: this.assets.sounds.wolvesRunningSFX.key,
-                        loop: true,
-                        holdReference: true
-                    });
-                    this.emitter.fireEvent(GameEventType.PLAY_SFX, {
-                        key: this.assets.sounds.wolvesFerociousSFX.key,
-                        loop: true,
-                        holdReference: true
-                    });
+                    this.audioController.playSFX(this.assets.sounds.wolvesRunningSFX.key, true, true);
+                    this.audioController.playSFX(this.assets.sounds.wolvesFerociousSFX.key, true, true);
                 }
             })
         );

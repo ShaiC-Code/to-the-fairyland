@@ -31,11 +31,23 @@ import AnimatedSprite from "../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
 import Excalibur from "../GameSystems/ItemSystem/Items/Excalibur";
 import PlayerAttackController, { PlayerAttackHitbox } from "../GameSystems/CombatSystem/PlayerAttackController";
 import SwordHitDispatcher from "../GameSystems/CombatSystem/SwordHitDispatcher";
+import AudioController from "../GameSystems/AudioController";
 
 export type AssetRef = Readonly<{
     readonly key: string;
     readonly path: string;
 }>;
+
+export type AssetManifest = Record<string, AssetRef>;
+
+export type AssetBundle = {
+    tilemaps: AssetManifest;
+    spritesheets: AssetManifest;
+    sprites: AssetManifest;
+    sounds: AssetManifest;
+    images: AssetManifest;
+    [category: string]: AssetManifest | undefined;
+};
 
 type SceneEntranceData = {
     cheatsEnabled?: boolean;
@@ -53,26 +65,7 @@ export interface ChapterSceneDefinition {
     dialogueChoiceActionHandlers: Readonly<Partial<Record<DialogueChoiceAction, () => void>>>;
 }
 
-export type AssetManifest = Record<string, AssetRef>;
-
-export type AssetBundle = {
-    tilemaps: AssetManifest;
-    spritesheets: AssetManifest;
-    sprites: AssetManifest;
-    sounds: AssetManifest;
-    [category: string]: AssetManifest | undefined;
-};
-
-
 export default abstract class MappedAdventureScene extends Scene {
-    protected worldTimeScale = 1;
-    protected interactIcon!: AnimatedSprite;
-    protected readonly interactIconOffsetX = 5;
-    protected readonly interactIconOffsetY = -60;
-    protected readonly interactIconScale = 1.6;
-    protected readonly interactIconLayerName = "InteractIcon";
-
-
     // The tilemap to load for the scene, pass from sub scenes
     protected abstract readonly tilemap: AssetRef;
 
@@ -98,14 +91,16 @@ export default abstract class MappedAdventureScene extends Scene {
             itemReceivedSFX: { key: "item-received", path: "/assets/sounds/item-received.ogg" },
             walkingDirtSFX: { key: "walking-dirt", path: "/assets/sounds/walking-dirt.ogg" },
             woodenDoorSFX: { key: "door-wooden", path: "/assets/sounds/door-wooden.ogg" }
-        }
+        },
+        images: {}
     };
 
     protected assets: AssetBundle = {
         tilemaps: {},
         spritesheets: {},
         sprites: {},
-        sounds: {}
+        sounds: {},
+        images: {}
     }; 
     
     protected abstract readonly chapterDefinition: ChapterSceneDefinition;
@@ -123,6 +118,13 @@ export default abstract class MappedAdventureScene extends Scene {
     protected readonly combatEffectsLayerName = "CombatEffects";
     protected readonly entranceLayerName = "Entrances";
 
+    protected worldTimeScale = 1;
+    protected interactIcon!: AnimatedSprite;
+    protected readonly interactIconOffsetX = 5;
+    protected readonly interactIconOffsetY = -60;
+    protected readonly interactIconScale = 1.6;
+    protected readonly interactIconLayerName = "InteractIcon";
+
     protected player!: PlayerActor;
     protected ground!: OrthogonalTilemap;
     protected collision!: OrthogonalTilemap;
@@ -139,6 +141,7 @@ export default abstract class MappedAdventureScene extends Scene {
     protected worldPaused: boolean = false;
     
     protected cameraController!: CameraController;
+    protected audioController!: AudioController;
     protected dialogueController!: DialogueController;
     protected timeController!: TimeController;
     protected weatherController!: WeatherController;
@@ -158,7 +161,6 @@ export default abstract class MappedAdventureScene extends Scene {
     }
 
     public override loadScene(): void {
-        // Load only base assets here
         this.loadAssets(this.assets);
         
         this.add.registerCustomUIElement(CustomUIElementType.HOVER_BUTTON, (options?: Record<string, any>) => {
@@ -178,7 +180,7 @@ export default abstract class MappedAdventureScene extends Scene {
     public unloadScene(): void {
         this.keepAssets(MappedAdventureScene.assetBundle);
         this.weatherController.muteWeatherAmbience();
-        this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: this.assets.sounds.walkingDirtSFX.key});
+        this.audioController.stopSound(this.assets.sounds.walkingDirtSFX.key);
     }
 
     protected mergeAssetBundles(parent: AssetBundle, child: AssetBundle): AssetBundle {
@@ -186,7 +188,8 @@ export default abstract class MappedAdventureScene extends Scene {
             tilemaps: { ...(parent.tilemaps ?? {}), ...(child.tilemaps ?? {}) },
             spritesheets: { ...(parent.spritesheets ?? {}), ...(child.spritesheets ?? {}) },
             sprites: { ...(parent.sprites ?? {}), ...(child.sprites ?? {}) },
-            sounds: { ...(parent.sounds ?? {}), ...(child.sounds ?? {}) }
+            sounds: { ...(parent.sounds ?? {}), ...(child.sounds ?? {}) },
+            images: { ...(parent.images ?? {}), ...(child.images ?? {}) }
         };
     }
     
@@ -198,17 +201,19 @@ export default abstract class MappedAdventureScene extends Scene {
         tilemaps: ReadonlyArray<AssetRef>;
         spritesheets: ReadonlyArray<AssetRef>;
         sprites: ReadonlyArray<AssetRef>;
-        sounds: ReadonlyArray<AssetRef>
+        sounds: ReadonlyArray<AssetRef>;
+        images: ReadonlyArray<AssetRef>;
     } {
         const tilemaps = Object.values(bundle.tilemaps ?? {});
         const spritesheets = Object.values(bundle.spritesheets ?? {});
         const sprites = Object.values(bundle.sprites ?? {});
         const sounds = Object.values(bundle.sounds ?? {});
-        return {tilemaps, spritesheets, sprites, sounds};
+        const images = Object.values(bundle.images ?? {});
+        return {tilemaps, spritesheets, sprites, sounds, images};
     }
     
     protected loadAssets(assets: AssetBundle): void {
-        const { tilemaps, spritesheets, sprites, sounds } = this.assetBundleToKeyArrays(assets);
+        const { tilemaps, spritesheets, sprites, sounds, images } = this.assetBundleToKeyArrays(assets);
 
         tilemaps
             .filter(tilemap => !this.resourceManager.getTilemap(tilemap.key))
@@ -222,15 +227,19 @@ export default abstract class MappedAdventureScene extends Scene {
         sounds
             .filter(sound => !this.resourceManager.getAudio(sound.key))
             .forEach(sound => this.load.audio(sound.key, sound.path));
+        images
+            .filter(image => !this.resourceManager.getImage(image.key))
+            .forEach(image => this.load.image(image.key, image.path));
     }
 
     protected keepAssets(assets: AssetBundle): void {
-        const { tilemaps, spritesheets, sprites, sounds } = this.assetBundleToKeyArrays(assets);
+        const { tilemaps, spritesheets, sprites, sounds, images } = this.assetBundleToKeyArrays(assets);
 
         tilemaps.forEach(tilemap => {this.load.keepTilemap(tilemap.key)});
         spritesheets.forEach(spritesheet => {this.load.keepSpritesheet(spritesheet.key)});
         sprites.forEach(sprite => {this.load.keepImage(sprite.key)});
         sounds.forEach(sound => {this.load.keepAudio(sound.key)});
+        images.forEach(image => {this.load.keepImage(image.key)});
     }
 
     public override startScene(): void {
@@ -340,12 +349,15 @@ export default abstract class MappedAdventureScene extends Scene {
             confirm: () => controller.isJustPressed(PlayerInput.INTERACT)
         };
 
+        this.audioController = new AudioController();
+
         // Initialize pause and inventory screens with viewport data
         this.pauseScreen = new PauseScreen(
             "pauseOverlay",
             this,
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize(),
+            this.audioController,
             () => { this.pauseScreen?.hide(); this.pauseControlsScreen?.show() },
             () => this.saveGameWithFeedback(),
             () => this.sceneManager.changeToScene(MainMenu),
@@ -363,6 +375,7 @@ export default abstract class MappedAdventureScene extends Scene {
             this,
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize(),
+            this.audioController,
             () => { this.pauseControlsScreen?.hide(); this.pauseScreen?.show() },
             { onEnterSFXKey: this.assets.sounds.uiHoverSFX.key, onClickSFXKey: this.assets.sounds.uiClickSFX.key, uiActions }
         );
@@ -372,6 +385,7 @@ export default abstract class MappedAdventureScene extends Scene {
             this,
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize(),
+            this.audioController,
             playerState.inventory,
             (item: InventoryItem) => this.consumeInventoryItem(item),
             {
@@ -385,9 +399,12 @@ export default abstract class MappedAdventureScene extends Scene {
 
         const worldState = this.gameSessionManager.getWorldState();
 
+        this.cameraController = new CameraController(this, this.viewport, this.player, this.ground, this.actorLayerName);
+
         this.dialogueController = new DialogueController(
             this,
             this.viewport,
+            this.audioController,
             this.player,
             (option: DialogueInteraction) => {
                 this.handleDialogueCompleteAction(option);
@@ -401,15 +418,12 @@ export default abstract class MappedAdventureScene extends Scene {
                 uiActions
             }
         );
-
-        this.cameraController = new CameraController(this, this.viewport, this.player, this.ground, this.actorLayerName);
-        
         this.dialogueController.sceneAssets = this.assets;
 
         this.timeController = new TimeController(this, this.viewport, this.player);
         this.timeController.setTimeOfDay(worldState.timeOfDay);
 
-        this.weatherController = new WeatherController(this, this.viewport);
+        this.weatherController = new WeatherController(this, this.viewport, this.audioController);
         this.weatherController.sceneAssets = this.assets;
         this.weatherController.setWeather(WeatherType.NONE);
     }
@@ -1072,7 +1086,7 @@ export default abstract class MappedAdventureScene extends Scene {
     
     
     protected playItemReceivedSFX(): void {
-        this.emitter.fireEvent(GameEventType.PLAY_SFX, {key: this.assets.sounds.itemReceivedSFX.key, loop: false, holdReference: false});
+        this.audioController.playSFX(this.assets.sounds.itemReceivedSFX.key, false, false);
     }
 
     protected waitSeconds(seconds: number): Promise<void> {
@@ -1093,7 +1107,7 @@ export default abstract class MappedAdventureScene extends Scene {
         );
 
         this.gameSessionManager.saveCurrentSession();
-        this.emitter.fireEvent(GameEventType.PLAY_SFX, {key: this.assets.sounds.itemReceivedSFX.key, loop: false, holdReference: false});
+        this.audioController.playSFX(this.assets.sounds.itemReceivedSFX.key, false, false); // TEMP AUDIO
     }
 
     protected restoreSavedPlayerTile(savedPos: { x: number; y: number }): Vec2 {

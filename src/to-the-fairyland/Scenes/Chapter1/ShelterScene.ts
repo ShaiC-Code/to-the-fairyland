@@ -3,7 +3,6 @@ import ForestScene  from "./ForestScene";
 import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 import { AssetBundle } from "../MappedAdventureScene";
 import MappedAdventureChapter1Scene from "./MappedAdventureChapter1Scene";
-import { GameEventType } from "../../../Wolfie2D/Events/GameEventType";
 import { getBedDialogue, getPotDialogue } from "../../GameSystems/InteractionSystem/InteractionDatabase";
 import { WeatherType } from "../../GameSystems/WorldSystem/WorldState";
 
@@ -22,7 +21,8 @@ export default class ShelterScene extends MappedAdventureChapter1Scene {
             bedSprite: { key: "bed", path: "/assets/sprites/Bed.png" },
             potSprite: { key: "pot", path: "/assets/sprites/Pot.png" }
         },
-        sounds: {}
+        sounds: {},
+        images: {}
     };
 
     // Shelter.json currently uses "Shelter" as its main walkable/render layer.
@@ -93,7 +93,7 @@ export default class ShelterScene extends MappedAdventureChapter1Scene {
                     fadeInMs: 300
                 }
             );
-            this.emitter.fireEvent(GameEventType.PLAY_SFX, {key: this.assets.sounds.woodenDoorSFX.key, loop: false, holdReference: false});
+            this.audioController.playSFX(this.assets.sounds.woodenDoorSFX.key, false, false);
         }
     }
 }
