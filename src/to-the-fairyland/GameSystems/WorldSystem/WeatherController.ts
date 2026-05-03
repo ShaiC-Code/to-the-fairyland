@@ -1,6 +1,4 @@
 import Updateable from "../../../Wolfie2D/DataTypes/Interfaces/Updateable";
-import Emitter from "../../../Wolfie2D/Events/Emitter";
-import Receiver from "../../../Wolfie2D/Events/Receiver";
 import Sprite from "../../../Wolfie2D/Nodes/Sprites/Sprite";
 import Scene from "../../../Wolfie2D/Scene/Scene";
 import Viewport from "../../../Wolfie2D/SceneGraph/Viewport";
@@ -32,9 +30,6 @@ export default class WeatherController implements Updateable {
     protected scene: Scene;
     protected viewport: Viewport;
     protected audioController: AudioController;
-    
-    protected reciever: Receiver;
-    protected emitter: Emitter;
 
     private currentWeather: WeatherType = WeatherType.NONE;
     private weatherParticles: Sprite[] = [];
@@ -55,8 +50,6 @@ export default class WeatherController implements Updateable {
         this.scene = scene;
         this.viewport = viewport;
         this.audioController = audioController;
-        this.reciever = new Receiver();
-        this.emitter = new Emitter();
 
         this.weatherTintOverlay = new TintEffectOverlay(
             this.weatherTintLayerName,

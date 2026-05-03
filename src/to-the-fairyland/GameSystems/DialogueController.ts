@@ -1,6 +1,4 @@
 import Updateable from "../../Wolfie2D/DataTypes/Interfaces/Updateable";
-import Emitter from "../../Wolfie2D/Events/Emitter";
-import Receiver from "../../Wolfie2D/Events/Receiver";
 import Scene from "../../Wolfie2D/Scene/Scene";
 import Viewport from "../../Wolfie2D/SceneGraph/Viewport";
 import Color from "../../Wolfie2D/Utils/Color";
@@ -31,9 +29,6 @@ export default class DialogueController implements Updateable {
     protected scene: Scene;
     protected viewport: Viewport;
     protected audioController: AudioController;
-        
-    protected reciever: Receiver;
-    protected emitter: Emitter;
     
     private player: PlayerActor;
     private handleDialogueCompleteAction: (option: DialogueInteraction) => void;
@@ -80,9 +75,6 @@ export default class DialogueController implements Updateable {
             const ai = this.player.ai as PlayerAI;
             return ai.controller.isJustPressed(PlayerInput.INTERACT);
         });
-        
-        this.reciever = new Receiver();
-        this.emitter = new Emitter();
 
         this.dialogueScreen = new DialogueScreen(
             this.dialogueLayerName,
