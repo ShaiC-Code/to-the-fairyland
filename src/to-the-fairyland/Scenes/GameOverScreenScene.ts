@@ -9,6 +9,7 @@ import { PlayerInput } from "../AI/Player/PlayerController";
 import Color from "../../Wolfie2D/Utils/Color";
 import Rect from "../../Wolfie2D/Nodes/Graphics/Rect";
 import { GraphicType } from "../../Wolfie2D/Nodes/Graphics/GraphicTypes";
+import AudioController from "../GameSystems/AudioController";
 
 type AssetRef = Readonly<{
     key: string;
@@ -16,10 +17,6 @@ type AssetRef = Readonly<{
 }>;
 
 export default class GameOverScreenScene extends Scene {
-    private fadeCover!: Rect;
-    private fadeElapsed = 0;
-    private readonly fadeInDuration = 0.8;
-
     protected readonly GameOverScreenImage: AssetRef = {
     key: "game-over-screen-image",
     path: "/assets/images/game-over-screen-image.png"
@@ -29,7 +26,12 @@ export default class GameOverScreenScene extends Scene {
     key: "game-over-screen-proceed",
     path: "/assets/sounds/splash-screen-proceed.ogg"
     };
+    
+    private fadeCover!: Rect;
+    private fadeElapsed = 0;
+    private readonly fadeInDuration = 0.8;
 
+    protected audioController!: AudioController;
     protected gameOverScreen!: SplashScreen;
 
 	  public loadScene(): void {
@@ -46,11 +48,14 @@ export default class GameOverScreenScene extends Scene {
     }
 
     public startScene(): void {
+        this.audioController = new AudioController();
+        
         this.gameOverScreen = new SplashScreen(
             "gameOverScreen",
             this,
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize(),
+            this.audioController,
             this.GameOverScreenImage.key,
             () => this.sceneManager.changeToScene(
                 MainMenu, // Should be send to player to checkpoint, but is MainMenu for now

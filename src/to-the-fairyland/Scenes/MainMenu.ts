@@ -172,6 +172,9 @@ export default class MainMenu extends Scene {
             uiActions
         };
 
+        this.audioController = new AudioController();
+        this.audioController.playMusic(this.assets.sounds.mainScreenMusic.key, true, true);
+
         this.mainMenu = new MainScreen(
             "mainMenu",
             this,
@@ -181,6 +184,7 @@ export default class MainMenu extends Scene {
             this.assets.images.mainScreenImage.key,
             uiOptions
         );
+        this.mainMenu.setResumeEnabled(this.gameSessionManager.hasSavedSession());
         this.mainMenu.show();
 
         this.levelMenu = new LevelSelectionScreen(
@@ -218,11 +222,6 @@ export default class MainMenu extends Scene {
             this.audioController,
             uiOptions
         );
-
-        this.mainMenu.setResumeEnabled(this.gameSessionManager.hasSavedSession());
-
-        this.audioController = new AudioController();
-        this.audioController.playMusic(this.assets.sounds.mainScreenMusic.key, true, true);
 
         this.receiver.subscribe("openLevelMenu");
         this.receiver.subscribe("openControlsMenu");

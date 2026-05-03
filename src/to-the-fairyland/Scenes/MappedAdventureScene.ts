@@ -349,6 +349,8 @@ export default abstract class MappedAdventureScene extends Scene {
             confirm: () => controller.isJustPressed(PlayerInput.INTERACT)
         };
 
+        this.audioController = new AudioController();
+
         // Initialize pause and inventory screens with viewport data
         this.pauseScreen = new PauseScreen(
             "pauseOverlay",
@@ -398,8 +400,6 @@ export default abstract class MappedAdventureScene extends Scene {
         const worldState = this.gameSessionManager.getWorldState();
 
         this.cameraController = new CameraController(this, this.viewport, this.player, this.ground, this.actorLayerName);
-
-        this.audioController = new AudioController();
 
         this.dialogueController = new DialogueController(
             this,

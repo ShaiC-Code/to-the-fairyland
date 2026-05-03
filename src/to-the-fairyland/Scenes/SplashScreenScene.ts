@@ -41,6 +41,8 @@ export default class SplashScreenScene extends Scene {
     }
 
     public startScene(): void {
+        this.audioController = new AudioController();
+        
         this.splashScreen = new SplashScreen(
             "splashScreen",
             this,
