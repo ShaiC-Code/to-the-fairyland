@@ -2,13 +2,12 @@ import Scene from "../../Wolfie2D/Scene/Scene";
 import Vec2 from "../../Wolfie2D/DataTypes/Vec2";
 import UIScreen, { UIScreenOptions } from "./UIScreen";
 import Color from "../../Wolfie2D/Utils/Color";
-import AudioController from "../GameSystems/AudioController";
 
 export default class PauseControlsScreen extends UIScreen {
     private onClose: () => void;
 
-    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, audioController: AudioController, onClose: () => void, options?: UIScreenOptions) {
-        super(layerName, scene, getViewportCenter, getViewportHalfSize, audioController, options);
+    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, onClose: () => void, options?: UIScreenOptions) {
+        super(layerName, scene, getViewportCenter, getViewportHalfSize, options);
         this.onClose = onClose;
         this.initializeUI();
     }

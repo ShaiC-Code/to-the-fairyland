@@ -28,7 +28,6 @@ export default class DialogueController implements Updateable {
     
     protected scene: Scene;
     protected viewport: Viewport;
-    protected audioController: AudioController;
     
     private player: PlayerActor;
     private handleDialogueCompleteAction: (option: DialogueInteraction) => void;
@@ -58,7 +57,6 @@ export default class DialogueController implements Updateable {
     constructor(
       scene: Scene,
       viewport: Viewport,
-      audioController: AudioController,
       player: PlayerActor,
       handleDialogueCompleteAction: (option: DialogueInteraction) => void,
       handleDialogueChoiceAction: (option: DialogueChoiceOption) => void,
@@ -66,7 +64,6 @@ export default class DialogueController implements Updateable {
     ) {
         this.scene = scene;
         this.viewport = viewport;
-        this.audioController = audioController;
         this.player = player;
         this.handleDialogueCompleteAction = handleDialogueCompleteAction;
         this.handleDialogueChoiceAction = handleDialogueChoiceAction;
@@ -81,7 +78,6 @@ export default class DialogueController implements Updateable {
             this.scene,
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize(),
-            this.audioController,
             undefined,
             options
         );
@@ -91,7 +87,6 @@ export default class DialogueController implements Updateable {
             this.scene,
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize(),
-            this.audioController,
             undefined,
             options
         );
@@ -275,14 +270,14 @@ export default class DialogueController implements Updateable {
     }
 
     private playDialogueSpeakingSFX(): void {
-        this.audioController.playSFX(this.sceneAssets.sounds.dialogueSpeakingSFX.key, true, true);
+        AudioController.getInstance().playSFX(this.sceneAssets.sounds.dialogueSpeakingSFX.key, true, true);
     }
 
     private stopDialogueSpeakingSFX(): void {
-        this.audioController.stopSound(this.sceneAssets.sounds.dialogueSpeakingSFX.key);
+        AudioController.getInstance().stopSound(this.sceneAssets.sounds.dialogueSpeakingSFX.key);
     }
 
     private playDialogueNextSFX(): void {
-        this.audioController.playSFX(this.sceneAssets.sounds.dialogueNextSFX.key, false, false);
+        AudioController.getInstance().playSFX(this.sceneAssets.sounds.dialogueNextSFX.key);
     }
 }

@@ -3,13 +3,12 @@ import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 import UIScreen, { UIScreenOptions } from "../UIScreen";
 import HoverButton from "../CustomUIElements/HoverButton";
 import Button from "../../../Wolfie2D/Nodes/UIElements/Button";
-import AudioController from "../../GameSystems/AudioController";
 
 export default class MainScreen extends UIScreen {
     private mainMenuImageKey: string;
 
-    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, audioController: AudioController, mainMenuImageKey: string, options?: UIScreenOptions) {
-        super(layerName, scene, getViewportCenter, getViewportHalfSize, audioController, options);
+    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, mainMenuImageKey: string, options?: UIScreenOptions) {
+        super(layerName, scene, getViewportCenter, getViewportHalfSize, options);
         this.mainMenuImageKey = mainMenuImageKey;
         this.initializeUI();
     }

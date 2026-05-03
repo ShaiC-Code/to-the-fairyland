@@ -29,7 +29,6 @@ export default class WeatherController implements Updateable {
 
     protected scene: Scene;
     protected viewport: Viewport;
-    protected audioController: AudioController;
 
     private currentWeather: WeatherType = WeatherType.NONE;
     private weatherParticles: Sprite[] = [];
@@ -46,10 +45,9 @@ export default class WeatherController implements Updateable {
     private readonly weatherTintLayerName = "weatherTintLayer";
     private readonly weatherLayerName = "weather";
 
-    constructor(scene: Scene, viewport: Viewport, audioController: AudioController) {
+    constructor(scene: Scene, viewport: Viewport) {
         this.scene = scene;
         this.viewport = viewport;
-        this.audioController = audioController;
 
         this.weatherTintOverlay = new TintEffectOverlay(
             this.weatherTintLayerName,
@@ -84,7 +82,7 @@ export default class WeatherController implements Updateable {
             return;
         }
 
-        this.audioController.playSound(
+        AudioController.getInstance().playSound(
             this.getWeatherAmbianceKey(this.currentWeather),
             true,
             true,
@@ -94,7 +92,7 @@ export default class WeatherController implements Updateable {
     }
 
     private stopWeatherAmbience(): void {
-        this.audioController.stopSound(this.getWeatherAmbianceKey(this.currentWeather));
+        AudioController.getInstance().stopSound(this.getWeatherAmbianceKey(this.currentWeather));
     }
 
     

@@ -6,7 +6,6 @@ import UIScreen, { UIScreenOptions } from "./UIScreen";
 import NullFunc from "../../Wolfie2D/DataTypes/Functions/NullFunc";
 import Inventory from "../GameSystems/ItemSystem/Inventory";
 import InventoryItem from "../GameSystems/ItemSystem/InventoryItem";
-import AudioController from "../GameSystems/AudioController";
 
 export default class InventoryScreen extends UIScreen {
     private readonly inventory: Inventory;
@@ -25,12 +24,11 @@ export default class InventoryScreen extends UIScreen {
         scene: Scene,
         getViewportCenter: () => Vec2,
         getViewportHalfSize: () => Vec2,
-        audioController: AudioController,
         inventory: Inventory,
         onItemSelected?: (item: InventoryItem) => void,
         options?: UIScreenOptions
     ) {
-        super(layerName, scene, getViewportCenter, getViewportHalfSize, audioController, options);
+        super(layerName, scene, getViewportCenter, getViewportHalfSize, options);
         this.inventory = inventory;
         this.onItemSelected = onItemSelected ?? NullFunc;
         this.initializeUI();

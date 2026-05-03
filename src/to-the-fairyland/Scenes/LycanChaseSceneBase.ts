@@ -7,6 +7,7 @@ import { AssetBundle } from "./MappedAdventureScene";
 import MappedAdventureChapter2Scene from "./Chapter2/MappedAdventureChapter2Scene";
 import PlayerDeathHitOverlay from "../Overlays/PlayerDeathHitOverlay";
 import GameOverScreenScene from "./GameOverScreenScene";
+import AudioController from "../GameSystems/AudioController";
 
 export default abstract class LycanChaseSceneBase extends MappedAdventureChapter2Scene {
     protected lycans: NPCActor[] = [];
@@ -52,8 +53,8 @@ export default abstract class LycanChaseSceneBase extends MappedAdventureChapter
         super.unloadScene();
         this.keepAssets(LycanChaseSceneBase.assetBundle);
 
-        this.audioController.stopSound(this.assets.sounds.wolvesRunningSFX.key);
-        this.audioController.stopSound(this.assets.sounds.wolvesFerociousSFX.key);
+        AudioController.getInstance().stopSound(this.assets.sounds.wolvesRunningSFX.key);
+        AudioController.getInstance().stopSound(this.assets.sounds.wolvesFerociousSFX.key);
     }
 
     public override startScene(): void {
@@ -78,8 +79,8 @@ export default abstract class LycanChaseSceneBase extends MappedAdventureChapter
         this.receiver.subscribe(LycanEvent.PLAYER_CAUGHT);
 
         if (this.storyManager.chapter2.needsToEscapeLycans()) {
-            this.audioController.playSFX(this.assets.sounds.wolvesRunningSFX.key, true, true);
-            this.audioController.playSFX(this.assets.sounds.wolvesFerociousSFX.key, true, true);
+            AudioController.getInstance().playSFX(this.assets.sounds.wolvesRunningSFX.key, true, true);
+            AudioController.getInstance().playSFX(this.assets.sounds.wolvesFerociousSFX.key, true, true);
         }
     }
 
@@ -154,9 +155,9 @@ export default abstract class LycanChaseSceneBase extends MappedAdventureChapter
         this.lycanDeathSequencePlaying = true;
         this.setWorldPaused(true);
 
-        this.audioController.playSFX(this.assets.sounds.wolvesBitingSFX.key, false, false);
-        this.audioController.stopSound(this.assets.sounds.wolvesRunningSFX.key);
-        this.audioController.stopSound(this.assets.sounds.wolvesFerociousSFX.key);
+        AudioController.getInstance().playSFX(this.assets.sounds.wolvesBitingSFX.key);
+        AudioController.getInstance().stopSound(this.assets.sounds.wolvesRunningSFX.key);
+        AudioController.getInstance().stopSound(this.assets.sounds.wolvesFerociousSFX.key);
     
         this.lycanDeathHitOverlay.play({
             deathSFXKey: this.assets.sounds.playerDeathSFX?.key,
