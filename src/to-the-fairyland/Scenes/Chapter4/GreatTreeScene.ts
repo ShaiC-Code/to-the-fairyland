@@ -7,6 +7,7 @@ import VineAttackController from "./TreeInner/VineAttackController";
 import { choiceOption, dialogue, dialogueWithChoice } from "../../GameSystems/InteractionSystem/InteractionDatabase";
 import Excalibur from "../../GameSystems/ItemSystem/Items/Excalibur";
 import MainMenu from "../MainMenu";
+import AudioController from "../../GameSystems/AudioController";
 
 export default class GreatTreeScene extends ForestSceneBase {
     protected readonly tilemap = {
@@ -53,7 +54,8 @@ export default class GreatTreeScene extends ForestSceneBase {
             ground: this.ground,
             collision: this.collision,
             layerName: this.vineGateLayerName,
-            defaultSpriteKey: this.assets.sprites.vinePartExitSprite.key
+            defaultSpriteKey: this.assets.sprites.vinePartExitSprite.key,
+            swordAttackHitSFXKey: this.assets.sounds.swordAttackHitSFX.key
         });
 
         const interactLayer = tilemapData.layers.find(layer => layer.name === this.interactablesLayerName);
@@ -173,6 +175,7 @@ export default class GreatTreeScene extends ForestSceneBase {
             return;
         }
 
+        AudioController.getInstance().playSFX(this.assets.sounds.swordCutSFX.key);
         this.vineGateOpened = true;
         this.clearVineGateCollision();
         this.vineGateController.destroyMatching(attack => attack.type === "exit");

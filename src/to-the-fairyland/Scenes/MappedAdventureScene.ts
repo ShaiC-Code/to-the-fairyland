@@ -90,7 +90,10 @@ export default abstract class MappedAdventureScene extends Scene {
             dialogueNextSFX: { key: "dialogue-next", path: "/assets/sounds/dialogue-next.ogg" },
             itemReceivedSFX: { key: "item-received", path: "/assets/sounds/item-received.ogg" },
             walkingDirtSFX: { key: "walking-dirt", path: "/assets/sounds/walking-dirt.ogg" },
-            woodenDoorSFX: { key: "door-wooden", path: "/assets/sounds/door-wooden.ogg" }
+            woodenDoorSFX: { key: "door-wooden", path: "/assets/sounds/door-wooden.ogg" },
+            swordCutSFX: { key: "sword-cut", path: "/assets/sounds/sword-cut.ogg" },
+            swordAttackSFX: { key: "sword-attack", path: "/assets/sounds/sword-attack.ogg" },
+            swordAttackHitSFX: { key: "sword-attack-hit", path: "/assets/sounds/sword-attack-hit.ogg" }
         },
         images: {}
     };
@@ -141,7 +144,6 @@ export default abstract class MappedAdventureScene extends Scene {
     protected worldPaused: boolean = false;
     
     protected cameraController!: CameraController;
-    protected audioController!: AudioController;
     protected dialogueController!: DialogueController;
     protected timeController!: TimeController;
     protected weatherController!: WeatherController;
@@ -180,7 +182,7 @@ export default abstract class MappedAdventureScene extends Scene {
     public unloadScene(): void {
         this.keepAssets(MappedAdventureScene.assetBundle);
         this.weatherController.muteWeatherAmbience();
-        this.audioController.stopSound(this.assets.sounds.walkingDirtSFX.key);
+        AudioController.getInstance().stopSound(this.assets.sounds.walkingDirtSFX.key);
     }
 
     protected mergeAssetBundles(parent: AssetBundle, child: AssetBundle): AssetBundle {
@@ -318,7 +320,6 @@ export default abstract class MappedAdventureScene extends Scene {
             ai.moveStart = restoredPlayerPosition.clone();
             ai.moveEnd = restoredPlayerPosition.clone();
         }
-
         this.playIdleForFacing(ai.facing);
 
         this.playerAttackController = new PlayerAttackController({
@@ -340,7 +341,8 @@ export default abstract class MappedAdventureScene extends Scene {
                 && !this.dialogueController.isActive
                 && !this.transitioning
                 && !this.shouldPauseWorldForScene()
-                && this.canPlayerAttack()
+                && this.canPlayerAttack(),
+            swordAttackSFXKey: this.assets.sounds.swordAttackSFX.key
         });
 
         const uiActions: UIScreenActionBindings = {
@@ -349,15 +351,12 @@ export default abstract class MappedAdventureScene extends Scene {
             confirm: () => controller.isJustPressed(PlayerInput.INTERACT)
         };
 
-        this.audioController = new AudioController();
-
         // Initialize pause and inventory screens with viewport data
         this.pauseScreen = new PauseScreen(
             "pauseOverlay",
             this,
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize(),
-            this.audioController,
             () => { this.pauseScreen?.hide(); this.pauseControlsScreen?.show() },
             () => this.saveGameWithFeedback(),
             () => this.sceneManager.changeToScene(MainMenu),
@@ -375,7 +374,6 @@ export default abstract class MappedAdventureScene extends Scene {
             this,
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize(),
-            this.audioController,
             () => { this.pauseControlsScreen?.hide(); this.pauseScreen?.show() },
             { onEnterSFXKey: this.assets.sounds.uiHoverSFX.key, onClickSFXKey: this.assets.sounds.uiClickSFX.key, uiActions }
         );
@@ -385,7 +383,6 @@ export default abstract class MappedAdventureScene extends Scene {
             this,
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize(),
-            this.audioController,
             playerState.inventory,
             (item: InventoryItem) => this.consumeInventoryItem(item),
             {
@@ -404,7 +401,6 @@ export default abstract class MappedAdventureScene extends Scene {
         this.dialogueController = new DialogueController(
             this,
             this.viewport,
-            this.audioController,
             this.player,
             (option: DialogueInteraction) => {
                 this.handleDialogueCompleteAction(option);
@@ -423,7 +419,7 @@ export default abstract class MappedAdventureScene extends Scene {
         this.timeController = new TimeController(this, this.viewport, this.player);
         this.timeController.setTimeOfDay(worldState.timeOfDay);
 
-        this.weatherController = new WeatherController(this, this.viewport, this.audioController);
+        this.weatherController = new WeatherController(this, this.viewport);
         this.weatherController.sceneAssets = this.assets;
         this.weatherController.setWeather(WeatherType.NONE);
     }
@@ -1086,7 +1082,7 @@ export default abstract class MappedAdventureScene extends Scene {
     
     
     protected playItemReceivedSFX(): void {
-        this.audioController.playSFX(this.assets.sounds.itemReceivedSFX.key, false, false);
+        AudioController.getInstance().playSFX(this.assets.sounds.itemReceivedSFX.key);
     }
 
     protected waitSeconds(seconds: number): Promise<void> {
@@ -1107,7 +1103,7 @@ export default abstract class MappedAdventureScene extends Scene {
         );
 
         this.gameSessionManager.saveCurrentSession();
-        this.audioController.playSFX(this.assets.sounds.itemReceivedSFX.key, false, false); // TEMP AUDIO
+        AudioController.getInstance().playSFX(this.assets.sounds.itemReceivedSFX.key); // TEMP AUDIO
     }
 
     protected restoreSavedPlayerTile(savedPos: { x: number; y: number }): Vec2 {

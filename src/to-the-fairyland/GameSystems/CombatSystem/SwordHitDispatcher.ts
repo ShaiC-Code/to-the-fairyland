@@ -4,7 +4,6 @@ export interface SwordHitTarget {
     handleSwordHit(hitbox: PlayerAttackHitbox): void;
 }
 
-
 export default class SwordHitDispatcher {
     private readonly targets = new Set<SwordHitTarget>();
 
