@@ -1,14 +1,14 @@
 import Scene from "../../../Wolfie2D/Scene/Scene";
 import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 import UIScreen, { UIScreenOptions } from "../UIScreen";
+import AudioController from "../../GameSystems/AudioController";
 
 export default class SplashScreen extends UIScreen {
     private splashImageKey: string;
     private onProceed: () => void;
 
-    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, splashImageKey: string, onProceed: () => void, options?: UIScreenOptions) {
-        super(layerName, scene, getViewportCenter, getViewportHalfSize, options);
-
+    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, audioController: AudioController, splashImageKey: string, onProceed: () => void, options?: UIScreenOptions) {
+        super(layerName, scene, getViewportCenter, getViewportHalfSize, audioController, options);
         this.splashImageKey = splashImageKey;
         this.onProceed = onProceed;
         this.initializeUI();

@@ -4,9 +4,7 @@ import { DialogueChoiceActions, DialogueCompleteActions } from "../../GameSystem
 import FrozenBerries from "../../GameSystems/ItemSystem/Items/FrozenBerries";
 import CookedBerries from "../../GameSystems/ItemSystem/Items/CookedBerries";
 import WorldMap from "../../GameSystems/ItemSystem/Items/WorldMap";
-import { GameEventType } from "../../../Wolfie2D/Events/GameEventType";
 import VillageScene from "../Chapter2/VillageScene";
-import Timer from "../../../Wolfie2D/Timing/Timer";
 
 export default abstract class MappedAdventureChapter1Scene extends MappedAdventureScene {
     protected static readonly assetBundle: AssetBundle = {
@@ -20,7 +18,8 @@ export default abstract class MappedAdventureChapter1Scene extends MappedAdventu
             weatherSnowSFX: { key: "weather-snow", path: "/assets/sounds/weather-snow.ogg" },
             weatherSnowStormSFX: { key: "weather-snowstorm", path: "/assets/sounds/weather-snowstorm.ogg" },
             wolvesHowlingSFX: { key: "wolves-howling", path: "/assets/sounds/wolves-howling.ogg" }
-        }
+        },
+        images: {}
     };
 
     protected readonly chapterDefinition: ChapterSceneDefinition = {
@@ -38,7 +37,6 @@ export default abstract class MappedAdventureChapter1Scene extends MappedAdventu
         }
     };
     
-
     protected readonly storyManager = StoryManager.getInstance();
 
     protected combinedAssetBundles(): AssetBundle {
@@ -50,9 +48,9 @@ export default abstract class MappedAdventureChapter1Scene extends MappedAdventu
         this.keepAssets(MappedAdventureChapter1Scene.assetBundle);
 
         // Stop sfx when changing scenes
-        this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: this.assets.sounds.walkingWoodSFX.key});
-        this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: this.assets.sounds.walkingSnowSFX.key});
-        this.emitter.fireEvent(GameEventType.STOP_SOUND, {key: this.assets.sounds.walkingSnowBushSFX.key});
+        this.audioController.stopSound(this.assets.sounds.walkingWoodSFX.key);
+        this.audioController.stopSound(this.assets.sounds.walkingSnowSFX.key);
+        this.audioController.stopSound(this.assets.sounds.walkingSnowBushSFX.key);
     }
 
     protected onMapPickedUp(): void {}

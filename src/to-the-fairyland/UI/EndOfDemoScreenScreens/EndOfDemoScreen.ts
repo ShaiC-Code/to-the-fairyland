@@ -2,12 +2,13 @@ import Scene from "../../../Wolfie2D/Scene/Scene";
 import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 import Color from "../../../Wolfie2D/Utils/Color";
 import UIScreen, { UIScreenOptions } from "../UIScreen";
+import AudioController from "../../GameSystems/AudioController";
 
 export default class EndOfDemoScreen extends UIScreen {
     private readonly onProceed: () => void;
 
-    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, onProceed: () => void, options?: UIScreenOptions) {
-        super(layerName, scene, getViewportCenter, getViewportHalfSize, options);
+    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, audioController: AudioController, onProceed: () => void, options?: UIScreenOptions) {
+        super(layerName, scene, getViewportCenter, getViewportHalfSize, audioController, options);
         this.onProceed = onProceed;
 
         this.initializeUI();

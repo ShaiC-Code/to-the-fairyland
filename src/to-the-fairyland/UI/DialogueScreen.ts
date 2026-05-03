@@ -5,6 +5,7 @@ import Button from "../../Wolfie2D/Nodes/UIElements/Button";
 import Color from "../../Wolfie2D/Utils/Color";
 import UIScreen, { UIScreenOptions } from "./UIScreen";
 import Label from "../../Wolfie2D/Nodes/UIElements/Label";
+import AudioController from "../GameSystems/AudioController";
 
 type DialogueChoice = {
     label: string;
@@ -46,9 +47,8 @@ export default class DialogueScreen extends UIScreen {
     private readonly unselectedButtonBackground = Color.TRANSPARENT;
     private readonly unselectedButtonText = Color.WHITE;
 
-    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, initialChoices?: DialogueChoice[], options?: UIScreenOptions) {
-        super(layerName, scene, getViewportCenter, getViewportHalfSize, options);
-
+    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, audioController: AudioController, initialChoices?: DialogueChoice[], options?: UIScreenOptions) {
+        super(layerName, scene, getViewportCenter, getViewportHalfSize, audioController, options);
         this.initializeUI();
         this.setChoices(initialChoices ?? [{ label: "Yes" }, { label: "No" }]);
     }

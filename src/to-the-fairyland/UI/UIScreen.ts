@@ -13,8 +13,8 @@ import Button from "../../Wolfie2D/Nodes/UIElements/Button";
 import UIElement from "../../Wolfie2D/Nodes/UIElement";
 import Receiver from "../../Wolfie2D/Events/Receiver";
 import Emitter from "../../Wolfie2D/Events/Emitter";
-import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 import Updateable from "../../Wolfie2D/DataTypes/Interfaces/Updateable";
+import AudioController from "../GameSystems/AudioController";
 
 export type UIScreenActionBindings = {
     navigatePrevious: () => boolean;
@@ -35,6 +35,7 @@ export default class UIScreen implements Updateable {
     protected scene: Scene;
     protected getViewportCenter: () => Vec2;
     protected getViewportHalfSize: () => Vec2;
+    protected audioController: AudioController;
 
     protected reciever: Receiver;
     protected emitter: Emitter;
@@ -61,10 +62,11 @@ export default class UIScreen implements Updateable {
         confirm: () => false
     };
 
-    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, options?: UIScreenOptions) {
+    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, audioController: AudioController, options?: UIScreenOptions) {
         this.scene = scene;
         this.getViewportCenter = getViewportCenter;
         this.getViewportHalfSize = getViewportHalfSize;
+        this.audioController = audioController;
         this.layerName = layerName;
         this.layer = this.scene.addUILayer(layerName);
 
@@ -310,7 +312,7 @@ export default class UIScreen implements Updateable {
 
     protected playSFX(key?: string): void {
         if (key) {
-            this.emitter.fireEvent(GameEventType.PLAY_SFX, {key: key, loop: false, holdReference: false});
+            this.audioController.playSFX(key);
         }
     }
 

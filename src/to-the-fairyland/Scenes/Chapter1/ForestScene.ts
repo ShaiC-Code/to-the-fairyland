@@ -3,7 +3,6 @@ import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 import ShelterScene from "./ShelterScene";
 import { AssetBundle } from "../MappedAdventureScene";
 import MappedAdventureChapter1Scene from "./MappedAdventureChapter1Scene";
-import { GameEventType } from "../../../Wolfie2D/Events/GameEventType";
 import { Chapter1MainQuestStep } from "../../GameSystems/StorySystem/StoryState";
 import Sprite from "../../../Wolfie2D/Nodes/Sprites/Sprite";
 import { WeatherType } from "../../GameSystems/WorldSystem/WorldState";
@@ -27,7 +26,8 @@ export default class ForestScene extends MappedAdventureChapter1Scene {
             bushBerriesSprite: { key: "bushBerries", path: "/assets/sprites/BushBerries.png" },
             mapItemSprite: { key: "mapItem", path: "/assets/sprites/MapItem.png" }
         },
-        sounds: {}
+        sounds: {},
+        images: {}
     };
     
     private mapItemSprite: Sprite | null = null;
@@ -42,7 +42,7 @@ export default class ForestScene extends MappedAdventureChapter1Scene {
         super.startScene();
         this.weatherController.setWeather(WeatherType.SNOWSTORM, 50);
         this.howlEvent = new Timer(0, () => {
-            this.emitter.fireEvent(GameEventType.PLAY_SFX, { key: this.assets.sounds.wolvesHowlingSFX.key });
+            this.audioController.playSFX(this.assets.sounds.wolvesHowlingSFX.key, false, false);
             this.setHowlEventTimer();
         });
         this.setHowlEventTimer();
@@ -126,7 +126,7 @@ export default class ForestScene extends MappedAdventureChapter1Scene {
                     fadeInMs: 300
                 }
             );
-            this.emitter.fireEvent(GameEventType.PLAY_SFX, {key: this.assets.sounds.woodenDoorSFX.key, loop: false, holdReference: false});
+            this.audioController.playSFX(this.assets.sounds.woodenDoorSFX.key, false, false);
         }
     }
 

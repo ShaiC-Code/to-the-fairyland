@@ -68,7 +68,7 @@ export default class Road3Scene extends RoadSceneBase {
     private triggerVillageShake(): void {
         this.storyManager.chapter2.markVillageShakeStarted();
 
-        this.emitter.fireEvent(GameEventType.PLAY_SFX, { key: this.assets.sounds.somethingBigSFX.key });
+        this.audioController.playSFX(this.assets.sounds.somethingBigSFX.key, false, false);
         this.cameraController.shake(2200, 40);
     
         this.startDialogue(dialogue(

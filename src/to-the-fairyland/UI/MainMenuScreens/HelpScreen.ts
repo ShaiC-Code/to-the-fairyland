@@ -3,12 +3,11 @@ import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 import TextBox from "../../../Wolfie2D/Nodes/UIElements/TextBox";
 import UIScreen, { UIScreenOptions } from "../UIScreen";
 import Color from "../../../Wolfie2D/Utils/Color";
+import AudioController from "../../GameSystems/AudioController";
 
 export default class HelpScreen extends UIScreen {
-
-    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, options?: UIScreenOptions) {
-        super(layerName, scene, getViewportCenter, getViewportHalfSize, options);
-
+    constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, audioController: AudioController, options?: UIScreenOptions) {
+        super(layerName, scene, getViewportCenter, getViewportHalfSize, audioController, options);
         this.initializeUI();
     }
 

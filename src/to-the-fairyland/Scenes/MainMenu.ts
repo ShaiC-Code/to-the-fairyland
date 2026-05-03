@@ -21,24 +21,57 @@ import MainScreen from "../UI/MainMenuScreens/MainScreen";
 import TestScreen from "../UI/MainMenuScreens/TestScreen";
 import GameSessionManager from "../GameSystems/GameSessionSystem/GameSessionManager";
 import { PlayerInput } from "../AI/Player/PlayerController";
-import { UIScreenActionBindings } from "../UI/UIScreen";
+import { UIScreenActionBindings, UIScreenOptions } from "../UI/UIScreen";
 import RoadScene from "./Chapter2/RoadScene";
 import SleepingBag from "../GameSystems/ItemSystem/Items/SleepingBag";
 import { Chapter2MainQuestStep, Chapter4MainQuestStep } from "../GameSystems/StorySystem/StoryState";
-import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 import { TimeOfDay } from "../GameSystems/WorldSystem/WorldState";
 import CliffScene from "./Chapter2/CliffScene";
 import EmeraldPondScene from "./Chapter7/EmeraldPondScene";
 import CliffBottomScene from "./Chapter4/CliffBottomScene";
 import TreeInnerScene from "./Chapter4/TreeInnerScene";
 import Excalibur from "../GameSystems/ItemSystem/Items/Excalibur";
+import AudioController from "../GameSystems/AudioController";
 
 type AssetRef = Readonly<{
-    key: string;
-    path: string;
+    readonly key: string;
+    readonly path: string;
 }>;
 
+type AssetManifest = Record<string, AssetRef>;
+
+type AssetBundle = {
+    tilemaps: AssetManifest;
+    spritesheets: AssetManifest;
+    sprites: AssetManifest;
+    sounds: AssetManifest;
+    images: AssetManifest;
+    [category: string]: AssetManifest | undefined;
+};
+
 export default class MainMenu extends Scene {
+    protected static readonly assetBundle: AssetBundle = {
+        tilemaps: {},
+        spritesheets: {},
+        sprites: {},
+        sounds: {
+            uiHoverSFX: { key: "ui-hover", path: "/assets/sounds/ui-hover.ogg" },
+            uiClickSFX: { key: "ui-click", path: "/assets/sounds/ui-click.ogg" },
+            mainScreenMusic: { key: "main-screen-music", path: "/assets/sounds/main-screen-music.ogg" }
+        },
+        images: {
+            mainScreenImage: { key: "main-screen-image", path: "/assets/images/main-screen-image.png" },
+        }
+    };
+
+    protected assets: AssetBundle = {
+        tilemaps: {},
+        spritesheets: {},
+        sprites: {},
+        sounds: {},
+        images: {}
+    };
+    
     private readonly gameSessionManager = GameSessionManager.getInstance();
 
     private mainMenu!: MainScreen;
@@ -47,39 +80,16 @@ export default class MainMenu extends Scene {
     private helpMenu!: HelpScreen;
     private testMenu!: TestScreen;
 
+    protected audioController!: AudioController;
+
     private cheatsEnabled = false;
 
-    protected readonly mainScreenImage: AssetRef = {
-        key: "main-screen-image",
-        path: "/assets/images/main-screen-image.png"
-    };
-
-    protected readonly mainScreenMusic: AssetRef = {
-        key: "main-screen-music",
-        path: "/assets/sounds/main-screen-music.ogg"
-    };
-
-    protected readonly uiHover: AssetRef = {
-        key: "ui-hover",
-        path: "/assets/sounds/ui-hover.ogg"
-    };
-
-    protected readonly uiClick: AssetRef = {
-        key: "ui-click",
-        path: "/assets/sounds/ui-click.ogg"
-    };
+    public override initScene(): void {
+        this.assets = MainMenu.assetBundle;
+    }
 
     public loadScene(){
-        this.load.image(this.mainScreenImage.key, this.mainScreenImage.path);
-        this.load.audio(this.mainScreenMusic.key, this.mainScreenMusic.path);
-
-        if (!this.resourceManager.getAudio(this.uiHover.key)) {
-            this.load.audio(this.uiHover.key, this.uiHover.path);
-        }
-
-        if (!this.resourceManager.getAudio(this.uiClick.key)) {
-            this.load.audio(this.uiClick.key, this.uiClick.path);
-        }
+        this.loadAssets(this.assets);
 
         this.add.registerCustomUIElement(CustomUIElementType.HOVER_BUTTON, (options?: Record<string, any>) => {
             return new HoverButton(options!.position, options!.text);
@@ -91,7 +101,63 @@ export default class MainMenu extends Scene {
     }
 
     public unloadScene(): void {
-        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: this.mainScreenMusic.key });
+        this.keepAssets(MainMenu.assetBundle);
+        this.audioController.stopSound(this.assets.sounds.mainScreenMusic.key);
+    }
+
+    protected mergeAssetBundles(parent: AssetBundle, child: AssetBundle): AssetBundle {
+        return {
+            tilemaps: { ...(parent.tilemaps ?? {}), ...(child.tilemaps ?? {}) },
+            spritesheets: { ...(parent.spritesheets ?? {}), ...(child.spritesheets ?? {}) },
+            sprites: { ...(parent.sprites ?? {}), ...(child.sprites ?? {}) },
+            sounds: { ...(parent.sounds ?? {}), ...(child.sounds ?? {}) },
+            images: { ...(parent.images ?? {}), ...(child.images ?? {}) }
+        };
+    }
+
+    protected assetBundleToKeyArrays(bundle: AssetBundle): {
+        tilemaps: ReadonlyArray<AssetRef>;
+        spritesheets: ReadonlyArray<AssetRef>;
+        sprites: ReadonlyArray<AssetRef>;
+        sounds: ReadonlyArray<AssetRef>;
+        images: ReadonlyArray<AssetRef>;
+    } {
+        const tilemaps = Object.values(bundle.tilemaps ?? {});
+        const spritesheets = Object.values(bundle.spritesheets ?? {});
+        const sprites = Object.values(bundle.sprites ?? {});
+        const sounds = Object.values(bundle.sounds ?? {});
+        const images = Object.values(bundle.images ?? {});
+        return {tilemaps, spritesheets, sprites, sounds, images};
+    }
+    
+    protected loadAssets(assets: AssetBundle): void {
+        const { tilemaps, spritesheets, sprites, sounds, images } = this.assetBundleToKeyArrays(assets);
+
+        tilemaps
+            .filter(tilemap => !this.resourceManager.getTilemap(tilemap.key))
+            .forEach(tilemap => this.load.tilemap(tilemap.key, tilemap.path));
+        spritesheets
+            .filter(spritesheet => !this.resourceManager.getSpritesheet(spritesheet.key))
+            .forEach(spritesheet => this.load.spritesheet(spritesheet.key, spritesheet.path));
+        sprites
+            .filter(sprite => !this.resourceManager.getImage(sprite.key))
+            .forEach(sprite => this.load.image(sprite.key, sprite.path));
+        sounds
+            .filter(sound => !this.resourceManager.getAudio(sound.key))
+            .forEach(sound => this.load.audio(sound.key, sound.path));
+        images
+            .filter(image => !this.resourceManager.getImage(image.key))
+            .forEach(image => this.load.image(image.key, image.path));
+    }
+
+    protected keepAssets(assets: AssetBundle): void {
+        const { tilemaps, spritesheets, sprites, sounds, images } = this.assetBundleToKeyArrays(assets);
+
+        tilemaps.forEach(tilemap => {this.load.keepTilemap(tilemap.key)});
+        spritesheets.forEach(spritesheet => {this.load.keepSpritesheet(spritesheet.key)});
+        sprites.forEach(sprite => {this.load.keepImage(sprite.key)});
+        sounds.forEach(sound => {this.load.keepAudio(sound.key)});
+        images.forEach(image => {this.load.keepImage(image.key)});
     }
 
     public startScene(){
@@ -100,14 +166,20 @@ export default class MainMenu extends Scene {
             navigateNext: () => Input.isJustPressed(PlayerInput.MOVE_RIGHT) || Input.isJustPressed(PlayerInput.MOVE_DOWN),
             confirm: () => Input.isJustPressed(PlayerInput.INTERACT)
         };
+        const uiOptions: UIScreenOptions = {
+            onEnterSFXKey: this.assets.sounds.uiHoverSFX.key,
+            onClickSFXKey: this.assets.sounds.uiClickSFX.key,
+            uiActions
+        };
 
         this.mainMenu = new MainScreen(
             "mainMenu",
             this,
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize(),
-            this.mainScreenImage.key,
-            { onEnterSFXKey: this.uiHover.key, onClickSFXKey: this.uiClick.key, uiActions }
+            this.audioController,
+            this.assets.images.mainScreenImage.key,
+            uiOptions
         );
         this.mainMenu.show();
 
@@ -116,7 +188,8 @@ export default class MainMenu extends Scene {
             this,
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize(),
-            { onEnterSFXKey: this.uiHover.key, onClickSFXKey: this.uiClick.key, uiActions }
+            this.audioController,
+            uiOptions
         );
 
         this.controlsMenu = new ControlsScreen(
@@ -124,7 +197,8 @@ export default class MainMenu extends Scene {
             this,
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize(),
-            { onEnterSFXKey: this.uiHover.key, onClickSFXKey: this.uiClick.key, uiActions }
+            this.audioController,
+            uiOptions
         );
 
         this.helpMenu = new HelpScreen(
@@ -132,7 +206,8 @@ export default class MainMenu extends Scene {
             this,
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize(),
-            { onEnterSFXKey: this.uiHover.key, onClickSFXKey: this.uiClick.key, uiActions }
+            this.audioController,
+            uiOptions
         );
 
         this.testMenu = new TestScreen(
@@ -140,12 +215,14 @@ export default class MainMenu extends Scene {
             this,
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize(),
-            { onEnterSFXKey: this.uiHover.key, onClickSFXKey: this.uiClick.key, uiActions }
+            this.audioController,
+            uiOptions
         );
 
         this.mainMenu.setResumeEnabled(this.gameSessionManager.hasSavedSession());
 
-        this.emitter.fireEvent(GameEventType.PLAY_MUSIC, { key: this.mainScreenMusic.key, loop: true, holdReference: true });
+        this.audioController = new AudioController();
+        this.audioController.playMusic(this.assets.sounds.mainScreenMusic.key, true, true);
 
         this.receiver.subscribe("openLevelMenu");
         this.receiver.subscribe("openControlsMenu");

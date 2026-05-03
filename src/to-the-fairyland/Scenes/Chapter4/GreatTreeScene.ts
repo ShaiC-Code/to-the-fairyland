@@ -9,18 +9,6 @@ import Excalibur from "../../GameSystems/ItemSystem/Items/Excalibur";
 import MainMenu from "../MainMenu";
 
 export default class GreatTreeScene extends ForestSceneBase {
-    private vineGateController!: VineAttackController;
-    private vineGateObject: TiledObject | null = null;
-    private vineGateOpened = false;
-    private readonly vineGatePoints: Map<string, TiledObject> = new Map();
-    private readonly vineGateLayerName = "VineGateVines";
-    private readonly vineGatePointLayerName = "VineExit";
-    private readonly vineGateCollisionTileId = 1;
-    private readonly vineGatePairs: ReadonlyArray<readonly [string, string]> = [
-        ["1_L", "1_R"],
-        ["2_L", "2_R"]
-    ];
-
     protected readonly tilemap = {
         key: "greatTree",
         path: "/assets/tilemaps/Chapter4/GreatTree.json"
@@ -32,8 +20,21 @@ export default class GreatTreeScene extends ForestSceneBase {
         sprites: {
             vinePartExitSprite: { key: "vinePartExit", path: "/assets/sprites/VinePartExit.png" }
         },
-        sounds: {}
+        sounds: {},
+        images: {}
     };
+    
+    private vineGateController!: VineAttackController;
+    private vineGateObject: TiledObject | null = null;
+    private vineGateOpened = false;
+    private readonly vineGatePoints: Map<string, TiledObject> = new Map();
+    private readonly vineGateLayerName = "VineGateVines";
+    private readonly vineGatePointLayerName = "VineExit";
+    private readonly vineGateCollisionTileId = 1;
+    private readonly vineGatePairs: ReadonlyArray<readonly [string, string]> = [
+        ["1_L", "1_R"],
+        ["2_L", "2_R"]
+    ];
 
     protected override combinedAssetBundles(): AssetBundle {
         return this.mergeAssetBundles(super.combinedAssetBundles(), GreatTreeScene.assetBundle);

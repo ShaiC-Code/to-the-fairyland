@@ -9,7 +9,8 @@ export default abstract class ForestSceneBase extends MappedAdventureScene {
             bushBerriesSprite: { key: "bushBerries", path: "/assets/sprites/BushBerries.png" },
             forestTreeSprite: { key: "forestTree1", path: "/assets/sprites/ForestTree1.png" }
         },
-        sounds: {}
+        sounds: {},
+        images: {}
     };
 
     protected readonly chapterDefinition: ChapterSceneDefinition = {
@@ -27,7 +28,8 @@ export default abstract class ForestSceneBase extends MappedAdventureScene {
             tilemaps: { [this.tilemap.key]: this.tilemap },
             spritesheets: {},
             sprites: {},
-            sounds: {}
+            sounds: {},
+            images: {}
         });
     }
 

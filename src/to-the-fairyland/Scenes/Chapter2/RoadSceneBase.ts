@@ -4,13 +4,6 @@ import { TiledTilemapData } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData
 import LycanChaseSceneBase from "../LycanChaseSceneBase";
 
 export default abstract class RoadSceneBase extends LycanChaseSceneBase {
-
-    private pendingLycanSpawnTilemapData: TiledTilemapData | null = null;
-    private lycanSpawnDelayTimer = 0;
-    private readonly lycanSpawnDelaySeconds = 0.5;
-    private lycanSpawned = false;
-
-
     protected static readonly roadAssetBundle: AssetBundle = {
         tilemaps: {},
         spritesheets: {},
@@ -18,8 +11,14 @@ export default abstract class RoadSceneBase extends LycanChaseSceneBase {
             bushBerriesSprite: { key: "bushBerries", path: "/assets/sprites/BushBerries.png" },
             forestTreeSprite: { key: "forestTree1", path: "/assets/sprites/ForestTree1.png" }
         },
-        sounds: {}
+        sounds: {},
+        images: {}
     };
+
+    private pendingLycanSpawnTilemapData: TiledTilemapData | null = null;
+    private lycanSpawnDelayTimer = 0;
+    private readonly lycanSpawnDelaySeconds = 0.5;
+    private lycanSpawned = false;
 
     public override startScene(): void {
         super.startScene();
@@ -42,7 +41,8 @@ export default abstract class RoadSceneBase extends LycanChaseSceneBase {
             tilemaps: { [this.tilemap.key]: this.tilemap },
             spritesheets: {},
             sprites: {},
-            sounds: {}
+            sounds: {},
+            images: {}
         });
     }
 
