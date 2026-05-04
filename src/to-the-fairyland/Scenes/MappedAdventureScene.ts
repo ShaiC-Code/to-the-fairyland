@@ -76,9 +76,12 @@ export default abstract class MappedAdventureScene extends Scene {
             swordAttack: { key: "swordAttack", path: "/assets/spritesheets/Effects/SwordAttack.json" }
         },
         sprites: {
-            snowflake1Sprite: { key: "snowflake1", path: "/assets/sprites/particles/Snowflake1.png" },
-            snowflake2Sprite: { key: "snowflake2", path: "/assets/sprites/particles/Snowflake2.png" },
-            snowflake3Sprite: { key: "snowflake3", path: "/assets/sprites/particles/Snowflake3.png" }
+            snowFlake1Sprite: { key: "snowflake1", path: "/assets/sprites/particles/SnowFlake1.png" },
+            snowFlake2Sprite: { key: "snowflake2", path: "/assets/sprites/particles/SnowFlake2.png" },
+            snowFlake3Sprite: { key: "snowflake3", path: "/assets/sprites/particles/SnowFlake3.png" },
+            sandParticle1Sprite: { key: "sandParticle1", path: "/assets/sprites/particles/SandParticle1.png" },
+            sandParticle2Sprite: { key: "sandParticle2", path: "/assets/sprites/particles/SandParticle2.png" },
+            sandParticle3Sprite: { key: "sandParticle3", path: "/assets/sprites/particles/SandParticle3.png" }
         },
         sounds: {
             uiHoverSFX: { key: "ui-hover", path: "/assets/sounds/ui-hover.ogg" },
@@ -883,8 +886,8 @@ export default abstract class MappedAdventureScene extends Scene {
         this.dialogueController.startDialogue(dialogue, speakerName, options);
     }
     
-    // TEMPORARY function to determine ground type for sfx purposes, ideally this would be determined by properties on the tilemap
-    public groundTypeAtTile(tile: Vec2): "snow" | "wood" | "bush" | null {
+    // function to determine ground type for sfx purposes, ideally this would be determined by properties on the tilemap
+    public groundTypeAtTile(tile: Vec2): "snow" | "wood" | "bush" | "sand" | null {
         const tilemapData = this.resourceManager.getTilemap(this.tilemap.key) as TiledTilemapData;
         if (!tilemapData) {
             return null;
@@ -899,7 +902,15 @@ export default abstract class MappedAdventureScene extends Scene {
             return "bush";
         }
 
-        return this.tilemap.key === "chapter1" ? "snow" : this.tilemap.key === "shelter" ? "wood" : null;
+        if (this.tilemap.key === "chapter1") {
+            return "snow";
+        } else if (this.tilemap.key === "shelter") {
+            return "wood";
+        } else if (this.tilemap.key === "desertLand") {
+            return "sand";
+        }
+
+        return null;
     }
 
     protected handleDialogueCompleteAction(option: DialogueInteraction): void {

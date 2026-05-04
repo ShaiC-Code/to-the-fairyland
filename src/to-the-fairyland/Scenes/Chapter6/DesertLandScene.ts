@@ -4,6 +4,8 @@ import MappedAdventureScene, {
 } from "../MappedAdventureScene";
 import { TiledObject, TiledTilemapData } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData";
 import DesertCentipedeController from "./DesertCentipedeController";
+import { WeatherType } from "../../GameSystems/WorldSystem/WorldState";
+import AudioController from "../../GameSystems/AudioController";
 
 export default class DesertLandScene extends MappedAdventureScene {
     protected readonly tilemap = {
@@ -33,7 +35,11 @@ export default class DesertLandScene extends MappedAdventureScene {
                 path: "/assets/spritesheets/desertCentipede_pieces3.png"
             }
         },
-        sounds: {},
+        sounds: {
+            weatherSandStormSFX: { key: "weather-sandstorm", path: "/assets/sounds/weather-sandstorm.ogg" },
+            walkingSandSFX: { key: "walking-sand", path: "/assets/sounds/walking-sand.ogg" },
+            centipedesCrawlingSFX: {key: "centipedes-crawling", path: "/assets/sounds/centipedes-crawling.ogg" }
+        },
         images: {}
     };
 
@@ -68,6 +74,18 @@ export default class DesertLandScene extends MappedAdventureScene {
 
     protected override combinedAssetBundles(): AssetBundle {
         return this.mergeAssetBundles(super.combinedAssetBundles(), DesertLandScene.assetBundle);
+    }
+    
+    public override unloadScene(): void {
+        super.unloadScene();
+    
+        // Stop sfx when changing scenes
+        AudioController.getInstance().stopSound(this.assets.sounds.walkingSandSFX.key);
+    }
+    
+    public override startScene(): void {
+        super.startScene();
+        this.weatherController.setWeather(WeatherType.SANDSTORM, 50);
     }
 
     protected override configureLayers(): void {

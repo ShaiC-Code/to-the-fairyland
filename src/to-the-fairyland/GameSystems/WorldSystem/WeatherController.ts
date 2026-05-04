@@ -108,13 +108,13 @@ export default class WeatherController implements Updateable {
 
         this.currentWeather = weather;
         this.playWeatherAmbience();
-        // const color = this.getWeatherTintColor(weather);
-        // if (color) {
-        //     this.weatherTintOverlay.setOverlayColor(color);
-        //     this.weatherTintOverlay.show();
-        // } else {
-        //     this.weatherTintOverlay.hide();
-        // }
+        const color = this.getWeatherTintColor(weather);
+        if (color) {
+            this.weatherTintOverlay.setOverlayColor(color);
+            this.weatherTintOverlay.show();
+        } else {
+            this.weatherTintOverlay.hide();
+        }
 
         if (weather === WeatherType.NONE) {
             for (const particle of this.weatherParticles) {
@@ -128,7 +128,7 @@ export default class WeatherController implements Updateable {
         this.weatherLayerDepth = layerDepth;
         this.scene.getLayer(this.weatherLayerName).setDepth(layerDepth);
         this.weatherFadeInSpeed = preset.fadeInSpeed;
-        this.ensureSnowPool(preset);
+        this.ensureParticlePool(preset);
         this.weatherAlpha = 0;
     
         for (let i = 0; i < this.weatherParticles.length; i++) {
@@ -152,23 +152,29 @@ export default class WeatherController implements Updateable {
         this.weatherActive = true;
     }
     
-    private ensureSnowPool(preset: WeatherParticlePreset): void {  
-        const snowflakeKeys = [
-            this.sceneAssets.sprites.snowflake1Sprite.key,
-            this.sceneAssets.sprites.snowflake2Sprite.key,
-            this.sceneAssets.sprites.snowflake3Sprite.key
-        ];  
+    private ensureParticlePool(preset: WeatherParticlePreset): void {
+        const particleKeys = this.currentWeather === WeatherType.SANDSTORM
+            ? [
+                this.sceneAssets.sprites.sandParticle1Sprite.key,
+                this.sceneAssets.sprites.sandParticle2Sprite.key,
+                this.sceneAssets.sprites.sandParticle3Sprite.key
+            ]
+            : [
+                this.sceneAssets.sprites.snowFlake1Sprite.key,
+                this.sceneAssets.sprites.snowFlake2Sprite.key,
+                this.sceneAssets.sprites.snowFlake3Sprite.key
+            ];
 
         while (this.weatherParticles.length < preset.poolSize) {
-            const key = snowflakeKeys[this.weatherParticles.length % snowflakeKeys.length];
+            const key = particleKeys[this.weatherParticles.length % particleKeys.length];
             const flake = this.scene.add.sprite(key, this.weatherLayerName);
-    
+
             flake.visible = false;
             flake.addAI(WeatherParticleBehavior, {
                 viewport: this.viewport,
                 settings: preset.settings
             });
-    
+
             this.weatherParticles.push(flake);
         }
     }
@@ -176,8 +182,9 @@ export default class WeatherController implements Updateable {
     private getWeatherTintColor(weather: WeatherType): Color | null {
         switch (weather) {
         case WeatherType.NONE: return null;
-        case WeatherType.SNOW: return new Color(255, 255, 255, 0.1);
-        case WeatherType.SNOWSTORM: return new Color(255, 255, 255, 0.25);
+        case WeatherType.SNOW: return null;
+        case WeatherType.SNOWSTORM: return new Color(255, 255, 255, 0.05);
+        case WeatherType.SANDSTORM: return new Color(194, 154, 82, 0.4);
         default: return null;
         }
     }
@@ -187,6 +194,7 @@ export default class WeatherController implements Updateable {
         case WeatherType.NONE: return "";
         case WeatherType.SNOW: return this.sceneAssets.sounds.weatherSnowSFX.key;
         case WeatherType.SNOWSTORM: return this.sceneAssets.sounds.weatherSnowStormSFX.key;
+        case WeatherType.SANDSTORM: return this.sceneAssets.sounds.weatherSandStormSFX.key;
         default: return "";
         }
     }
@@ -232,6 +240,27 @@ export default class WeatherController implements Updateable {
                     wobbleAmplitudeMax: 56,
                     wobbleFrequencyMin: 0.9,
                     wobbleFrequencyMax: 2.1
+                }
+            };
+
+        case WeatherType.SANDSTORM:
+            return {
+                poolSize: 850,
+                fadeInSpeed: 2.0,
+                scaleMin: 0.35,
+                scaleMax: 1.1,
+                settings: {
+                    spawnPadding: 200,
+                    recyclePadding: 240,
+                    inflowEpsilon: 5,
+                    baseSpeedMin: 420,
+                    baseSpeedMax: 900,
+                    angleMinDegrees: 72,
+                    angleMaxDegrees: 86,
+                    wobbleAmplitudeMin: 20,
+                    wobbleAmplitudeMax: 70,
+                    wobbleFrequencyMin: 2.0,
+                    wobbleFrequencyMax: 5.0
                 }
             };
 
