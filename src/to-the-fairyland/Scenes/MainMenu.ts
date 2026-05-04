@@ -100,7 +100,7 @@ export default class MainMenu extends Scene {
 
     public unloadScene(): void {
         this.keepAssets(MainMenu.assetBundle);
-        AudioController.getInstance().stopSound(this.assets.sounds.mainScreenMusic.key);
+        AudioController.getInstance().stopMusic();
     }
 
     protected mergeAssetBundles(parent: AssetBundle, child: AssetBundle): AssetBundle {
@@ -170,7 +170,7 @@ export default class MainMenu extends Scene {
             uiActions
         };
 
-        AudioController.getInstance().playMusic(this.assets.sounds.mainScreenMusic.key, true, true);
+        AudioController.getInstance().playMusic(this.assets.sounds.mainScreenMusic.key, true, true, 3);
 
         this.mainMenu = new MainScreen(
             "mainMenu",

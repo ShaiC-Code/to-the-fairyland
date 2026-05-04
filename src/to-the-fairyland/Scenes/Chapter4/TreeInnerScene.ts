@@ -241,6 +241,7 @@ export default class TreeInnerScene extends ForestSceneBase {
         this.storyManager.chapter4.markVineExitOpened();
         this.clearVineExitCollision();
         this.vineAttackController.destroyMatching(attack => attack.type === "exit");
+        AudioController.getInstance().stopMusic(5);
     }
 
     private hasExcaliburBeenPulled(): boolean {
@@ -510,9 +511,14 @@ export default class TreeInnerScene extends ForestSceneBase {
         this.vineShooterWaveController.setCooldown(this.vineShooterWaveController.getInitialCooldown());
         this.vineExitCloseCutsceneActive = false;
 
-        this.startDialogue(dialogue([
-            "The Vines blocked the way out..."
-        ]));
+        this.startDialogue(
+            dialogue(["The Vines blocked the way out..."],
+            {
+                onComplete: () => {
+                    AudioController.getInstance().playMusic(this.assets.sounds.battleTreeMusic.key, true, true, 3);
+                }
+            })
+        );
     }
 
     private tileKey(tile: Vec2): string {
