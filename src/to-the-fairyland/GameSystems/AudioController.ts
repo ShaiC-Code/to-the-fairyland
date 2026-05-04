@@ -8,6 +8,9 @@ export default class AudioController {
     protected reciever: Receiver;
     protected emitter: Emitter;
 
+    private previousMusicKey: string | null = null;
+    private currentMusicKey: string | null = null;
+
     private constructor() {
         this.reciever = new Receiver();
         this.emitter = new Emitter();
@@ -32,8 +35,31 @@ export default class AudioController {
         this.emitter.fireEvent(GameEventType.PLAY_SFX, { key: key, loop: loop, holdReference: holdReference, channel: channel, fadeInSeconds: fadeSeconds });
     }
 
-    public playMusic(key: string, loop: boolean = false, holdReference: boolean = false): void {
+    public async playMusic(key: string, loop: boolean = false, holdReference: boolean = false, fadeSeconds: number = 0): Promise<void> {
+        if (this.currentMusicKey) {
+            await this.stopMusic();
+        }
+        this.currentMusicKey = key;
         this.emitter.fireEvent(GameEventType.PLAY_MUSIC, { key: key, loop: loop, holdReference: holdReference });
+        this.unmuteChannel(AudioChannelType.MUSIC, fadeSeconds);
+    }
+
+    public async stopMusic(fadeSeconds: number = 0): Promise<void> {
+        if (!this.currentMusicKey) {
+            if (this.previousMusicKey) {
+                this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: this.previousMusicKey });
+                this.previousMusicKey = null;
+            }
+            return;
+        }
+
+        this.previousMusicKey = this.currentMusicKey;
+        this.currentMusicKey = null;
+        this.muteChannel(AudioChannelType.MUSIC, fadeSeconds);
+        return new Promise<void>(resolve => window.setTimeout(() => {
+            this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: this.previousMusicKey });
+            resolve();
+        }, fadeSeconds * 1000)); 
     }
 
     public muteChannel(channel: AudioChannelType, fadeSeconds: number = 0): void {

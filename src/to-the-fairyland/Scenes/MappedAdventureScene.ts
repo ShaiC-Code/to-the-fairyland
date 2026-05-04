@@ -12,7 +12,6 @@ import { CustomUIElementType } from "../UI/CustomUIElements/CustomUIElementTypes
 import HoverButton from "../UI/CustomUIElements/HoverButton";
 import UIImage from "../UI/CustomUIElements/UIImage";
 import { PlayerControlMode, PlayerInput } from "../AI/Player/PlayerController";
-import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 import { DialogueChoiceAction, DialogueChoiceOption, DialogueInteraction, DialogueCompleteAction, getInteractionData } from "../GameSystems/InteractionSystem/InteractionDatabase";
 import PlayerStateManager from "../GameSystems/PlayerSystem/PlayerStateManager";
 import GameSessionManager from "../GameSystems/GameSessionSystem/GameSessionManager";
@@ -93,7 +92,8 @@ export default abstract class MappedAdventureScene extends Scene {
             woodenDoorSFX: { key: "door-wooden", path: "/assets/sounds/door-wooden.ogg" },
             swordCutSFX: { key: "sword-cut", path: "/assets/sounds/sword-cut.ogg" },
             swordAttackSFX: { key: "sword-attack", path: "/assets/sounds/sword-attack.ogg" },
-            swordAttackHitSFX: { key: "sword-attack-hit", path: "/assets/sounds/sword-attack-hit.ogg" }
+            swordAttackHitSFX: { key: "sword-attack-hit", path: "/assets/sounds/sword-attack-hit.ogg" },
+            battleTreeMusic: { key: "battle-tree-music", path: "/assets/sounds/battle-tree-music.ogg" }
         },
         images: {}
     };
@@ -183,6 +183,7 @@ export default abstract class MappedAdventureScene extends Scene {
         this.keepAssets(MappedAdventureScene.assetBundle);
         this.weatherController.muteWeatherAmbience();
         AudioController.getInstance().stopSound(this.assets.sounds.walkingDirtSFX.key);
+        AudioController.getInstance().stopMusic();
     }
 
     protected mergeAssetBundles(parent: AssetBundle, child: AssetBundle): AssetBundle {
