@@ -6,7 +6,8 @@ import {
     createChapter1CompletedState,
     createInitialChapter2State,
     createChapter2CompletedState,
-    createInitialChapter4State
+    createInitialChapter4State,
+    createInitialChapter6State
 } from "../StorySystem/StoryState";
 import { WorldState, createInitialWorldState } from "../WorldSystem/WorldState";
 import { getTimeOfDayForStory } from "../StorySystem/StoryRules";
@@ -85,6 +86,23 @@ export function createInitialChapter4GameSessionState(): GameSessionState {
         {
             sceneId: "Chapter4Scene",
             spawnName: "Start",
+            cheatsEnabled: false
+        }
+    );
+}
+
+export function createInitialChapter6GameSessionState(): GameSessionState {
+    return createGameSessionState(
+        {
+            activeChapter: ActiveChapter.CHAPTER6,
+            chapter1: createChapter1CompletedState(),
+            chapter2: createChapter2CompletedState(),
+            chapter4: createInitialChapter4State(),
+            chapter6: createInitialChapter6State()
+        },
+        {
+            sceneId: "DesertLandScene",
+            spawnName: "RoadStart",
             cheatsEnabled: false
         }
     );
