@@ -32,6 +32,8 @@ import CliffBottomScene from "./Chapter4/CliffBottomScene";
 import TreeInnerScene from "./Chapter4/TreeInnerScene";
 import Excalibur from "../GameSystems/ItemSystem/Items/Excalibur";
 import AudioController from "../GameSystems/AudioController";
+import DesertLandScene from "./Chapter6/DesertLandScene";
+
 
 type AssetRef = Readonly<{
     readonly key: string;
@@ -230,6 +232,8 @@ export default class MainMenu extends Scene {
         this.receiver.subscribe("level6");
         this.receiver.subscribe("level7");
         this.receiver.subscribe("level8");
+        this.receiver.subscribe("level9");
+
 
         this.receiver.subscribe("level10");
 
@@ -478,6 +482,27 @@ export default class MainMenu extends Scene {
 
                 break;
             }
+            case "level9": {
+                this.gameSessionManager.startNewChapter6Game();
+            
+                this.sceneManager.changeToScene(
+                    DesertLandScene,
+                    {
+                        cheatsEnabled: this.cheatsEnabled,
+                        spawnName: "RoadStart"
+                    },
+                    undefined,
+                    {
+                        showLoadingOverlay: true,
+                        useFadeTransition: true,
+                        fadeOutMs: 500,
+                        fadeInMs: 500
+                    }
+                );
+            
+                break;
+            }
+            
             case "level10": {
                 this.gameSessionManager.startNewChapter2Game();
 

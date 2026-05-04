@@ -1,7 +1,8 @@
 export enum ActiveChapter {
     CHAPTER1 = "CHAPTER1",
     CHAPTER2 = "CHAPTER2",
-    CHAPTER4 = "CHAPTER4"
+    CHAPTER4 = "CHAPTER4",
+    CHAPTER6 = "CHAPTER6"
 }
 
 //======================== Chapter1 =================================
@@ -60,6 +61,16 @@ export const CHAPTER4_MAIN_QUEST_ORDER = Object.values(Chapter4MainQuestStep);
 export interface Chapter4StoryState {
     mainQuestStep: Chapter4MainQuestStep;
 }
+//======================== Chapter6 =================================
+export enum Chapter6MainQuestStep {
+    ESCAPE_DESERT_CENTIPEDES = "ESCAPE_DESERT_CENTIPEDES",
+    JUMP_INTO_EMERALD_POND = "JUMP_INTO_EMERALD_POND"
+}
+
+export interface Chapter6StoryState {
+    mainQuestStep: Chapter6MainQuestStep;
+}
+
 // =================================================================
 
 export interface StoryState {
@@ -67,6 +78,7 @@ export interface StoryState {
     chapter1: Chapter1StoryState;
     chapter2?: Chapter2StoryState;
     chapter4?: Chapter4StoryState;
+    chapter6?: Chapter6StoryState;
 }
 
 export function createInitialChapter1State(): Chapter1StoryState {
@@ -102,6 +114,11 @@ export function createChapter2CompletedState(): Chapter2StoryState {
             [Chapter2VillageItem.SLEEPING_BAG]: true,
             [Chapter2VillageItem.OBSIDIAN_BOOTS]: true
         }
+    };
+}
+export function createInitialChapter6State(): Chapter6StoryState {
+    return {
+        mainQuestStep: Chapter6MainQuestStep.ESCAPE_DESERT_CENTIPEDES
     };
 }
 
