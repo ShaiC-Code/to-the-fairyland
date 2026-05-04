@@ -886,8 +886,8 @@ export default abstract class MappedAdventureScene extends Scene {
         this.dialogueController.startDialogue(dialogue, speakerName, options);
     }
     
-    // TEMPORARY function to determine ground type for sfx purposes, ideally this would be determined by properties on the tilemap
-    public groundTypeAtTile(tile: Vec2): "snow" | "wood" | "bush" | null {
+    // function to determine ground type for sfx purposes, ideally this would be determined by properties on the tilemap
+    public groundTypeAtTile(tile: Vec2): "snow" | "wood" | "bush" | "sand" | null {
         const tilemapData = this.resourceManager.getTilemap(this.tilemap.key) as TiledTilemapData;
         if (!tilemapData) {
             return null;
@@ -902,7 +902,15 @@ export default abstract class MappedAdventureScene extends Scene {
             return "bush";
         }
 
-        return this.tilemap.key === "chapter1" ? "snow" : this.tilemap.key === "shelter" ? "wood" : null;
+        if (this.tilemap.key === "chapter1") {
+            return "snow";
+        } else if (this.tilemap.key === "shelter") {
+            return "wood";
+        } else if (this.tilemap.key === "desertLand") {
+            return "sand";
+        }
+
+        return null;
     }
 
     protected handleDialogueCompleteAction(option: DialogueInteraction): void {

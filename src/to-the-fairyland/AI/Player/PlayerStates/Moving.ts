@@ -20,6 +20,8 @@ export default class Moving extends PlayerBehaviorState {
             nextFootstepSFXKey = this.owner.sceneAssets.sounds.walkingSnowSFX.key;
         } else if (groundType === "bush") {
             nextFootstepSFXKey = this.owner.sceneAssets.sounds.walkingSnowBushSFX.key;
+        } else if (groundType === "sand") {
+            nextFootstepSFXKey = this.owner.sceneAssets.sounds.walkingSandSFX.key;
         } else {
             nextFootstepSFXKey = this.owner.sceneAssets.sounds.walkingDirtSFX.key;
         }
