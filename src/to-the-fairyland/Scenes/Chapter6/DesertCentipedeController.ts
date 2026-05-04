@@ -17,6 +17,8 @@ type DesertCentipedeSegment = {
     lastDirection: Vec2;
 };
 
+type DesertCentipedeMoveMode = "approach" | "aggro" | "guidedCharge" | "charge";
+
 export type DesertCentipedeOptions = {
     scene: Scene;
     layerName: string;
@@ -29,7 +31,14 @@ export type DesertCentipedeOptions = {
     bodyToBodySegmentSpacing?: number;
     bodyToTailSegmentSpacing?: number;
     moveSpeed?: number;
+    chargeMoveSpeed?: number;
     headSteerTurnSpeed?: number;
+    aggroStartDistance?: number;
+    aggroDuration?: number;
+    minAggroDuration?: number;
+    maxAggroDuration?: number;
+    chargeGuidanceDuration?: number;
+    chargeDuration?: number;
     maxTurnSpeed?: number;
     rotationOffset?: number;
     scale?: number;
@@ -43,13 +52,21 @@ export default class DesertCentipedeController {
     private readonly bodyToBodySegmentSpacing: number;
     private readonly bodyToTailSegmentSpacing: number;
     private readonly moveSpeed: number;
+    private readonly chargeMoveSpeed: number;
     private readonly headSteerTurnSpeed: number;
+    private readonly aggroStartDistance: number;
+    private readonly minAggroDuration: number;
+    private readonly maxAggroDuration: number;
+    private readonly chargeGuidanceDuration: number;
+    private readonly chargeDuration: number;
     private readonly maxTurnSpeed: number;
     private readonly rotationOffset: number;
     private readonly scale: number;
     private readonly segmentSortTile = Vec2.ZERO;
 
     private readonly segments: DesertCentipedeSegment[] = [];
+    private moveMode: DesertCentipedeMoveMode = "approach";
+    private moveModeTimer = 0;
 
     public constructor(options: DesertCentipedeOptions) {
         this.scene = options.scene;
@@ -59,7 +76,16 @@ export default class DesertCentipedeController {
         this.bodyToBodySegmentSpacing = options.bodyToBodySegmentSpacing ?? options.segmentSpacing ?? 48;
         this.bodyToTailSegmentSpacing = options.bodyToTailSegmentSpacing ?? options.segmentSpacing ?? 48;
         this.moveSpeed = options.moveSpeed ?? 120;
+        this.chargeMoveSpeed = options.chargeMoveSpeed ?? this.moveSpeed * 1.5;
         this.headSteerTurnSpeed = options.headSteerTurnSpeed ?? Math.PI * 1.5;
+        this.aggroStartDistance = options.aggroStartDistance ?? 360;
+        this.minAggroDuration = options.minAggroDuration ?? options.aggroDuration ?? 0.85;
+        this.maxAggroDuration = Math.max(
+            this.minAggroDuration,
+            options.maxAggroDuration ?? options.aggroDuration ?? this.minAggroDuration
+        );
+        this.chargeGuidanceDuration = options.chargeGuidanceDuration ?? 0;
+        this.chargeDuration = options.chargeDuration ?? 1.35;
         this.maxTurnSpeed = options.maxTurnSpeed ?? Math.PI * 4;
         this.rotationOffset = options.rotationOffset ?? 0;
         this.scale = options.scale ?? 1;
@@ -125,6 +151,13 @@ export default class DesertCentipedeController {
         const toTarget = head.sprite.position.vecTo(targetPosition);
         const distance = toTarget.mag();
 
+        this.updateMoveMode(distance, deltaT);
+
+        if (this.moveMode === "charge") {
+            this.moveHeadForward(head, deltaT);
+            return;
+        }
+
         if (distance <= 0.001) {
             return;
         }
@@ -139,8 +172,74 @@ export default class DesertCentipedeController {
             this.headSteerTurnSpeed * deltaT
         );
         const direction = new Vec2(Math.cos(nextAngle), Math.sin(nextAngle));
-        const stepDistance = this.moveSpeed * deltaT;
+        this.moveHeadInDirection(
+            head,
+            direction,
+            deltaT,
+            this.moveMode === "guidedCharge" ? this.chargeMoveSpeed : this.moveSpeed
+        );
+    }
 
+    private updateMoveMode(distanceToTarget: number, deltaT: number): void {
+        switch (this.moveMode) {
+            case "approach":
+                if (distanceToTarget <= this.aggroStartDistance) {
+                    this.moveMode = "aggro";
+                    this.moveModeTimer = this.getRandomAggroDuration();
+                }
+                break;
+            case "aggro":
+                this.moveModeTimer -= deltaT;
+                if (this.moveModeTimer <= 0) {
+                    this.startCharge();
+                }
+                break;
+            case "guidedCharge":
+                this.moveModeTimer -= deltaT;
+                if (this.moveModeTimer <= 0) {
+                    this.moveMode = "charge";
+                    this.moveModeTimer = this.chargeDuration;
+                }
+                break;
+            case "charge":
+                this.moveModeTimer -= deltaT;
+                if (this.moveModeTimer <= 0) {
+                    this.moveMode = "approach";
+                    this.moveModeTimer = 0;
+                }
+                break;
+        }
+    }
+
+    private startCharge(): void {
+        if (this.chargeGuidanceDuration > 0) {
+            this.moveMode = "guidedCharge";
+            this.moveModeTimer = this.chargeGuidanceDuration;
+            return;
+        }
+
+        this.moveMode = "charge";
+        this.moveModeTimer = this.chargeDuration;
+    }
+
+    private getRandomAggroDuration(): number {
+        return this.minAggroDuration + Math.random() * (
+            this.maxAggroDuration - this.minAggroDuration
+        );
+    }
+
+    private moveHeadForward(head: DesertCentipedeSegment, deltaT: number): void {
+        const direction = head.lastDirection.clone().normalize();
+        this.moveHeadInDirection(head, direction, deltaT, this.chargeMoveSpeed);
+    }
+
+    private moveHeadInDirection(
+        head: DesertCentipedeSegment,
+        direction: Vec2,
+        deltaT: number,
+        moveSpeed = this.moveSpeed
+    ): void {
+        const stepDistance = moveSpeed * deltaT;
         head.sprite.position.add(direction.scaled(stepDistance));
         head.lastDirection.copy(direction);
     }

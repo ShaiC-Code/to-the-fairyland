@@ -191,7 +191,7 @@
                         {
                          "name":"bodySegments",
                          "type":"int",
-                         "value":10
+                         "value":20
                         }, 
                         {
                          "name":"facing",
@@ -203,6 +203,30 @@
                  "visible":true,
                  "width":0,
                  "x":1504,
+                 "y":2144
+                }, 
+                {
+                 "height":0,
+                 "id":4,
+                 "name":"Desert_Centipede2",
+                 "opacity":1,
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"bodySegments",
+                         "type":"int",
+                         "value":20
+                        }, 
+                        {
+                         "name":"facing",
+                         "type":"string",
+                         "value":"down"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":864,
                  "y":2144
                 }],
          "opacity":1,
@@ -242,7 +266,7 @@
          "y":0
         }],
  "nextlayerid":6,
- "nextobjectid":4,
+ "nextobjectid":5,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.12.1",

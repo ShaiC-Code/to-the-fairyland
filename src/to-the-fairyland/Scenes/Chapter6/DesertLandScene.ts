@@ -46,14 +46,23 @@ export default class DesertLandScene extends MappedAdventureScene {
     private readonly enemySpawnLayerName = "EnemySpawns";
     private readonly centipedeLayerDepthOffset = 100;
     private readonly defaultCentipedeBodySegments = 5;
-    private readonly centipedeHeadToBodySegmentSpacing = 42;
-    private readonly centipedeBodyToBodySegmentSpacing = 22;
-    private readonly centipedeBodyToTailSegmentSpacing = 42;
-    private readonly centipedeMoveSpeed = 350;
-    private readonly centipedeHeadSteerTurnSpeedDegrees = 80;
-    private readonly centipedeMaxTurnSpeedDegrees = 360;
+    private readonly centipedeHeadToBodySegmentSpacing = 32;
+    private readonly centipedeBodyToBodySegmentSpacing = 32;
+    private readonly centipedeBodyToTailSegmentSpacing = 32;
     private readonly centipedeRotationOffsetDegrees = 180;
     private readonly centipedeScale = 1;
+
+    private readonly centipedeMoveSpeed = 450;
+    private readonly centipedeChargeMoveSpeed = 850;
+    private readonly centipedeHeadSteerTurnSpeedDegrees = 100;
+    private readonly centipedeMaxTurnSpeedDegrees = 360;
+
+    private readonly centipedeAggroStartDistance = 600;
+    private readonly centipedeMinAggroDurationSeconds = 1;
+    private readonly centipedeMaxAggroDurationSeconds = 1.3;
+    private readonly centipedeChargeGuidanceDurationSeconds = 0.3;
+    private readonly centipedeChargeDurationSeconds = 2;
+
 
     private readonly centipedes: DesertCentipedeController[] = [];
 
@@ -111,7 +120,13 @@ export default class DesertLandScene extends MappedAdventureScene {
             bodyToBodySegmentSpacing: this.centipedeBodyToBodySegmentSpacing,
             bodyToTailSegmentSpacing: this.centipedeBodyToTailSegmentSpacing,
             moveSpeed: this.centipedeMoveSpeed,
+            chargeMoveSpeed: this.centipedeChargeMoveSpeed,
             headSteerTurnSpeed: this.degreesToRadians(this.centipedeHeadSteerTurnSpeedDegrees),
+            aggroStartDistance: this.centipedeAggroStartDistance,
+            minAggroDuration: this.centipedeMinAggroDurationSeconds,
+            maxAggroDuration: this.centipedeMaxAggroDurationSeconds,
+            chargeGuidanceDuration: this.centipedeChargeGuidanceDurationSeconds,
+            chargeDuration: this.centipedeChargeDurationSeconds,
             maxTurnSpeed: this.degreesToRadians(this.centipedeMaxTurnSpeedDegrees),
             rotationOffset: this.degreesToRadians(this.centipedeRotationOffsetDegrees),
             scale: this.centipedeScale
