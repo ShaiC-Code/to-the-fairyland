@@ -6,7 +6,8 @@ export enum TimeOfDay {
 export enum WeatherType {
     NONE,
     SNOW,
-    SNOWSTORM
+    SNOWSTORM,
+    SANDSTORM
 }
 
 /**

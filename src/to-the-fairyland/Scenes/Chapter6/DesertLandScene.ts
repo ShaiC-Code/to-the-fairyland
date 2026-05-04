@@ -4,6 +4,7 @@ import MappedAdventureScene, {
 } from "../MappedAdventureScene";
 import { TiledObject, TiledTilemapData } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData";
 import DesertCentipedeController from "./DesertCentipedeController";
+import { WeatherType } from "../../GameSystems/WorldSystem/WorldState";
 
 export default class DesertLandScene extends MappedAdventureScene {
     protected readonly tilemap = {
@@ -33,7 +34,9 @@ export default class DesertLandScene extends MappedAdventureScene {
                 path: "/assets/spritesheets/desertCentipede_pieces3.png"
             }
         },
-        sounds: {},
+        sounds: {
+            weatherSandStormSFX: { key: "weather-sandstorm", path: "/assets/sounds/weather-sandstorm.ogg" }
+        },
         images: {}
     };
 
@@ -68,6 +71,11 @@ export default class DesertLandScene extends MappedAdventureScene {
 
     protected override combinedAssetBundles(): AssetBundle {
         return this.mergeAssetBundles(super.combinedAssetBundles(), DesertLandScene.assetBundle);
+    }
+    
+    public override startScene(): void {
+        super.startScene();
+        this.weatherController.setWeather(WeatherType.SANDSTORM, 50);
     }
 
     protected override configureLayers(): void {
