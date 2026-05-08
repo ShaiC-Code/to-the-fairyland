@@ -31,6 +31,7 @@ import EmeraldPondScene from "./Chapter7/EmeraldPondScene";
 import CliffBottomScene from "./Chapter4/CliffBottomScene";
 import TreeInnerScene from "./Chapter4/TreeInnerScene";
 import Excalibur from "../GameSystems/ItemSystem/Items/Excalibur";
+import FreshPrettyTooth from "../GameSystems/ItemSystem/Items/FreshPrettyTooth";
 import AudioController from "../GameSystems/AudioController";
 import DesertLandScene from "./Chapter6/DesertLandScene";
 
@@ -411,6 +412,12 @@ export default class MainMenu extends Scene {
             }
             case "level6": {
                 this.gameSessionManager.startNewChapter4Game();
+
+                const inventory = this.gameSessionManager.getPlayerState().inventory;
+
+                if (inventory.find(item => item instanceof FreshPrettyTooth) === null) {
+                    inventory.add(new FreshPrettyTooth());
+                }
 
                 this.sceneManager.changeToScene(
                     CliffBottomScene,

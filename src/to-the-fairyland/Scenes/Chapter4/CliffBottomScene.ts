@@ -27,7 +27,12 @@ export default class CliffBottomScene extends ForestSceneBase {
                 path: "/assets/spritesheets/ToothFairy.json"
             }
         },
-        sprites: {},
+        sprites: {
+            fairyParticle1: {
+                key: "fairyParticle1",
+                path: "/assets/sprites/particles/FairyParticle1.png"
+            }
+        },
         sounds: {},
         images: {}
     };
@@ -42,12 +47,19 @@ export default class CliffBottomScene extends ForestSceneBase {
         return this.mergeAssetBundles(super.combinedAssetBundles(), CliffBottomScene.assetBundle);
     }
 
+    protected override configureLayers(): void {
+        super.configureLayers();
+        this.addLayer(this.fairyParticleLayerName, this.actorLayerDepth + 0.5);
+    }
+
     public override startScene(): void {
         super.startScene();
 
         for (const fairy of this.toothFairies) {
             fairy.addAI(ToothFairyApproachBehavior, {
-                player: this.player
+                player: this.player,
+                particleSpriteKey: this.assets.sprites.fairyParticle1.key,
+                particleLayerName: this.fairyParticleLayerName
             });
         }
         
@@ -63,6 +75,7 @@ export default class CliffBottomScene extends ForestSceneBase {
     }
 
     private readonly fairySpawnLayerName = "FairySpawns";
+    private readonly fairyParticleLayerName = "FairyParticles";
     private readonly fairyFeetOffsetY = 20;
 
     protected override spawnMapObjects(tilemapData: TiledTilemapData): void {

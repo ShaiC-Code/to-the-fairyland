@@ -3,7 +3,12 @@ import Vec2 from "../../../../Wolfie2D/DataTypes/Vec2";
 import GameEvent from "../../../../Wolfie2D/Events/GameEvent";
 import GameNode from "../../../../Wolfie2D/Nodes/GameNode";
 import AnimatedSprite from "../../../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
+import Sprite from "../../../../Wolfie2D/Nodes/Sprites/Sprite";
 import PlayerActor from "../../../Actors/PlayerActor";
+import FairyParticleBehavior, {
+    defaultFairyParticleSettings,
+    FairyParticleSettings
+} from "../../FairyParticleBehavior";
 
 export default class ToothFairyApproachBehavior implements AI {
     private owner!: AnimatedSprite;
@@ -12,6 +17,8 @@ export default class ToothFairyApproachBehavior implements AI {
     private velocity = Vec2.ZERO;
     private elapsed = 0;
     private phase = 0;
+    private startDelay = 2;
+    private delayTimer = 0;
 
     private maxSpeed = 200;
     private maxAcceleration = 260;
@@ -20,16 +27,30 @@ export default class ToothFairyApproachBehavior implements AI {
     private arriveRadius = 180;
     private stopDistance = 60;
 
-    private waveStrength = 45;
-    private waveFrequency = 2.2;
+    private waveStrength = 90;
+    private waveFrequency = 1.6;
 
     private hoverStrength = 18;
     private hoverFrequency = 2.0;
     private minHoverSpeed = 16;
 
+    private particleSpriteKey: string | null = null;
+    private particleLayerName = "FairyParticles";
+    private particlePoolSize = 28;
+    private particleSpawnSpread = 10;
+    private particleEmitTimer = 0;
+    private particleEmitIntervalMin = 0.035;
+    private particleEmitIntervalMax = 0.075;
+    private particleMinMoveSpeed = 25;
+    private fairyParticles: Sprite[] = [];
+    private particleSettings: FairyParticleSettings = defaultFairyParticleSettings;
+
     public initializeAI(owner: GameNode, options: Record<string, any>): void {
         this.owner = owner as AnimatedSprite;
         this.player = options.player;
+
+        this.startDelay = options.startDelay ?? this.startDelay;
+        this.delayTimer = this.startDelay;
 
         this.maxSpeed = options.maxSpeed ?? this.maxSpeed;
         this.maxAcceleration = options.maxAcceleration ?? this.maxAcceleration;
@@ -45,16 +66,36 @@ export default class ToothFairyApproachBehavior implements AI {
         this.hoverFrequency = options.hoverFrequency ?? this.hoverFrequency;
         this.minHoverSpeed = options.minHoverSpeed ?? this.minHoverSpeed;
 
+        this.particleSpriteKey = options.particleSpriteKey ?? this.particleSpriteKey;
+        this.particleLayerName = options.particleLayerName ?? this.particleLayerName;
+        this.particlePoolSize = options.particlePoolSize ?? this.particlePoolSize;
+        this.particleSpawnSpread = options.particleSpawnSpread ?? this.particleSpawnSpread;
+        this.particleEmitIntervalMin = options.particleEmitIntervalMin ?? this.particleEmitIntervalMin;
+        this.particleEmitIntervalMax = options.particleEmitIntervalMax ?? this.particleEmitIntervalMax;
+        this.particleMinMoveSpeed = options.particleMinMoveSpeed ?? this.particleMinMoveSpeed;
+        this.particleSettings = {
+            ...defaultFairyParticleSettings,
+            ...(options.particleSettings ?? {})
+        };
+
         this.phase = Math.random() * Math.PI * 2;
 
         const startDirection = this.owner.position.dirTo(this.player.position);
         this.velocity = startDirection.scaled(this.minHoverSpeed);
+        this.setupParticlePool();
 
         this.playFacingAnimation();
     }
 
     public update(deltaT: number): void {
         this.elapsed += deltaT;
+        this.updateParticleEmission(deltaT);
+
+        if (this.delayTimer > 0) {
+            this.delayTimer = Math.max(0, this.delayTimer - deltaT);
+            this.playFacingAnimation();
+            return;
+        }
 
         const desiredVelocity = this.getArriveVelocity();
         const acceleration = desiredVelocity.clone().sub(this.velocity);
@@ -118,6 +159,72 @@ export default class ToothFairyApproachBehavior implements AI {
         }
 
         vector.scaleTo(maxMagnitude);
+    }
+
+    private setupParticlePool(): void {
+        if (!this.particleSpriteKey) {
+            return;
+        }
+
+        for (let i = 0; i < this.particlePoolSize; i++) {
+            const particle = this.owner.getScene().add.sprite(
+                this.particleSpriteKey,
+                this.particleLayerName
+            );
+
+            particle.visible = false;
+            particle.alpha = 0;
+            particle.addAI(FairyParticleBehavior, {
+                settings: this.particleSettings
+            });
+
+            this.fairyParticles.push(particle);
+        }
+    }
+
+    private updateParticleEmission(deltaT: number): void {
+        if (!this.particleSpriteKey) {
+            return;
+        }
+
+        this.particleEmitTimer -= deltaT;
+
+        while (this.particleEmitTimer <= 0) {
+            this.emitParticle();
+            this.particleEmitTimer += this.randomBetween(
+                this.particleEmitIntervalMin,
+                this.particleEmitIntervalMax
+            );
+        }
+    }
+
+    private emitParticle(): void {
+        const particle = this.fairyParticles.find(candidate => !candidate.visible);
+
+        if (!particle) {
+            return;
+        }
+
+        const particleAI = particle.ai as FairyParticleBehavior;
+
+        particleAI.activate({
+            origin: this.owner.position.clone(),
+            sourceVelocity: this.getParticleSourceVelocity(),
+            spawnSpread: this.particleSpawnSpread,
+            settings: this.particleSettings
+        });
+    }
+
+    private getParticleSourceVelocity(): Vec2 {
+        if (this.velocity.magSq() < this.particleMinMoveSpeed * this.particleMinMoveSpeed) {
+            return Vec2.ZERO;
+        }
+
+        return this.velocity.clone();
+    }
+
+    private randomBetween(min: number, max: number): number {
+        return min + Math.random() * (max - min);
     }
 
     private playFacingAnimation(): void {

@@ -970,8 +970,8 @@
                  "type":"",
                  "visible":true,
                  "width":0,
-                 "x":1632,
-                 "y":864
+                 "x":1760,
+                 "y":800
                 }, 
                 {
                  "height":0,
@@ -983,8 +983,8 @@
                  "type":"",
                  "visible":true,
                  "width":0,
-                 "x":1184,
-                 "y":1248
+                 "x":1120,
+                 "y":1312
                 }, 
                 {
                  "height":0,
@@ -996,7 +996,7 @@
                  "type":"",
                  "visible":true,
                  "width":0,
-                 "x":288,
+                 "x":224,
                  "y":672
                 }],
          "opacity":1,
@@ -1022,19 +1022,6 @@
                  "width":0,
                  "x":1952,
                  "y":736
-                }, 
-                {
-                 "height":0,
-                 "id":146,
-                 "name":"ToothFairy1",
-                 "opacity":1,
-                 "point":true,
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":0,
-                 "x":160,
-                 "y":672
                 }, 
                 {
                  "height":0,
