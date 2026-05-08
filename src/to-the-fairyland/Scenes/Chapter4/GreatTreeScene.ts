@@ -3,7 +3,7 @@ import ForestSceneBase from "../ForestSceneBase";
 import DeeperForestScene from "./DeeperForestScene";
 import TreeInnerScene from "./TreeInnerScene";
 import { AssetBundle } from "../MappedAdventureScene";
-import VineAttackController from "./TreeInner/VineAttackController";
+import VineAttackController from "../../AI/Creatures/Controllers/TreeInner/VineAttackController";
 import { choiceOption, dialogue, dialogueWithChoice } from "../../GameSystems/InteractionSystem/InteractionDatabase";
 import Excalibur from "../../GameSystems/ItemSystem/Items/Excalibur";
 import MainMenu from "../MainMenu";

@@ -1,7 +1,7 @@
 import { TiledObject, TiledTilemapData } from "../../Wolfie2D/DataTypes/Tilesets/TiledData";
 import NPCActor from "../Actors/NPCActor";
 import IdleBehavior from "../AI/NPC/NPCBehavior/IdleBehavior";
-import LycanChaseBehavior from "../AI/NPC/NPCBehavior/LycanChaseBehavior";
+import LycanChaseBehavior from "../AI/Creatures/Behaviors/LycanChaseBehavior";
 import { LycanEvent } from "../Events";
 import { AssetBundle } from "./MappedAdventureScene";
 import MappedAdventureChapter2Scene from "./Chapter2/MappedAdventureChapter2Scene";

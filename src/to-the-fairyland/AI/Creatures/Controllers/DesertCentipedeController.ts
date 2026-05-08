@@ -1,6 +1,6 @@
-import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
-import Scene from "../../../Wolfie2D/Scene/Scene";
-import Sprite from "../../../Wolfie2D/Nodes/Sprites/Sprite";
+import Vec2 from "../../../../Wolfie2D/DataTypes/Vec2";
+import Scene from "../../../../Wolfie2D/Scene/Scene";
+import Sprite from "../../../../Wolfie2D/Nodes/Sprites/Sprite";
 
 type DesertCentipedeSegmentRole = "head" | "body" | "tail";
 
