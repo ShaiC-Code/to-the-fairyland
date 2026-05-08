@@ -230,13 +230,17 @@ export default class VineShooterWaveController {
             return;
         }
 
-        this.warnThenStartNormalVineAttack(startObj, endObj, speed);
+        this.warnThenStartVineAttack(startObj, endObj, {
+            type: "normal",
+            speed,
+            spriteKey: this.vineSpriteKey
+        });
     }
 
-    private async warnThenStartNormalVineAttack(
+    private async warnThenStartVineAttack(
         startObj: TiledObject,
         endObj: TiledObject,
-        speed: number
+        options: VineAttackOptions
     ): Promise<void> {
         const start = new Vec2(startObj.x, startObj.y);
         const end = new Vec2(endObj.x, endObj.y);
@@ -256,11 +260,7 @@ export default class VineShooterWaveController {
             return;
         }
 
-        this.startVineAttack(startObj, endObj, {
-            type: "normal",
-            speed,
-            spriteKey: this.vineSpriteKey
-        });
+        this.startVineAttack(startObj, endObj, options);
     }
 
     private showVineAttackIndicators(start: Vec2, end: Vec2, tiles: Vec2[]): VineIndicatorGroup {
@@ -306,6 +306,10 @@ export default class VineShooterWaveController {
 
         indicator.color = new Color(150, 0, 0, this.indicatorAlpha);
         indicator.thickness = this.indicatorLineThickness;
+        indicator.size.set(
+            Math.abs(end.x - start.x) * 2 + this.indicatorLineThickness,
+            Math.abs(end.y - start.y) * 2 + this.indicatorLineThickness
+        );
         indicator.setSortTile(this.ground.getTilemapPosition(start.x, start.y));
         indicator.setSortOrder(20);
 

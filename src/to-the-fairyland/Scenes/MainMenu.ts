@@ -34,6 +34,7 @@ import Excalibur from "../GameSystems/ItemSystem/Items/Excalibur";
 import FreshPrettyTooth from "../GameSystems/ItemSystem/Items/FreshPrettyTooth";
 import AudioController from "../GameSystems/AudioController";
 import DesertLandScene from "./Chapter4/DesertLandScene";
+import DesertLandScene1 from "./Chapter4/DesertLandScene1";
 
 type AssetRef = Readonly<{
     readonly key: string;
@@ -437,6 +438,13 @@ export default class MainMenu extends Scene {
             }
             case "level7": {
                 this.gameSessionManager.startNewChapter3Game();
+
+                const chapter3 = this.gameSessionManager.getStoryState().chapter3;
+                if (!chapter3) {
+                    throw new Error("Chapter 3 story state was not initialized.");
+                }
+
+                chapter3.mainQuestStep = Chapter3MainQuestStep.NEED_EXCALIBUR;
             
                 this.sceneManager.changeToScene(
                     TreeInnerScene,
@@ -492,7 +500,7 @@ export default class MainMenu extends Scene {
                 this.gameSessionManager.startNewChapter4Game();
             
                 this.sceneManager.changeToScene(
-                    DesertLandScene,
+                    DesertLandScene1,
                     {
                         cheatsEnabled: this.cheatsEnabled,
                         spawnName: "RoadStart"
@@ -628,7 +636,7 @@ export default class MainMenu extends Scene {
                     fadeInMs: 500
                 });
                 break;
-            // Chapter 4
+            // Chapter 3
             case "CliffBottomScene":
                 this.sceneManager.changeToScene(CliffBottomScene, initData, undefined, {
                     showLoadingOverlay: true,
@@ -655,6 +663,23 @@ export default class MainMenu extends Scene {
                 break;
             case "TreeInnerScene":
                 this.sceneManager.changeToScene(TreeInnerScene, initData, undefined, {
+                    showLoadingOverlay: true,
+                    useFadeTransition: true,
+                    fadeOutMs: 500,
+                    fadeInMs: 500
+                });
+                break;
+            // Chapter 4
+            case "DesertLandScene":
+                this.sceneManager.changeToScene(DesertLandScene, initData, undefined, {
+                    showLoadingOverlay: true,
+                    useFadeTransition: true,
+                    fadeOutMs: 500,
+                    fadeInMs: 500
+                });
+                break;
+            case "DesertLandScene1":
+                this.sceneManager.changeToScene(DesertLandScene1, initData, undefined, {
                     showLoadingOverlay: true,
                     useFadeTransition: true,
                     fadeOutMs: 500,

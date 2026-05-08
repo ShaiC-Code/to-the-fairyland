@@ -87,6 +87,10 @@ export default class OverlayLayer implements Updateable {
         return this.isVisible;
     }
 
+    public getLayerName(): string {
+        return this.layerName;
+    }
+
     public destroy(): void {
         if (this.layer) {
             this.layer.setHidden(true);
