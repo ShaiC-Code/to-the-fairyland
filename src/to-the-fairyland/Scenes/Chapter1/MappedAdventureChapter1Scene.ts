@@ -35,7 +35,7 @@ export default abstract class MappedAdventureChapter1Scene extends MappedAdventu
             [DialogueChoiceActions.COLLECT_FROZEN_BERRIES]: () => this.giveFrozenBerries(),
             [DialogueChoiceActions.COOK_FROZEN_BERRIES]: () => this.giveCookedBerries(),
             [DialogueChoiceActions.SLEEP]: () => {
-                this.storyManager.chapter1.markSlept();
+                this.storyManager.chapter1.markReturnToBed();
                 this.timeController.setTimeOfDay(this.gameSessionManager.getWorldState().timeOfDay);
             },
             [DialogueChoiceActions.PICKUP_MAP]: () => this.pickupMap()
@@ -91,7 +91,7 @@ export default abstract class MappedAdventureChapter1Scene extends MappedAdventu
         this.playItemReceivedSFX();
 
         if (addedItem !== null) {
-            this.storyManager.chapter1.markFoodFound();
+            this.storyManager.chapter1.markNeedFood();
         }
     }
 
@@ -109,7 +109,7 @@ export default abstract class MappedAdventureChapter1Scene extends MappedAdventu
         this.playItemReceivedSFX();
 
         if (addedItem !== null) {
-            this.storyManager.chapter1.markFoodCooked();
+            this.storyManager.chapter1.markNeedToCook();
         }
     }
 
@@ -126,7 +126,7 @@ export default abstract class MappedAdventureChapter1Scene extends MappedAdventu
         this.playItemReceivedSFX();
 
         if (addedItem !== null) {
-            this.storyManager.chapter1.markMapPickedUp();
+            this.storyManager.chapter1.markMapPicked();
             this.onMapPickedUp();
         }
     }

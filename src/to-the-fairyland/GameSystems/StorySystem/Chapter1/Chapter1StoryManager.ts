@@ -13,56 +13,47 @@ export default class Chapter1StoryManager {
         return this.getState().mainQuestStep;
     }
 
-    public canSleep(): boolean {
-        return this.getState().mainQuestStep === Chapter1MainQuestStep.RETURN_TO_BED;
+    private getState(): Chapter1StoryState {
+        return this.getStoryState().chapter1;
     }
 
-    public markFoodFound(): void {
+    public markNeedFood(): void {
         const state = this.getState();
-
         if (state.mainQuestStep === Chapter1MainQuestStep.NEED_FOOD) {
             state.mainQuestStep = Chapter1MainQuestStep.NEED_TO_COOK;
             this.syncWorldState();
         }
     }
 
-    public markFoodCooked(): void {
+    public markNeedToCook(): void {
         const state = this.getState();
-
         if (state.mainQuestStep === Chapter1MainQuestStep.NEED_TO_COOK) {
             state.mainQuestStep = Chapter1MainQuestStep.NEED_TO_EAT;
             this.syncWorldState();
         }
     }
 
-    public markFoodConsumed(): void {
+    public markNeedToEat(): void {
         const state = this.getState();
-
         if (state.mainQuestStep === Chapter1MainQuestStep.NEED_TO_EAT) {
             state.mainQuestStep = Chapter1MainQuestStep.RETURN_TO_BED;
             this.syncWorldState();
         }
     }
 
-    public markSlept(): void {
+    public markReturnToBed(): void {
         const state = this.getState();
-
         if (state.mainQuestStep === Chapter1MainQuestStep.RETURN_TO_BED) {
             state.mainQuestStep = Chapter1MainQuestStep.SLEPT;
             this.syncWorldState();
         }
     }
 
-    public markMapPickedUp(): void {
+    public markMapPicked(): void {
         const state = this.getState();
-
         if (state.mainQuestStep === Chapter1MainQuestStep.SLEPT) {
             state.mainQuestStep = Chapter1MainQuestStep.MAP_PICKED;
             this.syncWorldState();
         }
-    }
-
-    private getState(): Chapter1StoryState {
-        return this.getStoryState().chapter1;
     }
 }

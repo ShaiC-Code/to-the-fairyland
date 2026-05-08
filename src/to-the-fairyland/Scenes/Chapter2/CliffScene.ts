@@ -12,8 +12,23 @@ export default class CliffScene extends RoadSceneBase {
         path: "/assets/tilemaps/Chapter2/Cliff.json"
     };
 
+    public override startScene(): void {
+        super.startScene();
+        this.storyManager.chapter2.markEscapeLycans();
+    }
+
     protected override handleAutoTransition(obj: TiledObject): void {
         if (obj.name === "PathToRoad3") {
+            if (this.storyManager.chapter2.needsToJumpOffCliff()) {
+                this.rejectAutoTransitionEntry();
+    
+                this.startDialogue(dialogue([
+                    "You can't go back there.",
+                    "They're hot on your tail."
+                ]));
+    
+                return;
+            }
             this.changeToRoadSection(Road3Scene, "RoadEnd");
         }
     }

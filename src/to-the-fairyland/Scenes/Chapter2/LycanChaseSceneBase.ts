@@ -27,7 +27,7 @@ export default abstract class LycanChaseSceneBase extends MappedAdventureChapter
     protected readonly lycanCatchCooldown = 0.8;
     protected readonly lycanCaughtFlashLayerName = "lycanCaughtFlashLayer";
 
-    protected static readonly lycanAssetBundle: AssetBundle = {
+    protected static readonly assetBundle: AssetBundle = {
         tilemaps: {},
         spritesheets: {
             Lycan: { key: "Lycan", path: "/assets/spritesheets/Lycan.json" }
@@ -43,10 +43,7 @@ export default abstract class LycanChaseSceneBase extends MappedAdventureChapter
     };
 
     protected override combinedAssetBundles(): AssetBundle {
-        return this.mergeAssetBundles(
-            super.combinedAssetBundles(),
-            LycanChaseSceneBase.lycanAssetBundle
-        );
+        return this.mergeAssetBundles(super.combinedAssetBundles(), LycanChaseSceneBase.assetBundle);
     }
     
     public override unloadScene(): void {
@@ -78,7 +75,7 @@ export default abstract class LycanChaseSceneBase extends MappedAdventureChapter
 
         this.receiver.subscribe(LycanEvent.PLAYER_CAUGHT);
 
-        if (this.storyManager.chapter2.needsToEscapeLycans()) {
+        if (this.storyManager.chapter2.needsToEscapeLycans() || this.storyManager.chapter2.needsToJumpOffCliff()) {
             AudioController.getInstance().playSFX(this.assets.sounds.wolvesRunningSFX.key, true, true);
             AudioController.getInstance().playSFX(this.assets.sounds.wolvesFerociousSFX.key, true, true);
         }
