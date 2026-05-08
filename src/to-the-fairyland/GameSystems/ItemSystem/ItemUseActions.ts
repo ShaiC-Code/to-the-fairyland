@@ -1,5 +1,6 @@
 export const ItemUseActions = {
-    SLEEP_WITH_SLEEPING_BAG: "sleepWithSleepingBag"
+    SLEEP_WITH_SLEEPING_BAG: "sleepWithSleepingBag",
+    HOLD_UP_TOOTH: "holdUpTooth"
 } as const;
 
 export type ItemUseAction =
@@ -9,3 +10,4 @@ export interface ItemUseResult {
     success: boolean;
     lines: string[];
 }
+

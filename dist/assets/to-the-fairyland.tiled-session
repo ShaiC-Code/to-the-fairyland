@@ -149,7 +149,7 @@
             "scale": 1,
             "selectedLayer": 6,
             "viewCenter": {
-                "x": 1024.5,
+                "x": 1024,
                 "y": 1056
             }
         },
@@ -159,15 +159,15 @@
         },
         "tilemaps/Chapter4/CliffBottom.json": {
             "expandedObjectLayers": [
-                10,
+                4,
                 3,
-                4
+                10
             ],
             "scale": 0.5,
             "selectedLayer": 8,
             "viewCenter": {
-                "x": 991,
-                "y": 747
+                "x": 1088,
+                "y": 1150
             }
         },
         "tilemaps/Chapter4/CliffBottom.json#Chapter2_Village_Tiles": {
@@ -176,14 +176,14 @@
         },
         "tilemaps/Chapter4/DeeperForest.json": {
             "expandedObjectLayers": [
+                4,
                 8,
-                5,
-                4
+                5
             ],
             "scale": 0.33,
             "selectedLayer": 6,
             "viewCenter": {
-                "x": 1056.060606060606,
+                "x": 1054.5454545454547,
                 "y": 1151.5151515151515
             }
         },
@@ -193,16 +193,16 @@
         },
         "tilemaps/Chapter4/GreatTree.json": {
             "expandedObjectLayers": [
+                4,
                 8,
                 5,
-                2,
                 3,
-                4
+                2
             ],
             "scale": 0.5,
             "selectedLayer": 8,
             "viewCenter": {
-                "x": 1023,
+                "x": 1024,
                 "y": 1184
             }
         },
@@ -212,15 +212,15 @@
         },
         "tilemaps/Chapter4/TreeInner.json": {
             "expandedObjectLayers": [
-                5,
-                18,
                 4,
-                17
+                18,
+                17,
+                5
             ],
             "scale": 1.5,
             "selectedLayer": 8,
             "viewCenter": {
-                "x": 1600.3333333333333,
+                "x": 1600,
                 "y": 1280
             }
         },
@@ -232,7 +232,7 @@
             "scale": 1.5,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 3840.333333333333,
+                "x": 3840,
                 "y": 5120
             }
         },
@@ -247,8 +247,8 @@
             "scale": 0.75,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 1210.6666666666667,
-                "y": 2130.6666666666665
+                "x": 1216,
+                "y": 1504
             }
         },
         "tilemaps/Chapter6/DesertLand.json#DesertLand": {
@@ -256,13 +256,13 @@
         },
         "tilemaps/Chapter7/EmeraldPond.json": {
             "expandedObjectLayers": [
-                5,
-                4
+                4,
+                5
             ],
             "scale": 0.75,
             "selectedLayer": 4,
             "viewCenter": {
-                "x": 831.3333333333333,
+                "x": 832,
                 "y": 672
             }
         },

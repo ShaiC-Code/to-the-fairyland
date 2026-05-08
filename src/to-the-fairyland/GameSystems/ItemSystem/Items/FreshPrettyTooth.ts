@@ -1,5 +1,6 @@
 import InventoryItem, { InventoryItemConsumeContext } from "../InventoryItem";
-import { dialogue } from "../../InteractionSystem/InteractionDatabase";
+import { choiceOption, dialogue, dialogueWithChoice } from "../../InteractionSystem/InteractionDatabase";
+import { ItemUseActions } from "../ItemUseActions";
 
 export default class FreshPrettyTooth extends InventoryItem {
     public constructor(){
@@ -12,10 +13,27 @@ export default class FreshPrettyTooth extends InventoryItem {
 
     public consume(context: InventoryItemConsumeContext): void {
         context.showDialogue(
-            dialogue([
-                "A fresh pretty tooth.",
-                "It was a gift from Vila."
-            ])
+            dialogueWithChoice(
+                ["Hold up the fresh pretty tooth?"],
+                {
+                    lineIndex: 0,
+                    options: [
+                        choiceOption(
+                            "Yes",
+                            dialogue(
+                                ["You hold up the fresh pretty tooth."],
+                                {
+                                    onComplete: () => context.runItemAction(ItemUseActions.HOLD_UP_TOOTH)
+                                }
+                            )
+                        ),
+                        choiceOption(
+                            "No",
+                            dialogue(["You put the tooth away."])
+                        )
+                    ]
+                }
+            )
         );
     }
 }

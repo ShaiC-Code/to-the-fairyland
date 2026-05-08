@@ -12,7 +12,7 @@ import { CustomUIElementType } from "../UI/CustomUIElements/CustomUIElementTypes
 import HoverButton from "../UI/CustomUIElements/HoverButton";
 import UIImage from "../UI/CustomUIElements/UIImage";
 import { PlayerControlMode, PlayerInput } from "../AI/Player/PlayerController";
-import { DialogueChoiceAction, DialogueChoiceOption, DialogueInteraction, DialogueCompleteAction, getInteractionData } from "../GameSystems/InteractionSystem/InteractionDatabase";
+import { DialogueChoiceAction, DialogueChoiceOption, DialogueInteraction, DialogueCompleteAction, dialogue, getInteractionData } from "../GameSystems/InteractionSystem/InteractionDatabase";
 import PlayerStateManager from "../GameSystems/PlayerSystem/PlayerStateManager";
 import GameSessionManager from "../GameSystems/GameSessionSystem/GameSessionManager";
 import InventoryItem from "../GameSystems/ItemSystem/InventoryItem";
@@ -22,7 +22,7 @@ import SpotlightOverlay from "../UI/CustomUIElements/SpotlightOverlay";
 import DialogueController, { DialogueStartOptions } from "../GameSystems/DialogueController";
 import TimeController from "../GameSystems/WorldSystem/TimeController";
 import CameraController from "../GameSystems/CameraController";
-import { ItemUseAction, ItemUseResult } from "../GameSystems/ItemSystem/ItemUseActions";
+import { ItemUseAction, ItemUseActions, ItemUseResult } from "../GameSystems/ItemSystem/ItemUseActions";
 import { PlayerStateType } from "../AI/Player/PlayerStates/PlayerBehaviorState";
 import { WeatherType } from "../GameSystems/WorldSystem/WorldState";
 import PauseControlsScreen from "../UI/PauseControlsScreen";
@@ -152,6 +152,12 @@ export default abstract class MappedAdventureScene extends Scene {
     protected weatherController!: WeatherController;
     protected playerAttackController!: PlayerAttackController;
     protected readonly swordHitDispatcher = new SwordHitDispatcher();
+
+    private toothHeldActive = false;
+    private toothHeldTimer = 0;
+    private toothFairyResponded = false;
+    private readonly toothHoldDuration = 3;
+    private readonly toothFairyAttractRadius = 450;
 
     
     protected readonly hudLayerName = "HUD";
@@ -467,6 +473,7 @@ export default abstract class MappedAdventureScene extends Scene {
         
         this.cameraController.update(deltaT);
         this.dialogueController.update(deltaT);
+        this.updateToothHeldEffect(deltaT);
         this.timeController.update(deltaT);
         this.weatherController.update(deltaT);
         this.playerAttackController.update(deltaT);
@@ -936,7 +943,14 @@ export default abstract class MappedAdventureScene extends Scene {
     }
 
     // use to determine the result before running actual action. So we can display different dialogues base on different world state 
-    protected previewItemAction(_action: ItemUseAction): ItemUseResult {
+    protected previewItemAction(action: ItemUseAction): ItemUseResult {
+        if (action === ItemUseActions.HOLD_UP_TOOTH) {
+            return {
+                success: true,
+                lines: ["You hold up the fresh pretty tooth."]
+            };
+        }
+
         return {
             success: false,
             lines: ["Nothing happens."]
@@ -944,7 +958,51 @@ export default abstract class MappedAdventureScene extends Scene {
     }
     
     protected runItemAction(action: ItemUseAction): ItemUseResult {
+        if (action === ItemUseActions.HOLD_UP_TOOTH) {
+            this.startToothHeldEffect();
+
+            return {
+                success: true,
+                lines: ["You hold up the fresh pretty tooth."]
+            };
+        }
+
         return this.previewItemAction(action);
+    }
+
+    protected getToothFairies(): AnimatedSprite[] {
+        return [];
+    }
+
+    protected attractToothFairy(_fairy: AnimatedSprite): void {}
+
+    private startToothHeldEffect(): void {
+        this.toothHeldActive = true;
+        this.toothHeldTimer = this.toothHoldDuration;
+        this.toothFairyResponded = false;
+    }
+
+    private updateToothHeldEffect(deltaT: number): void {
+        if (!this.toothHeldActive || this.worldPaused || this.dialogueController.isActive) {
+            return;
+        }
+
+        this.toothHeldTimer -= deltaT;
+
+        for (const fairy of this.getToothFairies()) {
+            if (fairy.position.distanceTo(this.player.position) <= this.toothFairyAttractRadius) {
+                this.attractToothFairy(fairy);
+                this.toothFairyResponded = true;
+            }
+        }
+
+        if (this.toothHeldTimer <= 0) {
+            this.toothHeldActive = false;
+
+            if (!this.toothFairyResponded) {
+                this.startDialogue(dialogue(["Nothing happens."]));
+            }
+        }
     }
     
     protected rejectAutoTransitionEntry(): void {

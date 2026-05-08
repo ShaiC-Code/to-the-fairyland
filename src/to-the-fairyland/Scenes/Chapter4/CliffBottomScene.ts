@@ -41,6 +41,7 @@ export default class CliffBottomScene extends ForestSceneBase {
     private faintSprite: AnimatedSprite | null = null;
     private faintLockActive = false;
     private toothFairies: AnimatedSprite[] = [];
+    private toothFairyIntroStarted = false;
 
 
     protected override combinedAssetBundles(): AssetBundle {
@@ -119,12 +120,21 @@ export default class CliffBottomScene extends ForestSceneBase {
         this.toothFairies.push(fairy);
     }
 
+    protected override getToothFairies(): AnimatedSprite[] {
+        return this.toothFairies;
+    }
 
-    private attractToothFairy(): void {
+    protected override attractToothFairy(fairy: AnimatedSprite): void {
+        const ai = fairy.ai as ToothFairyApproachBehavior;
+        ai.startAttraction();
+
+        if (this.toothFairyIntroStarted) {
+            return;
+        }
+
+        this.toothFairyIntroStarted = true;
         this.storyManager.chapter4.markToothFairyAttracted();
         this.playerFaint();
-    
-        // spawn fairy / start fairy dialogue
     }
 
     private healByToothFairy(): void {
