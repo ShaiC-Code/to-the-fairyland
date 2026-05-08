@@ -33,7 +33,7 @@ import TreeInnerScene from "./Chapter4/TreeInnerScene";
 import Excalibur from "../GameSystems/ItemSystem/Items/Excalibur";
 import FreshPrettyTooth from "../GameSystems/ItemSystem/Items/FreshPrettyTooth";
 import AudioController from "../GameSystems/AudioController";
-import DesertLandScene from "./Chapter6/DesertLandScene";
+import DesertLandScene from "./Chapter6/DesertLandScene1";
 
 
 type AssetRef = Readonly<{
@@ -438,6 +438,13 @@ export default class MainMenu extends Scene {
             }
             case "level7": {
                 this.gameSessionManager.startNewChapter4Game();
+
+                const chapter4 = this.gameSessionManager.getStoryState().chapter4;
+                if (!chapter4) {
+                    throw new Error("Chapter 4 story state was not initialized.");
+                }
+
+                chapter4.mainQuestStep = Chapter4MainQuestStep.NEED_EXCALIBUR;
             
                 this.sceneManager.changeToScene(
                     TreeInnerScene,

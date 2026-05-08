@@ -95,7 +95,10 @@ export default class TreeInnerScene extends ForestSceneBase {
             this.vineWaveTitleLayerName,
             this,
             () => this.viewport.getCenter(),
-            () => this.viewport.getHalfSize()
+            () => this.viewport.getHalfSize(),
+            {
+                pauseScene: true
+            }
         );
 
     }
@@ -115,14 +118,6 @@ export default class TreeInnerScene extends ForestSceneBase {
 
         this.vineWaveTitleOverlay.update(deltaT);
         this.syncTreeInnerInputLock();
-    }
-
-    protected override shouldPauseWorldForScene(): boolean {
-        return this.isVineWaveTitlePauseActive();
-    }
-
-    protected override getWorldPauseLayerExceptions(): ReadonlyArray<string> {
-        return [this.vineWaveTitleLayerName];
     }
 
     protected override canPlayerAttack(): boolean {
@@ -396,12 +391,9 @@ export default class TreeInnerScene extends ForestSceneBase {
     }
 
     private async showVineWaveTitle(text: string, duration: number): Promise<void> {
-        this.vineWaveTitleOverlay.showTitle(text);
         this.lockPlayerInput();
 
-        await this.waitSeconds(duration);
-
-        this.vineWaveTitleOverlay.hide();
+        await this.vineWaveTitleOverlay.showTitle(text, duration);
 
         if (!this.shouldHoldTreeInnerInputLock()) {
             this.unlockPlayerInput();

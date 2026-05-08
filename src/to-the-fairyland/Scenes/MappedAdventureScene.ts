@@ -31,6 +31,7 @@ import Excalibur from "../GameSystems/ItemSystem/Items/Excalibur";
 import PlayerAttackController, { PlayerAttackHitbox } from "../GameSystems/CombatSystem/PlayerAttackController";
 import SwordHitDispatcher from "../GameSystems/CombatSystem/SwordHitDispatcher";
 import AudioController from "../GameSystems/AudioController";
+import OverlayLayer from "../Overlays/OverlayLayer";
 
 export type AssetRef = Readonly<{
     readonly key: string;
@@ -152,6 +153,7 @@ export default abstract class MappedAdventureScene extends Scene {
     protected weatherController!: WeatherController;
     protected playerAttackController!: PlayerAttackController;
     protected readonly swordHitDispatcher = new SwordHitDispatcher();
+    private readonly scenePauseOverlays: OverlayLayer[] = [];
 
     private toothHeldActive = false;
     private toothHeldTimer = 0;
@@ -604,12 +606,18 @@ export default abstract class MappedAdventureScene extends Scene {
         return this.worldPaused;
     }
 
+    public registerScenePauseOverlay(overlay: OverlayLayer): void {
+        if (!this.scenePauseOverlays.includes(overlay)) {
+            this.scenePauseOverlays.push(overlay);
+        }
+    }
+
     protected shouldPauseWorldForScene(): boolean {
-        return false;
+        return this.scenePauseOverlays.some(overlay => overlay.getIsVisible());
     }
 
     protected getWorldPauseLayerExceptions(): ReadonlyArray<string> {
-        return [];
+        return this.scenePauseOverlays.map(overlay => overlay.getLayerName());
     }
 
     protected configureLayers(): void {}

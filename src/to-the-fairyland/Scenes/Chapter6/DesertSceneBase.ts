@@ -1,25 +1,12 @@
-import MappedAdventureScene, {
-    AssetBundle,
-    ChapterSceneDefinition
-} from "../MappedAdventureScene";
 import { TiledObject, TiledTilemapData } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData";
 import DesertCentipedeController from "../../AI/NPC/NPCController/DesertCentipedeController";
-import { WeatherType } from "../../GameSystems/WorldSystem/WorldState";
 import AudioController from "../../GameSystems/AudioController";
+import { WeatherType } from "../../GameSystems/WorldSystem/WorldState";
+import MappedAdventureScene, { AssetBundle, ChapterSceneDefinition } from "../MappedAdventureScene";
 
-export default class DesertLandScene extends MappedAdventureScene {
-    protected readonly tilemap = {
-        key: "desertLand",
-        path: "/assets/tilemaps/Chapter6/DesertLand.json"
-    };
-
-    protected static readonly assetBundle: AssetBundle = {
-        tilemaps: {
-            desertLand: {
-                key: "desertLand",
-                path: "/assets/tilemaps/Chapter6/DesertLand.json"
-            }
-        },
+export default abstract class DesertSceneBase extends MappedAdventureScene {
+    protected static readonly desertAssetBundle: AssetBundle = {
+        tilemaps: {},
         spritesheets: {},
         sprites: {
             desertCentipedeHead: {
@@ -38,7 +25,7 @@ export default class DesertLandScene extends MappedAdventureScene {
         sounds: {
             weatherSandStormSFX: { key: "weather-sandstorm", path: "/assets/sounds/weather-sandstorm.ogg" },
             walkingSandSFX: { key: "walking-sand", path: "/assets/sounds/walking-sand.ogg" },
-            centipedesCrawlingSFX: {key: "centipedes-crawling", path: "/assets/sounds/centipedes-crawling.ogg" }
+            centipedesCrawlingSFX: { key: "centipedes-crawling", path: "/assets/sounds/centipedes-crawling.ogg" }
         },
         images: {}
     };
@@ -48,48 +35,52 @@ export default class DesertLandScene extends MappedAdventureScene {
         dialogueChoiceActionHandlers: {}
     };
 
-    private readonly centipedeLayerName = "Centipedes";
-    private readonly enemySpawnLayerName = "EnemySpawns";
-    private readonly centipedeLayerDepthOffset = 100;
-    private readonly defaultCentipedeBodySegments = 5;
-    private readonly centipedeHeadToBodySegmentSpacing = 32;
-    private readonly centipedeBodyToBodySegmentSpacing = 32;
-    private readonly centipedeBodyToTailSegmentSpacing = 32;
-    private readonly centipedeRotationOffsetDegrees = 180;
-    private readonly centipedeScale = 1;
+    protected readonly centipedeLayerName = "Centipedes";
+    protected readonly enemySpawnLayerName = "EnemySpawns";
+    protected readonly centipedeLayerDepthOffset = 100;
+    protected readonly defaultCentipedeBodySegments = 5;
+    protected readonly centipedeHeadToBodySegmentSpacing = 32;
+    protected readonly centipedeBodyToBodySegmentSpacing = 32;
+    protected readonly centipedeBodyToTailSegmentSpacing = 32;
+    protected readonly centipedeRotationOffsetDegrees = 180;
+    protected readonly centipedeScale = 1;
 
-    private readonly centipedeMoveSpeed = 450;
-    private readonly centipedeChargeMoveSpeed = 850;
-    private readonly centipedeHeadSteerTurnSpeedDegrees = 100;
-    private readonly centipedeMaxTurnSpeedDegrees = 360;
+    protected readonly centipedeMoveSpeed = 450;
+    protected readonly centipedeChargeMoveSpeed = 850;
+    protected readonly centipedeHeadSteerTurnSpeedDegrees = 100;
+    protected readonly centipedeMaxTurnSpeedDegrees = 360;
 
-    private readonly centipedeAggroStartDistance = 600;
-    private readonly centipedeMinAggroDurationSeconds = 1;
-    private readonly centipedeMaxAggroDurationSeconds = 1.3;
-    private readonly centipedeChargeGuidanceDurationSeconds = 0.3;
-    private readonly centipedeChargeDurationSeconds = 2;
-
+    protected readonly centipedeAggroStartDistance = 600;
+    protected readonly centipedeMinAggroDurationSeconds = 1;
+    protected readonly centipedeMaxAggroDurationSeconds = 1.3;
+    protected readonly centipedeChargeGuidanceDurationSeconds = 0.3;
+    protected readonly centipedeChargeDurationSeconds = 2;
 
     private readonly centipedes: DesertCentipedeController[] = [];
 
     protected override combinedAssetBundles(): AssetBundle {
-        return this.mergeAssetBundles(super.combinedAssetBundles(), DesertLandScene.assetBundle);
+        const sharedAssets = this.mergeAssetBundles(
+            super.combinedAssetBundles(),
+            DesertSceneBase.desertAssetBundle
+        );
+
+        return this.mergeAssetBundles(sharedAssets, {
+            tilemaps: { [this.tilemap.key]: this.tilemap },
+            spritesheets: {},
+            sprites: {},
+            sounds: {},
+            images: {}
+        });
     }
-    
+
     public override unloadScene(): void {
         super.unloadScene();
-    
-        // Stop sfx when changing scenes
         AudioController.getInstance().stopSound(this.assets.sounds.walkingSandSFX.key);
     }
-    
+
     public override startScene(): void {
         super.startScene();
         this.weatherController.setWeather(WeatherType.SANDSTORM, 50);
-    }
-
-    protected override configureLayers(): void {
-        this.addLayer(this.centipedeLayerName, this.actorLayerDepth + this.centipedeLayerDepthOffset);
     }
 
     public override updateScene(deltaT: number): void {
@@ -104,7 +95,13 @@ export default class DesertLandScene extends MappedAdventureScene {
         }
     }
 
+    protected override configureLayers(): void {
+        this.addLayer(this.centipedeLayerName, this.actorLayerDepth + this.centipedeLayerDepthOffset);
+    }
+
     protected override spawnMapObjects(tilemapData: TiledTilemapData): void {
+        this.centipedes.length = 0;
+
         const enemySpawnLayer = tilemapData.layers.find(layer => layer.name === this.enemySpawnLayerName);
         const centipedeSpawns = enemySpawnLayer?.objects.filter(obj =>
             obj.name.startsWith("Desert_Centipede")

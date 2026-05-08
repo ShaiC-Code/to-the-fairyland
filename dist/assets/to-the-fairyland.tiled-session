@@ -164,10 +164,10 @@
                 10
             ],
             "scale": 0.5,
-            "selectedLayer": 8,
+            "selectedLayer": 9,
             "viewCenter": {
-                "x": 1088,
-                "y": 1150
+                "x": 921,
+                "y": 1387
             }
         },
         "tilemaps/Chapter4/CliffBottom.json#Chapter2_Village_Tiles": {
@@ -232,8 +232,8 @@
             "scale": 1.5,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 3840,
-                "y": 5120
+                "x": 3840.333333333333,
+                "y": 5120.333333333333
             }
         },
         "tilemaps/Chapter5/UndergroundTunnel.json#DesertLand": {
@@ -244,15 +244,26 @@
                 5,
                 2
             ],
-            "scale": 0.75,
-            "selectedLayer": 3,
+            "scale": 0.5,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 1216,
-                "y": 1504
+                "x": 1295,
+                "y": 2217
             }
         },
         "tilemaps/Chapter6/DesertLand.json#DesertLand": {
             "scaleInDock": 0.25
+        },
+        "tilemaps/Chapter6/DesertLand1.json": {
+            "scale": 1,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 946.5,
+                "y": 2521.5
+            }
+        },
+        "tilemaps/Chapter6/DesertLand1.json#DesertLand": {
+            "scaleInDock": 0.75
         },
         "tilemaps/Chapter7/EmeraldPond.json": {
             "expandedObjectLayers": [
@@ -262,8 +273,8 @@
             "scale": 0.75,
             "selectedLayer": 4,
             "viewCenter": {
-                "x": 832,
-                "y": 672
+                "x": 831.3333333333333,
+                "y": 671.3333333333334
             }
         },
         "tilemaps/Chapter7/EmeraldPond.json#EmeraldPond": {
