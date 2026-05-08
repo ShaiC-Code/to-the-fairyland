@@ -11,6 +11,9 @@ export default class RoadScene extends RoadSceneBase {
 
     protected override handleAutoTransition(obj: TiledObject): void {
         if (obj.name === "PathToVillage") {
+            if (this.storyManager.chapter2.needsToCheckVillage()) {
+                this.storyManager.chapter2.markCheckVillage();
+            }
             this.changeToRoadSection(VillageScene, "RoadEnd");
         } else if (obj.name === "PathToRoad1") {
             this.changeToRoadSection(Road1Scene, "RoadStart");

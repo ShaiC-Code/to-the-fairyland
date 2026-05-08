@@ -10,11 +10,6 @@ export default class Road3Scene extends RoadSceneBase {
         key: "road3",
         path: "/assets/tilemaps/Chapter2/Road3.json"
     };
-
-    public override startScene(): void {
-        super.startScene();
-        this.storyManager.chapter2.markLeaveVillage();
-    }
     
     protected override canUseSleepingBagHere(): boolean {
         return true;
@@ -53,6 +48,7 @@ export default class Road3Scene extends RoadSceneBase {
             }
 
             if (this.storyManager.chapter2.needsToEscapeLycans()) {
+                this.storyManager.chapter2.markEscapeLycans();
                 this.changeToRoadSection(CliffScene, "RoadStart");
                 return;
             }
