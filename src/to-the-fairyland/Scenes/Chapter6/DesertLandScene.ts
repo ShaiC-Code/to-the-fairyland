@@ -3,7 +3,7 @@ import MappedAdventureScene, {
     ChapterSceneDefinition
 } from "../MappedAdventureScene";
 import { TiledObject, TiledTilemapData } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData";
-import DesertCentipedeController from "../../AI/Creatures/Controllers/DesertCentipedeController";
+import DesertCentipedeController from "../../AI/NPC/NPCController/DesertCentipedeController";
 import { WeatherType } from "../../GameSystems/WorldSystem/WorldState";
 import AudioController from "../../GameSystems/AudioController";
 
