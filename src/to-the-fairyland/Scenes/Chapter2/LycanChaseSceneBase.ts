@@ -10,6 +10,21 @@ import GameOverScreenScene from "../GameOverScreenScene";
 import AudioController from "../../GameSystems/AudioController";
 
 export default abstract class LycanChaseSceneBase extends MappedAdventureChapter2Scene {
+    protected static readonly assetBundle: AssetBundle = {
+        tilemaps: {},
+        spritesheets: {
+            Lycan: { key: "Lycan", path: "/assets/spritesheets/Lycan.json" }
+        },
+        sprites: {},
+        sounds: {
+            wolvesRunningSFX: { key: "wolves-running", path: "/assets/sounds/wolves-running.ogg" },
+            wolvesDashingSFX: { key: "wolves-dashing", path: "/assets/sounds/wolves-dashing.ogg" },
+            wolvesBitingSFX: { key: "wolves-biting", path: "/assets/sounds/wolves-biting.ogg" },
+            wolvesFerociousSFX: { key: "wolves-ferocious", path: "/assets/sounds/wolves-ferocious.ogg" },
+        },
+        images: {}
+    };
+    
     protected lycans: NPCActor[] = [];
     protected lycanDeathHitOverlay!: PlayerDeathHitOverlay;
     private lycanDeathSequencePlaying = false;
@@ -26,21 +41,6 @@ export default abstract class LycanChaseSceneBase extends MappedAdventureChapter
     protected readonly lycanBoostLocksDirection = true;
     protected readonly lycanCatchCooldown = 0.8;
     protected readonly lycanCaughtFlashLayerName = "lycanCaughtFlashLayer";
-
-    protected static readonly assetBundle: AssetBundle = {
-        tilemaps: {},
-        spritesheets: {
-            Lycan: { key: "Lycan", path: "/assets/spritesheets/Lycan.json" }
-        },
-        sprites: {},
-        sounds: {
-            wolvesRunningSFX: { key: "wolves-running", path: "/assets/sounds/wolves-running.ogg" },
-            wolvesDashingSFX: { key: "wolves-dashing", path: "/assets/sounds/wolves-dashing.ogg" },
-            wolvesBitingSFX: { key: "wolves-biting", path: "/assets/sounds/wolves-biting.ogg" },
-            wolvesFerociousSFX: { key: "wolves-ferocious", path: "/assets/sounds/wolves-ferocious.ogg" },
-        },
-        images: {}
-    };
 
     protected override combinedAssetBundles(): AssetBundle {
         return this.mergeAssetBundles(super.combinedAssetBundles(), LycanChaseSceneBase.assetBundle);

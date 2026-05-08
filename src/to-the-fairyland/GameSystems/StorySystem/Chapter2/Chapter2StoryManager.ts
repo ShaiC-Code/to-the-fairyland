@@ -82,7 +82,11 @@ export default class Chapter2StoryManager {
     
     public canLeaveVillage(): boolean {
         return this.hasReachedStep(Chapter2MainQuestStep.LEAVE_VILLAGE);
-    } 
+    }
+
+    public needsToLeaveVillage(): boolean {
+        return this.getState().mainQuestStep === Chapter2MainQuestStep.LEAVE_VILLAGE;
+    }
 
     public markLeaveVillage(): void {
         this.advanceToStep(Chapter2MainQuestStep.SLEEP_ON_ROAD);
@@ -101,19 +105,11 @@ export default class Chapter2StoryManager {
     }
     
     public markApproachCliff(): void {
-        this.advanceToStep(Chapter2MainQuestStep.VILLAGE_SHAKE);
-    }
-    
-    public markVillageShake(): void {
         this.advanceToStep(Chapter2MainQuestStep.CHECK_VILLAGE);
     }
     
     public needsToCheckVillage(): boolean {
         return this.getState().mainQuestStep === Chapter2MainQuestStep.CHECK_VILLAGE;
-    }
-    
-    public hasReachedCheckVillage(): boolean {
-        return this.hasReachedStep(Chapter2MainQuestStep.CHECK_VILLAGE);
     }
 
     public markCheckVillage(): void {
@@ -124,19 +120,11 @@ export default class Chapter2StoryManager {
         return this.getState().mainQuestStep === Chapter2MainQuestStep.RETURNED_TO_VILLAGE;
     }
     
-    public markReturnedToVillage(): void {
-        this.advanceToStep(Chapter2MainQuestStep.DETECTED_BY_LYCANS);
-    }
-    
     public needsLycanDetection(): boolean {
         return this.getState().mainQuestStep === Chapter2MainQuestStep.RETURNED_TO_VILLAGE;
     }
     
-    public wasDetectedByLycans(): boolean {
-        return this.getState().mainQuestStep === Chapter2MainQuestStep.DETECTED_BY_LYCANS;
-    }
-    
-    public markDetectedByLycans(): void {
+    public markReturnedToVillage(): void {
         this.advanceToStep(Chapter2MainQuestStep.ESCAPE_LYCANS);
     }
     
