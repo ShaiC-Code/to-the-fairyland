@@ -76,14 +76,7 @@ export default abstract class MappedAdventureScene extends Scene {
             interactIcon: { key: "interactIcon", path: "/assets/spritesheets/InteractIcon.json" },
             swordAttack: { key: "swordAttack", path: "/assets/spritesheets/Effects/SwordAttack.json" }
         },
-        sprites: {
-            snowFlake1Sprite: { key: "snowflake1", path: "/assets/sprites/particles/SnowFlake1.png" },
-            snowFlake2Sprite: { key: "snowflake2", path: "/assets/sprites/particles/SnowFlake2.png" },
-            snowFlake3Sprite: { key: "snowflake3", path: "/assets/sprites/particles/SnowFlake3.png" },
-            sandParticle1Sprite: { key: "sandParticle1", path: "/assets/sprites/particles/SandParticle1.png" },
-            sandParticle2Sprite: { key: "sandParticle2", path: "/assets/sprites/particles/SandParticle2.png" },
-            sandParticle3Sprite: { key: "sandParticle3", path: "/assets/sprites/particles/SandParticle3.png" }
-        },
+        sprites: {},
         sounds: {
             uiHoverSFX: { key: "ui-hover", path: "/assets/sounds/ui-hover.ogg" },
             uiClickSFX: { key: "ui-click", path: "/assets/sounds/ui-click.ogg" },
@@ -207,7 +200,13 @@ export default abstract class MappedAdventureScene extends Scene {
     }
     
     protected combinedAssetBundles(): AssetBundle {
-        return MappedAdventureScene.assetBundle;
+        return this.mergeAssetBundles(MappedAdventureScene.assetBundle, {
+            tilemaps: { [this.tilemap.key]: this.tilemap },
+            spritesheets: {},
+            sprites: {},
+            sounds: {},
+            images: {}
+        });
     }
 
     protected assetBundleToKeyArrays(bundle: AssetBundle): {

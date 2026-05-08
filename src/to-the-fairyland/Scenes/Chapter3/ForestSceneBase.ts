@@ -1,38 +1,7 @@
-import { TiledTilemapData } from "../../Wolfie2D/DataTypes/Tilesets/TiledData";
-import MappedAdventureScene, { AssetBundle, ChapterSceneDefinition } from "./MappedAdventureScene";
+import { TiledTilemapData } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData";
+import MappedAdventureChapter3Scene from "./MappedAdventureChapter3Scene";
 
-export default abstract class ForestSceneBase extends MappedAdventureScene {
-    protected static readonly forestAssetBundle: AssetBundle = {
-        tilemaps: {},
-        spritesheets: {},
-        sprites: {
-            bushBerriesSprite: { key: "bushBerries", path: "/assets/sprites/BushBerries.png" },
-            forestTreeSprite: { key: "forestTree1", path: "/assets/sprites/ForestTree1.png" }
-        },
-        sounds: {},
-        images: {}
-    };
-
-    protected readonly chapterDefinition: ChapterSceneDefinition = {
-        dialogueCompleteActionHandlers: {},
-        dialogueChoiceActionHandlers: {}
-    };
-
-    protected override combinedAssetBundles(): AssetBundle {
-        const sharedAssets = this.mergeAssetBundles(
-            super.combinedAssetBundles(),
-            ForestSceneBase.forestAssetBundle
-        );
-
-        return this.mergeAssetBundles(sharedAssets, {
-            tilemaps: { [this.tilemap.key]: this.tilemap },
-            spritesheets: {},
-            sprites: {},
-            sounds: {},
-            images: {}
-        });
-    }
-
+export default abstract class ForestSceneBase extends MappedAdventureChapter3Scene {
     protected override configureLayers(): void {
         this.getLayer("Bushes").setDepth(this.actorLayerDepth);
         this.getLayer("Ground").setDepth(2);

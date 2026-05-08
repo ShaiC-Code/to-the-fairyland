@@ -1,10 +1,10 @@
 import TitleOverlay from "../../Overlays/TitleOverlay";
 import DesertSceneBase from "./DesertSceneBase";
 
-export default class DesertLandScene extends DesertSceneBase {
+export default class DesertLandScene1 extends DesertSceneBase {
     protected readonly tilemap = {
-        key: "desertLand",
-        path: "/assets/tilemaps/Chapter6/DesertLand1.json"
+        key: "desertLand1",
+        path: "/assets/tilemaps/Chapter4/DesertLand1.json"
     };
 
     private introTitleOverlay!: TitleOverlay;

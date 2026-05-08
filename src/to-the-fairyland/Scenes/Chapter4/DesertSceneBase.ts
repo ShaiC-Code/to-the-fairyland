@@ -9,6 +9,9 @@ export default abstract class DesertSceneBase extends MappedAdventureScene {
         tilemaps: {},
         spritesheets: {},
         sprites: {
+            sandParticle1Sprite: { key: "sandParticle1", path: "/assets/sprites/particles/SandParticle1.png" },
+            sandParticle2Sprite: { key: "sandParticle2", path: "/assets/sprites/particles/SandParticle2.png" },
+            sandParticle3Sprite: { key: "sandParticle3", path: "/assets/sprites/particles/SandParticle3.png" },
             desertCentipedeHead: {
                 key: "desertCentipedeHead",
                 path: "/assets/spritesheets/desertCentipede_pieces1.png"

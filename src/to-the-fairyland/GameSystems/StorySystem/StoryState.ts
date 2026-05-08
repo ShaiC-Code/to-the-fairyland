@@ -1,8 +1,8 @@
 export enum ActiveChapter {
     CHAPTER1 = "CHAPTER1",
     CHAPTER2 = "CHAPTER2",
-    CHAPTER4 = "CHAPTER4",
-    CHAPTER6 = "CHAPTER6"
+    CHAPTER3 = "CHAPTER3",
+    CHAPTER4 = "CHAPTER4"
 }
 
 //======================== Chapter1 =================================
@@ -48,8 +48,9 @@ export interface Chapter2StoryState {
     mainQuestStep: Chapter2MainQuestStep;
     villageItems: Record<Chapter2VillageItem, boolean>;
 }
-//======================== Chapter4 =================================
-export enum Chapter4MainQuestStep {
+
+//======================== Chapter3 =================================
+export enum Chapter3MainQuestStep {
     FAINTED = "FAINTED",
     ATTRACT_TOOTH_FAIRY = "ATTRACT_TOOTH_FAIRY",
     HEALED_BY_TOOTH_FAIRY = "HEALED_BY_TOOTH_FAIRY",
@@ -59,19 +60,22 @@ export enum Chapter4MainQuestStep {
     VINE_EXIT_OPEN = "VINE_EXIT_OPEN"
 }
 
-export const CHAPTER4_MAIN_QUEST_ORDER = Object.values(Chapter4MainQuestStep);
+export const CHAPTER3_MAIN_QUEST_ORDER = Object.values(Chapter3MainQuestStep);
 
-export interface Chapter4StoryState {
-    mainQuestStep: Chapter4MainQuestStep;
+export interface Chapter3StoryState {
+    mainQuestStep: Chapter3MainQuestStep;
 }
-//======================== Chapter6 =================================
-export enum Chapter6MainQuestStep {
+
+//======================== Chapter4 =================================
+export enum Chapter4MainQuestStep {
     ESCAPE_DESERT_CENTIPEDES = "ESCAPE_DESERT_CENTIPEDES",
     JUMP_INTO_EMERALD_POND = "JUMP_INTO_EMERALD_POND"
 }
 
-export interface Chapter6StoryState {
-    mainQuestStep: Chapter6MainQuestStep;
+export const CHAPTER4_MAIN_QUEST_ORDER = Object.values(Chapter4MainQuestStep);
+
+export interface Chapter4StoryState {
+    mainQuestStep: Chapter4MainQuestStep;
 }
 
 // =================================================================
@@ -80,8 +84,8 @@ export interface StoryState {
     activeChapter: ActiveChapter;
     chapter1: Chapter1StoryState;
     chapter2?: Chapter2StoryState;
+    chapter3?: Chapter3StoryState;
     chapter4?: Chapter4StoryState;
-    chapter6?: Chapter6StoryState;
 }
 
 export function createInitialChapter1State(): Chapter1StoryState {
@@ -119,16 +123,16 @@ export function createChapter2CompletedState(): Chapter2StoryState {
         }
     };
 }
-export function createInitialChapter6State(): Chapter6StoryState {
+export function createInitialChapter4State(): Chapter4StoryState {
     return {
-        mainQuestStep: Chapter6MainQuestStep.ESCAPE_DESERT_CENTIPEDES
+        mainQuestStep: Chapter4MainQuestStep.ESCAPE_DESERT_CENTIPEDES
     };
 }
 
 
-export function createInitialChapter4State(): Chapter4StoryState {
+export function createInitialChapter3State(): Chapter3StoryState {
     return {
-        mainQuestStep: Chapter4MainQuestStep.FAINTED
+        mainQuestStep: Chapter3MainQuestStep.FAINTED
     };
 }
 

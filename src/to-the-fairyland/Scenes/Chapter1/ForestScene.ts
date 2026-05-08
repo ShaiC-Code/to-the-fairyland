@@ -18,9 +18,7 @@ export default class ForestScene extends MappedAdventureChapter1Scene {
     };
     
     protected static readonly assetBundle: AssetBundle = {
-        tilemaps: {
-            chapter1: { key: "chapter1", path: "/assets/tilemaps/Chapter1/Chapter1.json" }
-        },
+        tilemaps: {},
         spritesheets: {},
         sprites: {
             snowTreeSprite: { key: "snowTree1", path: "/assets/sprites/SnowTree1.png" },

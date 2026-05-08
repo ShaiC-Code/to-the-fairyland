@@ -5,8 +5,8 @@ import HoverButton from "../UI/CustomUIElements/HoverButton";
 import UIImage from "../UI/CustomUIElements/UIImage";
 import ForestScene from "./Chapter1/ForestScene";
 import ShelterScene from "./Chapter1/ShelterScene";
-import GreatTreeScene from "./Chapter4/GreatTreeScene";
-import DeeperForestScene from "./Chapter4/DeeperForestScene";
+import GreatTreeScene from "./Chapter3/GreatTreeScene";
+import DeeperForestScene from "./Chapter3/DeeperForestScene";
 import VillageScene from "./Chapter2/VillageScene";
 import Road1Scene from "./Chapter2/Road1Scene";
 import Road2Scene from "./Chapter2/Road2Scene";
@@ -24,17 +24,17 @@ import { PlayerInput } from "../AI/Player/PlayerController";
 import { UIScreenActionBindings, UIScreenOptions } from "../UI/UIScreen";
 import RoadScene from "./Chapter2/RoadScene";
 import SleepingBag from "../GameSystems/ItemSystem/Items/SleepingBag";
-import { Chapter2MainQuestStep, Chapter4MainQuestStep } from "../GameSystems/StorySystem/StoryState";
+import { Chapter2MainQuestStep, Chapter3MainQuestStep } from "../GameSystems/StorySystem/StoryState";
 import { TimeOfDay } from "../GameSystems/WorldSystem/WorldState";
 import CliffScene from "./Chapter2/CliffScene";
 import EmeraldPondScene from "./Chapter7/EmeraldPondScene";
-import CliffBottomScene from "./Chapter4/CliffBottomScene";
-import TreeInnerScene from "./Chapter4/TreeInnerScene";
+import CliffBottomScene from "./Chapter3/CliffBottomScene";
+import TreeInnerScene from "./Chapter3/TreeInnerScene";
 import Excalibur from "../GameSystems/ItemSystem/Items/Excalibur";
 import FreshPrettyTooth from "../GameSystems/ItemSystem/Items/FreshPrettyTooth";
 import AudioController from "../GameSystems/AudioController";
-import DesertLandScene from "./Chapter6/DesertLandScene1";
-
+import DesertLandScene from "./Chapter4/DesertLandScene";
+import DesertLandScene1 from "./Chapter4/DesertLandScene1";
 
 type AssetRef = Readonly<{
     readonly key: string;
@@ -411,7 +411,7 @@ export default class MainMenu extends Scene {
                 break;
             }
             case "level6": {
-                this.gameSessionManager.startNewChapter4Game();
+                this.gameSessionManager.startNewChapter3Game();
 
                 const inventory = this.gameSessionManager.getPlayerState().inventory;
 
@@ -437,14 +437,14 @@ export default class MainMenu extends Scene {
                 break;
             }
             case "level7": {
-                this.gameSessionManager.startNewChapter4Game();
+                this.gameSessionManager.startNewChapter3Game();
 
-                const chapter4 = this.gameSessionManager.getStoryState().chapter4;
-                if (!chapter4) {
-                    throw new Error("Chapter 4 story state was not initialized.");
+                const chapter3 = this.gameSessionManager.getStoryState().chapter3;
+                if (!chapter3) {
+                    throw new Error("Chapter 3 story state was not initialized.");
                 }
 
-                chapter4.mainQuestStep = Chapter4MainQuestStep.NEED_EXCALIBUR;
+                chapter3.mainQuestStep = Chapter3MainQuestStep.NEED_EXCALIBUR;
             
                 this.sceneManager.changeToScene(
                     TreeInnerScene,
@@ -464,7 +464,7 @@ export default class MainMenu extends Scene {
                 break;
             }
             case "level8": {
-                this.gameSessionManager.startNewChapter4Game();
+                this.gameSessionManager.startNewChapter3Game();
 
                 const inventory = this.gameSessionManager.getPlayerState().inventory;
 
@@ -472,12 +472,12 @@ export default class MainMenu extends Scene {
                     inventory.add(new Excalibur());
                 }
 
-                const chapter4 = this.gameSessionManager.getStoryState().chapter4;
-                if (!chapter4) {
-                    throw new Error("Chapter 4 story state was not initialized.");
+                const chapter3 = this.gameSessionManager.getStoryState().chapter3;
+                if (!chapter3) {
+                    throw new Error("Chapter 3 story state was not initialized.");
                 }
 
-                chapter4.mainQuestStep = Chapter4MainQuestStep.EXCALIBUR_PULLED;
+                chapter3.mainQuestStep = Chapter3MainQuestStep.EXCALIBUR_PULLED;
 
                 this.sceneManager.changeToScene(
                     GreatTreeScene,
@@ -497,10 +497,10 @@ export default class MainMenu extends Scene {
                 break;
             }
             case "level9": {
-                this.gameSessionManager.startNewChapter6Game();
+                this.gameSessionManager.startNewChapter4Game();
             
                 this.sceneManager.changeToScene(
-                    DesertLandScene,
+                    DesertLandScene1,
                     {
                         cheatsEnabled: this.cheatsEnabled,
                         spawnName: "RoadStart"
@@ -636,7 +636,7 @@ export default class MainMenu extends Scene {
                     fadeInMs: 500
                 });
                 break;
-            // Chapter 4
+            // Chapter 3
             case "CliffBottomScene":
                 this.sceneManager.changeToScene(CliffBottomScene, initData, undefined, {
                     showLoadingOverlay: true,
@@ -663,6 +663,23 @@ export default class MainMenu extends Scene {
                 break;
             case "TreeInnerScene":
                 this.sceneManager.changeToScene(TreeInnerScene, initData, undefined, {
+                    showLoadingOverlay: true,
+                    useFadeTransition: true,
+                    fadeOutMs: 500,
+                    fadeInMs: 500
+                });
+                break;
+            // Chapter 4
+            case "DesertLandScene":
+                this.sceneManager.changeToScene(DesertLandScene, initData, undefined, {
+                    showLoadingOverlay: true,
+                    useFadeTransition: true,
+                    fadeOutMs: 500,
+                    fadeInMs: 500
+                });
+                break;
+            case "DesertLandScene1":
+                this.sceneManager.changeToScene(DesertLandScene1, initData, undefined, {
                     showLoadingOverlay: true,
                     useFadeTransition: true,
                     fadeOutMs: 500,
