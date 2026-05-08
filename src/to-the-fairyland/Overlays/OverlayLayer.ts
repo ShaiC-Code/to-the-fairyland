@@ -87,6 +87,10 @@ export default class OverlayLayer implements Updateable {
         return this.isVisible;
     }
 
+    public shouldPauseWorld(): boolean {
+        return this.getIsVisible();
+    }
+
     public getLayerName(): string {
         return this.layerName;
     }

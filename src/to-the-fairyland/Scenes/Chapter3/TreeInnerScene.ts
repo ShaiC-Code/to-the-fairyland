@@ -410,7 +410,7 @@ export default class TreeInnerScene extends ForestSceneBase {
     }
 
     private isVineWaveTitlePauseActive(): boolean {
-        return this.vineWaveTitleOverlay?.getIsVisible() ?? false;
+        return this.vineWaveTitleOverlay?.shouldPauseWorld() ?? false;
     }
 
     private findVineTrapAtTile(tile: Vec2 | null): TiledObject | undefined {
