@@ -21,12 +21,11 @@ export default class ToothFairyApproachBehavior implements AI {
     private delayTimer = 0;
     private attracted = false;
 
-    private maxSpeed = 200;
-    private maxAcceleration = 260;
     private drag = 0.85;
 
-    private arriveRadius = 180;
+    private arriveRadius = 130;
     private stopDistance = 60;
+    private attractionThrust = 100;
 
     private waveStrength = 90;
     private waveFrequency = 1.6;
@@ -65,12 +64,11 @@ export default class ToothFairyApproachBehavior implements AI {
         this.delayTimer = this.startDelay;
         this.attracted = options.startAttracted ?? this.attracted;
 
-        this.maxSpeed = options.maxSpeed ?? this.maxSpeed;
-        this.maxAcceleration = options.maxAcceleration ?? this.maxAcceleration;
         this.drag = options.drag ?? this.drag;
 
         this.arriveRadius = options.arriveRadius ?? this.arriveRadius;
         this.stopDistance = options.stopDistance ?? this.stopDistance;
+        this.attractionThrust = options.attractionThrust ?? this.attractionThrust;
 
         this.waveStrength = options.waveStrength ?? this.waveStrength;
         this.waveFrequency = options.waveFrequency ?? this.waveFrequency;
@@ -258,7 +256,7 @@ export default class ToothFairyApproachBehavior implements AI {
         }
 
         const speedRatio = Math.min(1, (distance - this.stopDistance) / this.arriveRadius);
-        const targetSpeed = this.maxSpeed * speedRatio;
+        const targetSpeed = this.wanderSpeed * speedRatio;
 
         const forwardVelocity = direction.scaled(targetSpeed);
         const perpendicular = new Vec2(-direction.y, direction.x);
@@ -281,20 +279,28 @@ export default class ToothFairyApproachBehavior implements AI {
     private steerToward(desiredVelocity: Vec2, deltaT: number): void {
         const acceleration = desiredVelocity.clone().sub(this.velocity);
 
-        this.limitVector(acceleration, this.maxAcceleration);
+        if (this.attracted) {
+            acceleration.add(this.getAttractionThrust());
+        }
+
         acceleration.add(this.getHoverAcceleration());
         acceleration.add(this.velocity.scaled(-this.drag));
 
         this.velocity.add(acceleration.scaled(deltaT));
-        this.limitVector(this.velocity, this.maxSpeed);
     }
 
-    private limitVector(vector: Vec2, maxMagnitude: number): void {
-        if (vector.magSq() <= maxMagnitude * maxMagnitude) {
-            return;
+    private getAttractionThrust(): Vec2 {
+        const toPlayer = this.owner.position.vecTo(this.player.position);
+        const distance = toPlayer.mag();
+
+        if (distance <= this.stopDistance || distance <= 0.001) {
+            return Vec2.ZERO;
         }
 
-        vector.scaleTo(maxMagnitude);
+        const direction = toPlayer.scale(1 / distance);
+        const thrustRatio = Math.min(1, (distance - this.stopDistance) / this.arriveRadius);
+
+        return direction.scaled(this.attractionThrust * thrustRatio);
     }
 
     private setupParticlePool(): void {

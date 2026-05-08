@@ -157,7 +157,6 @@ export default abstract class MappedAdventureScene extends Scene {
     private toothHeldTimer = 0;
     private toothFairyResponded = false;
     private readonly toothHoldDuration = 3;
-    private readonly toothFairyAttractRadius = 450;
 
     
     protected readonly hudLayerName = "HUD";
@@ -990,7 +989,7 @@ export default abstract class MappedAdventureScene extends Scene {
         this.toothHeldTimer -= deltaT;
 
         for (const fairy of this.getToothFairies()) {
-            if (fairy.position.distanceTo(this.player.position) <= this.toothFairyAttractRadius) {
+            if (this.isToothFairyInAttractionView(fairy)) {
                 this.attractToothFairy(fairy);
                 this.toothFairyResponded = true;
             }
@@ -1003,6 +1002,10 @@ export default abstract class MappedAdventureScene extends Scene {
                 this.startDialogue(dialogue(["Nothing happens."]));
             }
         }
+    }
+
+    private isToothFairyInAttractionView(fairy: AnimatedSprite): boolean {
+        return this.viewport.includes(fairy);
     }
     
     protected rejectAutoTransitionEntry(): void {
