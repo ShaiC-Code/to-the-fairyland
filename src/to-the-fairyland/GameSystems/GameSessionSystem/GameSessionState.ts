@@ -11,6 +11,7 @@ import {
 } from "../StorySystem/StoryState";
 import { WorldState, createInitialWorldState } from "../WorldSystem/WorldState";
 import { getTimeOfDayForStory } from "../StorySystem/StoryRules";
+import type { CheckpointStoryKey } from "./LevelCheckpointMapping";
 
 export interface GameSessionResumePoint {
     sceneId: string;
@@ -28,6 +29,7 @@ export interface GameSessionState {
     story: StoryState;
     world: WorldState;
     resumePoint: GameSessionResumePoint;
+    activeCheckpointKey?: CheckpointStoryKey;
 }
 
 function createGameSessionState(story: StoryState, resumePoint: GameSessionResumePoint): GameSessionState {

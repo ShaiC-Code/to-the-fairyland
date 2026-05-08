@@ -5,6 +5,7 @@ import {
     createInitialChapter3GameSessionState,
     createInitialChapter4GameSessionState
 } from "./GameSessionState";
+import type { CheckpointStoryKey } from "./LevelCheckpointMapping";
 import { PlayerState } from "../PlayerSystem/PlayerState";
 import { StoryState } from "../StorySystem/StoryState";
 import { WorldState } from "../WorldSystem/WorldState";
@@ -86,7 +87,34 @@ export default class GameSessionManager {
     }
 
     public hasSavedSession(): boolean {
-        return CookieStorage.loadSession() !== null;
+        return CookieStorage.loadManualSession() !== null;
+    }
+
+    public saveCheckpoint(checkpointKey: CheckpointStoryKey): void {
+        this.persistCheckpointToCookie(checkpointKey);
+    }
+
+    public loadCheckpoint(checkpointKey: CheckpointStoryKey): boolean {
+        const checkpoint = CookieStorage.loadCheckpoint(checkpointKey);
+
+        if (!checkpoint) {
+            return false;
+        }
+
+        this.currentSession = checkpoint;
+        return true;
+    }
+
+    public hasCheckpoint(checkpointKey: CheckpointStoryKey): boolean {
+        return CookieStorage.hasCheckpoint(checkpointKey);
+    }
+
+    public setActiveCheckpointKey(checkpointKey: CheckpointStoryKey): void {
+        this.requireCurrentSession().activeCheckpointKey = checkpointKey;
+    }
+
+    public getActiveCheckpointKey(): CheckpointStoryKey | undefined {
+        return this.currentSession?.activeCheckpointKey;
     }
 
     public setResumePoint(sceneId: string, spawnName?: string, cheatsEnabled?: boolean, playerPos?: { x: number; y: number }): void {
@@ -168,7 +196,7 @@ export default class GameSessionManager {
      */
     public restoreSessionFromCookie(): boolean {
         try {
-            const saved = CookieStorage.loadSession();
+            const saved = CookieStorage.loadManualSession();
             if (saved && typeof saved === "object") {
                 this.currentSession = saved;
                 return true;
@@ -188,7 +216,16 @@ export default class GameSessionManager {
      */
     private persistSessionToCookie(): void {
         if (this.currentSession) {
-            CookieStorage.saveSession(this.currentSession);
+            CookieStorage.saveManualSession(this.currentSession);
+        }
+    }
+
+    /**
+     * Persists the current session to a checkpoint slot.
+     */
+    private persistCheckpointToCookie(checkpointKey: CheckpointStoryKey): void {
+        if (this.currentSession) {
+            CookieStorage.saveCheckpoint(checkpointKey, this.currentSession);
         }
     }
 }

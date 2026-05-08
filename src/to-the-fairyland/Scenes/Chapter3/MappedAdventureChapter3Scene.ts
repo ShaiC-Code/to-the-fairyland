@@ -175,7 +175,7 @@ export default abstract class MappedAdventureChapter3Scene extends MappedAdventu
                 : TimeOfDay.DAY;
     
         this.timeController.setTimeOfDay(worldState.timeOfDay);
-        this.storyManager.chapter2.markSleptOnRoad();
+        this.storyManager.chapter2.markSleepOnRoad();
     
         return result;
     }

@@ -15,24 +15,25 @@ export enum Chapter1MainQuestStep {
     MAP_PICKED = "MAP_PICKED"
 }
 
+export const CHAPTER1_MAIN_QUEST_ORDER = Object.values(Chapter1MainQuestStep);
+
 export interface Chapter1StoryState {
     mainQuestStep: Chapter1MainQuestStep;
 }
 
 //======================== Chapter2 =================================
-export const Chapter2MainQuestStep = {
-    COLLECT_VILLAGE_ITEMS: "COLLECT_VILLAGE_ITEMS",
-    READY_TO_LEAVE_VILLAGE: "READY_TO_LEAVE_VILLAGE",
-    NEED_TO_SLEEP_ON_ROAD: "NEED_TO_SLEEP_ON_ROAD",
-    NEED_TO_APPROACH_CLIFF: "NEED_TO_APPROACH_CLIFF",
-    VILLAGE_SHAKE: "VILLAGE_SHAKE",
-    CHECK_VILLAGE: "CHECK_VILLAGE",
-    DETECTED_BY_LYCANS: "DETECTED_BY_LYCANS",
-    ESCAPE_LYCANS: "ESCAPE_LYCANS"
-} as const;
-
-export type Chapter2MainQuestStep =
-    typeof Chapter2MainQuestStep[keyof typeof Chapter2MainQuestStep];
+export enum Chapter2MainQuestStep {
+    COLLECT_VILLAGE_ITEMS = "COLLECT_VILLAGE_ITEMS",
+    LEAVE_VILLAGE = "LEAVE_VILLAGE",
+    SLEEP_ON_ROAD = "SLEEP_ON_ROAD",
+    APPROACH_CLIFF = "APPROACH_CLIFF",
+    VILLAGE_SHAKE = "VILLAGE_SHAKE",
+    CHECK_VILLAGE = "CHECK_VILLAGE",
+    RETURNED_TO_VILLAGE = "RETURNED_TO_VILLAGE",
+    DETECTED_BY_LYCANS = "DETECTED_BY_LYCANS",
+    ESCAPE_LYCANS = "ESCAPE_LYCANS",
+    CLIFF_JUMP = "CLIFF_JUMP"
+}
 
 export const CHAPTER2_MAIN_QUEST_ORDER = Object.values(Chapter2MainQuestStep);
 
