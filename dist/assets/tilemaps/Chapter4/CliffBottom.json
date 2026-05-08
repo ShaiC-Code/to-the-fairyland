@@ -1012,19 +1012,6 @@
          "objects":[
                 {
                  "height":0,
-                 "id":145,
-                 "name":"ToothFairy1",
-                 "opacity":1,
-                 "point":true,
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":0,
-                 "x":1952,
-                 "y":736
-                }, 
-                {
-                 "height":0,
                  "id":147,
                  "name":"ToothFairy3",
                  "opacity":1,

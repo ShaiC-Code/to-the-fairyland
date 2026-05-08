@@ -19,6 +19,7 @@ export default class ToothFairyApproachBehavior implements AI {
     private phase = 0;
     private startDelay = 2;
     private delayTimer = 0;
+    private attracted = false;
 
     private maxSpeed = 200;
     private maxAcceleration = 260;
@@ -33,6 +34,17 @@ export default class ToothFairyApproachBehavior implements AI {
     private hoverStrength = 18;
     private hoverFrequency = 2.0;
     private minHoverSpeed = 16;
+
+    private wanderTarget: Vec2 | null = null;
+    private wanderMinTargetDistance = 220;
+    private wanderTargetPickAttempts = 8;
+    private wanderArriveSlowDistance = 34;
+    private wanderArriveRadius = 160;
+    private wanderSpeed = 120;
+    private wanderMinSpeed = 35;
+    private wanderWaveStrength = 70;
+    private wanderWaveFrequency = 1.35;
+    private cameraTargetPadding = 30;
 
     private particleSpriteKey: string | null = null;
     private particleLayerName = "FairyParticles";
@@ -51,6 +63,7 @@ export default class ToothFairyApproachBehavior implements AI {
 
         this.startDelay = options.startDelay ?? this.startDelay;
         this.delayTimer = this.startDelay;
+        this.attracted = options.startAttracted ?? this.attracted;
 
         this.maxSpeed = options.maxSpeed ?? this.maxSpeed;
         this.maxAcceleration = options.maxAcceleration ?? this.maxAcceleration;
@@ -65,6 +78,19 @@ export default class ToothFairyApproachBehavior implements AI {
         this.hoverStrength = options.hoverStrength ?? this.hoverStrength;
         this.hoverFrequency = options.hoverFrequency ?? this.hoverFrequency;
         this.minHoverSpeed = options.minHoverSpeed ?? this.minHoverSpeed;
+
+        this.wanderMinTargetDistance = options.wanderMinTargetDistance ?? this.wanderMinTargetDistance;
+        this.wanderTargetPickAttempts = Math.max(
+            1,
+            options.wanderTargetPickAttempts ?? this.wanderTargetPickAttempts
+        );
+        this.wanderArriveSlowDistance = options.wanderArriveDistance ?? this.wanderArriveSlowDistance;
+        this.wanderArriveRadius = options.wanderArriveRadius ?? this.wanderArriveRadius;
+        this.wanderSpeed = options.wanderSpeed ?? this.wanderSpeed;
+        this.wanderMinSpeed = options.wanderMinSpeed ?? this.wanderMinSpeed;
+        this.wanderWaveStrength = options.wanderWaveStrength ?? this.wanderWaveStrength;
+        this.wanderWaveFrequency = options.wanderWaveFrequency ?? this.wanderWaveFrequency;
+        this.cameraTargetPadding = options.cameraTargetPadding ?? this.cameraTargetPadding;
 
         this.particleSpriteKey = options.particleSpriteKey ?? this.particleSpriteKey;
         this.particleLayerName = options.particleLayerName ?? this.particleLayerName;
@@ -83,6 +109,7 @@ export default class ToothFairyApproachBehavior implements AI {
         const startDirection = this.owner.position.dirTo(this.player.position);
         this.velocity = startDirection.scaled(this.minHoverSpeed);
         this.setupParticlePool();
+        this.chooseWanderTarget();
 
         this.playFacingAnimation();
     }
@@ -91,22 +118,17 @@ export default class ToothFairyApproachBehavior implements AI {
         this.elapsed += deltaT;
         this.updateParticleEmission(deltaT);
 
-        if (this.delayTimer > 0) {
+        if (this.attracted && this.delayTimer > 0) {
             this.delayTimer = Math.max(0, this.delayTimer - deltaT);
             this.playFacingAnimation();
             return;
         }
 
-        const desiredVelocity = this.getArriveVelocity();
-        const acceleration = desiredVelocity.clone().sub(this.velocity);
+        const desiredVelocity = this.attracted
+            ? this.getArriveVelocity()
+            : this.getWanderVelocity();
 
-        this.limitVector(acceleration, this.maxAcceleration);
-        acceleration.add(this.getHoverAcceleration());
-        acceleration.add(this.velocity.scaled(-this.drag));
-
-        this.velocity.add(acceleration.scaled(deltaT));
-        this.limitVector(this.velocity, this.maxSpeed);
-
+        this.steerToward(desiredVelocity, deltaT);
         this.owner.position.add(this.velocity.scaled(deltaT));
 
         this.playFacingAnimation();
@@ -117,6 +139,109 @@ export default class ToothFairyApproachBehavior implements AI {
     public activate(_options: Record<string, any>): void {}
 
     public handleEvent(_event: GameEvent): void {}
+
+    public startAttraction(): void {
+        this.attracted = true;
+        this.delayTimer = 0;
+    }
+
+    protected getWanderVelocity(): Vec2 {
+        if (this.shouldChooseNewWanderTarget()) {
+            this.chooseWanderTarget();
+        }
+
+        if (!this.wanderTarget) {
+            return Vec2.ZERO;
+        }
+
+        const toTarget = this.owner.position.vecTo(this.wanderTarget);
+        const distance = toTarget.mag();
+
+        if (distance <= 0.001) {
+            return Vec2.ZERO;
+        }
+
+        const direction = toTarget.scale(1 / distance);
+        const speedRatio = Math.min(1, distance / this.wanderArriveRadius);
+        const targetSpeed = Math.max(this.wanderMinSpeed, this.wanderSpeed * speedRatio);
+        const forwardVelocity = direction.scaled(targetSpeed);
+        const perpendicular = new Vec2(-direction.y, direction.x);
+        const wave = Math.sin(this.elapsed * this.wanderWaveFrequency + this.phase);
+        const waveVelocity = perpendicular.scaled(wave * this.wanderWaveStrength * speedRatio);
+
+        return forwardVelocity.add(waveVelocity);
+    }
+
+    protected chooseWanderTarget(): void {
+        this.wanderTarget = this.getInsideCameraWanderTarget();
+    }
+
+    protected getInsideCameraWanderTarget(): Vec2 {
+        const minDistanceSq = this.wanderMinTargetDistance * this.wanderMinTargetDistance;
+        let bestTarget = this.getRandomPointInsideCamera(this.cameraTargetPadding);
+        let bestDistanceSq = this.owner.position.distanceSqTo(bestTarget);
+
+        for (let attempt = 1; attempt < this.wanderTargetPickAttempts; attempt++) {
+            if (bestDistanceSq >= minDistanceSq) {
+                return bestTarget;
+            }
+
+            const target = this.getRandomPointInsideCamera(this.cameraTargetPadding);
+            const distanceSq = this.owner.position.distanceSqTo(target);
+
+            if (distanceSq >= minDistanceSq) {
+                return target;
+            }
+
+            if (distanceSq > bestDistanceSq) {
+                bestTarget = target;
+                bestDistanceSq = distanceSq;
+            }
+        }
+
+        return bestTarget;
+    }
+
+    protected shouldChooseNewWanderTarget(): boolean {
+        if (!this.wanderTarget) {
+            return true;
+        }
+
+        if (this.owner.position.distanceTo(this.wanderTarget) <= this.wanderArriveSlowDistance) {
+            return true;
+        }
+
+        return !this.isInsideCamera(this.wanderTarget);
+    }
+
+    protected isOutsideCamera(position: Vec2): boolean {
+        return !this.isInsideCamera(position);
+    }
+
+    protected isInsideCamera(position: Vec2): boolean {
+        const viewport = this.owner.getScene().getViewport();
+        const center = viewport.getCenter();
+        const halfSize = viewport.getHalfSize();
+
+        return position.x >= center.x - halfSize.x
+            && position.x <= center.x + halfSize.x
+            && position.y >= center.y - halfSize.y
+            && position.y <= center.y + halfSize.y;
+    }
+
+    protected getRandomPointInsideCamera(padding: number): Vec2 {
+        const viewport = this.owner.getScene().getViewport();
+        const center = viewport.getCenter();
+        const halfSize = viewport.getHalfSize();
+
+        const safePaddingX = Math.min(padding, Math.max(0, halfSize.x - 1));
+        const safePaddingY = Math.min(padding, Math.max(0, halfSize.y - 1));
+
+        return new Vec2(
+            this.randomBetween(center.x - halfSize.x + safePaddingX, center.x + halfSize.x - safePaddingX),
+            this.randomBetween(center.y - halfSize.y + safePaddingY, center.y + halfSize.y - safePaddingY)
+        );
+    }
 
     private getArriveVelocity(): Vec2 {
         const toPlayer = this.owner.position.vecTo(this.player.position);
@@ -151,6 +276,17 @@ export default class ToothFairyApproachBehavior implements AI {
             waveX * this.hoverStrength,
             waveY * this.hoverStrength * 0.65
         );
+    }
+
+    private steerToward(desiredVelocity: Vec2, deltaT: number): void {
+        const acceleration = desiredVelocity.clone().sub(this.velocity);
+
+        this.limitVector(acceleration, this.maxAcceleration);
+        acceleration.add(this.getHoverAcceleration());
+        acceleration.add(this.velocity.scaled(-this.drag));
+
+        this.velocity.add(acceleration.scaled(deltaT));
+        this.limitVector(this.velocity, this.maxSpeed);
     }
 
     private limitVector(vector: Vec2, maxMagnitude: number): void {
@@ -228,8 +364,11 @@ export default class ToothFairyApproachBehavior implements AI {
     }
 
     private playFacingAnimation(): void {
-        const toPlayer = this.owner.position.vecTo(this.player.position);
-        const animation = toPlayer.x < 0 ? "IDLE_LEFT" : "IDLE_RIGHT";
+        const facingX = this.attracted
+            ? this.owner.position.vecTo(this.player.position).x
+            : this.velocity.x;
+
+        const animation = facingX < 0 ? "IDLE_LEFT" : "IDLE_RIGHT";
         this.owner.animation.playIfNotAlready(animation, true);
     }
 }
