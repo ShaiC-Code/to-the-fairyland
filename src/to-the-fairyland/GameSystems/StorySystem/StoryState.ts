@@ -50,6 +50,9 @@ export interface Chapter2StoryState {
 }
 //======================== Chapter4 =================================
 export enum Chapter4MainQuestStep {
+    FAINTED = "FAINTED",
+    ATTRACT_TOOTH_FAIRY = "ATTRACT_TOOTH_FAIRY",
+    HEALED_BY_TOOTH_FAIRY = "HEALED_BY_TOOTH_FAIRY",
     NEED_EXCALIBUR = "NEED_EXCALIBUR",
     EXCALIBUR_PULLED = "EXCALIBUR_PULLED",
     VINE_EXIT_CLOSED = "VINE_EXIT_CLOSED",
@@ -125,7 +128,7 @@ export function createInitialChapter6State(): Chapter6StoryState {
 
 export function createInitialChapter4State(): Chapter4StoryState {
     return {
-        mainQuestStep: Chapter4MainQuestStep.NEED_EXCALIBUR
+        mainQuestStep: Chapter4MainQuestStep.FAINTED
     };
 }
 

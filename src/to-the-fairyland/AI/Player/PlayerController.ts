@@ -19,7 +19,8 @@ export enum PlayerInput {
 export enum PlayerControlMode {
     GAMEPLAY,
     DIALOGUE,
-    LOCKED
+    LOCKED,
+    FAINTED
 }
 
 type VerticalDirection = "up" | "down";
@@ -44,7 +45,17 @@ const AllowedInputsByMode: Record<PlayerControlMode, ReadonlySet<PlayerInput>> =
         PlayerInput.MOVE_RIGHT,
         PlayerInput.INTERACT
     ]),
-    [PlayerControlMode.LOCKED]: new Set()
+    [PlayerControlMode.LOCKED]: new Set(),
+    [PlayerControlMode.FAINTED]: new Set([
+        PlayerInput.MOVE_UP,
+        PlayerInput.MOVE_DOWN,
+        PlayerInput.MOVE_LEFT,
+        PlayerInput.MOVE_RIGHT,
+        PlayerInput.INTERACT,
+        PlayerInput.INVENTORY,
+        PlayerInput.PAUSE
+    ])
+    
 };
 
 /**

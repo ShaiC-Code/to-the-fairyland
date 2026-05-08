@@ -25,6 +25,41 @@ export default class Chapter4StoryManager {
         return currentIndex !== -1 && targetIndex !== -1 && currentIndex >= targetIndex;
     }
 
+    public isPlayerFainted(): boolean {
+        const step = this.getState().mainQuestStep;
+    
+        return step === Chapter4MainQuestStep.FAINTED
+            || step === Chapter4MainQuestStep.ATTRACT_TOOTH_FAIRY;
+    }
+    
+    public markToothFairyAttracted(): void {
+        const state = this.getState();
+    
+        if (state.mainQuestStep === Chapter4MainQuestStep.FAINTED) {
+            state.mainQuestStep = Chapter4MainQuestStep.ATTRACT_TOOTH_FAIRY;
+            this.syncWorldState();
+        }
+    }
+    
+    public markHealedByToothFairy(): void {
+        const state = this.getState();
+    
+        if (state.mainQuestStep === Chapter4MainQuestStep.ATTRACT_TOOTH_FAIRY) {
+            state.mainQuestStep = Chapter4MainQuestStep.HEALED_BY_TOOTH_FAIRY;
+            this.syncWorldState();
+        }
+    }
+    
+    public markNeedExcalibur(): void {
+        const state = this.getState();
+    
+        if (state.mainQuestStep === Chapter4MainQuestStep.HEALED_BY_TOOTH_FAIRY) {
+            state.mainQuestStep = Chapter4MainQuestStep.NEED_EXCALIBUR;
+            this.syncWorldState();
+        }
+    }
+    
+    
     public markExcaliburPulled(): void {
         const state = this.getState();
 

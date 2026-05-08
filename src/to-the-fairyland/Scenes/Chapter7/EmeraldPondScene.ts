@@ -7,7 +7,7 @@ import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 import BubbleParticleBehavior, { BubbleParticleSettings } from "../../AI/BubbleParticleBehavior";
 import AnimatedSprite from "../../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
 import { TiledObject, TiledTilemapData } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData";
-import DolphinPathBehavior from "../../AI/NPC/NPCBehavior/DolphinPathBehavior";
+import DolphinPathBehavior from "../../AI/Creatures/Behaviors/DolphinPathBehavior";
 import MainMenu from "../MainMenu";
 
 export default class EmeraldPondScene extends MappedAdventureScene {

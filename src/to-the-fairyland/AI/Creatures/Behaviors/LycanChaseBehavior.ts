@@ -7,7 +7,7 @@ import { LycanEvent } from "../../../Events";
 import PlayerAI from "../../Player/PlayerAI";
 import { sameGridTile } from "../../Pathfinding/GridAStar";
 import { GameEventType } from "../../../../Wolfie2D/Events/GameEventType";
-import AStarTileMovementBehavior from "./AStarTileMovementBehavior";
+import AStarTileMovementBehavior from "../../NPC/NPCBehavior/AStarTileMovementBehavior";
 
 export default class LycanChaseBehavior extends AStarTileMovementBehavior<NPCActor> {
     private readonly emitter = new Emitter();

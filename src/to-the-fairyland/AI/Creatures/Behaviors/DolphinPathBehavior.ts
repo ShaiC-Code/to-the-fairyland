@@ -2,7 +2,7 @@ import Vec2 from "../../../../Wolfie2D/DataTypes/Vec2";
 import GameNode from "../../../../Wolfie2D/Nodes/GameNode";
 import AnimatedSprite from "../../../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
 import { sameGridTile } from "../../Pathfinding/GridAStar";
-import AStarTileMovementBehavior from "./AStarTileMovementBehavior";
+import AStarTileMovementBehavior from "../../NPC/NPCBehavior/AStarTileMovementBehavior";
 import PlayerActor from "../../../Actors/PlayerActor";
 import PlayerAI from "../../Player/PlayerAI";
 

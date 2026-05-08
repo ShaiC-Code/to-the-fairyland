@@ -1,11 +1,11 @@
-import Vec2 from "../../../../Wolfie2D/DataTypes/Vec2";
-import { TiledObject } from "../../../../Wolfie2D/DataTypes/Tilesets/TiledData";
-import OrthogonalTilemap from "../../../../Wolfie2D/Nodes/Tilemaps/OrthogonalTilemap";
-import Sprite from "../../../../Wolfie2D/Nodes/Sprites/Sprite";
-import Scene from "../../../../Wolfie2D/Scene/Scene";
-import type { PlayerAttackHitbox } from "../../../GameSystems/CombatSystem/PlayerAttackController";
-import type { SwordHitTarget } from "../../../GameSystems/CombatSystem/SwordHitDispatcher";
-import AudioController from "../../../GameSystems/AudioController";
+import Vec2 from "../../../../../Wolfie2D/DataTypes/Vec2";
+import { TiledObject } from "../../../../../Wolfie2D/DataTypes/Tilesets/TiledData";
+import OrthogonalTilemap from "../../../../../Wolfie2D/Nodes/Tilemaps/OrthogonalTilemap";
+import Sprite from "../../../../../Wolfie2D/Nodes/Sprites/Sprite";
+import Scene from "../../../../../Wolfie2D/Scene/Scene";
+import type { PlayerAttackHitbox } from "../../../../GameSystems/CombatSystem/PlayerAttackController";
+import type { SwordHitTarget } from "../../../../GameSystems/CombatSystem/SwordHitDispatcher";
+import AudioController from "../../../../GameSystems/AudioController";
 
 export type VineAttackType = "normal" | "exit";
 

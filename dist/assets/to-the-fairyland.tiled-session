@@ -1,15 +1,15 @@
 {
-    "activeFile": "tilemaps/Chapter4/GreatTree.json",
+    "activeFile": "tilemaps/Chapter6/DesertLand.json",
     "expandedProjectPaths": [
+        "tilemaps/Chapter7",
+        "tilemaps/Chapter2",
         "tilemaps/Chapter5",
-        "tilemaps/Chapter4",
         "tilemaps",
         ".",
-        "tilemaps/Chapter1",
+        "tilemaps/Chapter4",
         "tilemaps/Chapter6",
         "spritesheets",
-        "tilemaps/Chapter7",
-        "tilemaps/Chapter2"
+        "tilemaps/Chapter1"
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
@@ -142,15 +142,15 @@
         },
         "tilemaps/Chapter2/Village.json": {
             "expandedObjectLayers": [
-                9,
+                5,
                 7,
-                5
+                9
             ],
             "scale": 1,
             "selectedLayer": 6,
             "viewCenter": {
-                "x": 878,
-                "y": 1709.5
+                "x": 1024.5,
+                "y": 1056
             }
         },
         "tilemaps/Chapter2/Village.json#Village": {
@@ -159,9 +159,9 @@
         },
         "tilemaps/Chapter4/CliffBottom.json": {
             "expandedObjectLayers": [
+                10,
                 3,
-                4,
-                10
+                4
             ],
             "scale": 0.5,
             "selectedLayer": 7,
@@ -193,17 +193,17 @@
         },
         "tilemaps/Chapter4/GreatTree.json": {
             "expandedObjectLayers": [
-                3,
                 8,
-                2,
                 5,
+                2,
+                3,
                 4
             ],
             "scale": 0.5,
             "selectedLayer": 8,
             "viewCenter": {
-                "x": 1094,
-                "y": 1179
+                "x": 1023,
+                "y": 1184
             }
         },
         "tilemaps/Chapter4/GreatTree.json#Chapter2_Village_Tiles": {
@@ -212,16 +212,16 @@
         },
         "tilemaps/Chapter4/TreeInner.json": {
             "expandedObjectLayers": [
-                17,
-                18,
                 5,
-                4
+                18,
+                4,
+                17
             ],
             "scale": 1.5,
             "selectedLayer": 8,
             "viewCenter": {
-                "x": 1562,
-                "y": 1814.333333333333
+                "x": 1600.3333333333333,
+                "y": 1280
             }
         },
         "tilemaps/Chapter4/TreeInner.json#Chapter2_Village_Tiles": {
@@ -232,8 +232,8 @@
             "scale": 1.5,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 3806.6666666666665,
-                "y": 6466.333333333333
+                "x": 3840.333333333333,
+                "y": 5120
             }
         },
         "tilemaps/Chapter5/UndergroundTunnel.json#DesertLand": {
@@ -241,13 +241,14 @@
         },
         "tilemaps/Chapter6/DesertLand.json": {
             "expandedObjectLayers": [
+                5,
                 2
             ],
             "scale": 0.75,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 1348,
-                "y": 1988.6666666666665
+                "x": 1210.6666666666667,
+                "y": 2130.6666666666665
             }
         },
         "tilemaps/Chapter6/DesertLand.json#DesertLand": {
@@ -261,8 +262,8 @@
             "scale": 0.75,
             "selectedLayer": 4,
             "viewCenter": {
-                "x": 689.3333333333333,
-                "y": 668.6666666666665
+                "x": 831.3333333333333,
+                "y": 672
             }
         },
         "tilemaps/Chapter7/EmeraldPond.json#EmeraldPond": {
@@ -289,23 +290,26 @@
         "tilemaps/Chapter4/DeeperForest.json",
         "tilemaps/Chapter4/GreatTree.json",
         "tilemaps/Chapter4/TreeInner.json",
-        "tilemaps/Chapter2/Village.json"
+        "tilemaps/Chapter2/Village.json",
+        "tilemaps/Chapter6/DesertLand.json",
+        "tilemaps/Chapter5/UndergroundTunnel.json",
+        "tilemaps/Chapter7/EmeraldPond.json"
     ],
     "project": "to-the-fairyland.tiled-project",
     "property.type": "int",
     "recentFiles": [
         "tilemaps/Chapter4/CliffBottom.json",
         "tilemaps/Chapter4/DeeperForest.json",
-        "tilemaps/Chapter2/Village.json",
-        "tilemaps/Chapter4/TreeInner.json",
         "tilemaps/Chapter4/GreatTree.json",
+        "tilemaps/Chapter4/TreeInner.json",
+        "tilemaps/Chapter2/Village.json",
+        "tilemaps/Chapter7/EmeraldPond.json",
+        "tilemaps/Chapter5/UndergroundTunnel.json",
+        "tilemaps/Chapter6/DesertLand.json",
         "tilemaps/Chapter2/Road.json",
         "tilemaps/Chapter2/Road1.json",
         "tilemaps/Chapter1/Chapter1.json",
-        "tilemaps/Chapter1/Shelter.json",
-        "tilemaps/Chapter2/Road2.json",
-        "tilemaps/Chapter6/DesertLand.json",
-        "tilemaps/Chapter5/UndergroundTunnel.json"
+        "tilemaps/Chapter1/Shelter.json"
     ],
     "resizeMap.removeObjects": false,
     "tileset.embedInMap": true,
