@@ -1,13 +1,13 @@
-import { TiledObject, TiledTilemapData } from "../../Wolfie2D/DataTypes/Tilesets/TiledData";
-import NPCActor from "../Actors/NPCActor";
-import IdleBehavior from "../AI/NPC/NPCBehavior/IdleBehavior";
-import LycanChaseBehavior from "../AI/NPC/NPCBehavior/LycanChaseBehavior";
-import { LycanEvent } from "../Events";
-import { AssetBundle } from "./MappedAdventureScene";
-import MappedAdventureChapter2Scene from "./Chapter2/MappedAdventureChapter2Scene";
-import PlayerDeathHitOverlay from "../Overlays/PlayerDeathHitOverlay";
-import GameOverScreenScene from "./GameOverScreenScene";
-import AudioController from "../GameSystems/AudioController";
+import { TiledObject, TiledTilemapData } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData";
+import NPCActor from "../../Actors/NPCActor";
+import IdleBehavior from "../../AI/NPC/NPCBehavior/IdleBehavior";
+import LycanChaseBehavior from "../../AI/NPC/NPCBehavior/LycanChaseBehavior";
+import { LycanEvent } from "../../Events";
+import { AssetBundle } from "../MappedAdventureScene";
+import MappedAdventureChapter2Scene from "./MappedAdventureChapter2Scene";
+import PlayerDeathHitOverlay from "../../Overlays/PlayerDeathHitOverlay";
+import GameOverScreenScene from "../GameOverScreenScene";
+import AudioController from "../../GameSystems/AudioController";
 
 export default abstract class LycanChaseSceneBase extends MappedAdventureChapter2Scene {
     protected lycans: NPCActor[] = [];

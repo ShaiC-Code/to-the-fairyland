@@ -14,9 +14,7 @@ export default class ShelterScene extends MappedAdventureChapter1Scene {
     };
 
     protected static readonly assetBundle: AssetBundle = {
-        tilemaps: {
-            shelter: { key: "shelter", path: "/assets/tilemaps/Chapter1/Shelter.json" }
-        },
+        tilemaps: {},
         spritesheets: {},
         sprites: {
             bedSprite: { key: "bed", path: "/assets/sprites/Bed.png" },

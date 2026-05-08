@@ -6,7 +6,7 @@ import { AssetBundle } from "../MappedAdventureScene";
 import RoadScene from "./RoadScene";
 import { dialogue, getNpcInteraction } from "../../GameSystems/InteractionSystem/InteractionDatabase";
 import ScrollingPatternWorldLayer from "../../Overlays/ScrollingPatternWorldLayer";
-import LycanChaseSceneBase from "../LycanChaseSceneBase";
+import LycanChaseSceneBase from "./LycanChaseSceneBase";
 import AudioController from "../../GameSystems/AudioController";
 
 type NpcRuntime = {
@@ -21,9 +21,7 @@ export default class VillageScene extends LycanChaseSceneBase {
     };
         
     protected static readonly assetBundle: AssetBundle = {
-        tilemaps: {
-            village: { key: "village", path: "/assets/tilemaps/Chapter2/Village.json" }
-        },
+        tilemaps: {},
         spritesheets: {
             K: { key: "K", path: "/assets/spritesheets/K.json" },
             J: { key: "J", path: "/assets/spritesheets/J.json" },

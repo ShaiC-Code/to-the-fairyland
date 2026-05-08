@@ -11,7 +11,11 @@ export default abstract class MappedAdventureChapter1Scene extends MappedAdventu
     protected static readonly assetBundle: AssetBundle = {
         tilemaps: {},
         spritesheets: {},
-        sprites: {},
+        sprites: {
+            snowFlake1Sprite: { key: "snowflake1", path: "/assets/sprites/particles/SnowFlake1.png" },
+            snowFlake2Sprite: { key: "snowflake2", path: "/assets/sprites/particles/SnowFlake2.png" },
+            snowFlake3Sprite: { key: "snowflake3", path: "/assets/sprites/particles/SnowFlake3.png" }
+        },
         sounds: {
             walkingSnowSFX: { key: "walking-snow", path: "/assets/sounds/walking-snow.ogg" },
             walkingWoodSFX: { key: "walking-wood", path: "/assets/sounds/walking-wood.ogg" },
@@ -52,6 +56,24 @@ export default abstract class MappedAdventureChapter1Scene extends MappedAdventu
         AudioController.getInstance().stopSound(this.assets.sounds.walkingWoodSFX.key);
         AudioController.getInstance().stopSound(this.assets.sounds.walkingSnowSFX.key);
         AudioController.getInstance().stopSound(this.assets.sounds.walkingSnowBushSFX.key);
+    }
+
+    protected gotoChapter2(): void {
+        this.storyManager.unlockChapter2();
+        this.sceneManager.changeToScene(
+            VillageScene,
+            {
+                cheatsEnabled: this.cheatsEnabled,
+                spawnName: "RoadStart"
+            },
+            undefined,
+            {
+                showLoadingOverlay: true,
+                useFadeTransition: true,
+                fadeOutMs: 500,
+                fadeInMs: 500
+            }
+        );
     }
 
     protected onMapPickedUp(): void {}
@@ -107,23 +129,5 @@ export default abstract class MappedAdventureChapter1Scene extends MappedAdventu
             this.storyManager.chapter1.markMapPickedUp();
             this.onMapPickedUp();
         }
-    }
-
-    protected gotoChapter2(): void {
-        this.storyManager.unlockChapter2();
-        this.sceneManager.changeToScene(
-            VillageScene,
-            {
-                cheatsEnabled: this.cheatsEnabled,
-                spawnName: "RoadStart"
-            },
-            undefined,
-            {
-                showLoadingOverlay: true,
-                useFadeTransition: true,
-                fadeOutMs: 500,
-                fadeInMs: 500
-            }
-        );
     }
 }

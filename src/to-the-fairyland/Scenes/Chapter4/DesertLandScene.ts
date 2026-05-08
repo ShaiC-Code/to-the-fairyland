@@ -1,7 +1,4 @@
-import MappedAdventureScene, {
-    AssetBundle,
-    ChapterSceneDefinition
-} from "../MappedAdventureScene";
+import MappedAdventureScene, { AssetBundle, ChapterSceneDefinition } from "../MappedAdventureScene";
 import { TiledObject, TiledTilemapData } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData";
 import DesertCentipedeController from "../../AI/NPC/NPCController/DesertCentipedeController";
 import { WeatherType } from "../../GameSystems/WorldSystem/WorldState";
@@ -10,18 +7,16 @@ import AudioController from "../../GameSystems/AudioController";
 export default class DesertLandScene extends MappedAdventureScene {
     protected readonly tilemap = {
         key: "desertLand",
-        path: "/assets/tilemaps/Chapter6/DesertLand.json"
+        path: "/assets/tilemaps/Chapter4/DesertLand.json"
     };
 
     protected static readonly assetBundle: AssetBundle = {
-        tilemaps: {
-            desertLand: {
-                key: "desertLand",
-                path: "/assets/tilemaps/Chapter6/DesertLand.json"
-            }
-        },
+        tilemaps: {},
         spritesheets: {},
         sprites: {
+            sandParticle1Sprite: { key: "sandParticle1", path: "/assets/sprites/particles/SandParticle1.png" },
+            sandParticle2Sprite: { key: "sandParticle2", path: "/assets/sprites/particles/SandParticle2.png" },
+            sandParticle3Sprite: { key: "sandParticle3", path: "/assets/sprites/particles/SandParticle3.png" },
             desertCentipedeHead: {
                 key: "desertCentipedeHead",
                 path: "/assets/spritesheets/desertCentipede_pieces1.png"

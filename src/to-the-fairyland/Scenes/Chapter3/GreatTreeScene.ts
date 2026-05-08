@@ -1,5 +1,5 @@
 import { TiledObject, TiledTilemapData } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData";
-import ForestSceneBase from "../ForestSceneBase";
+import ForestSceneBase from "./ForestSceneBase";
 import DeeperForestScene from "./DeeperForestScene";
 import TreeInnerScene from "./TreeInnerScene";
 import { AssetBundle } from "../MappedAdventureScene";
@@ -12,7 +12,7 @@ import AudioController from "../../GameSystems/AudioController";
 export default class GreatTreeScene extends ForestSceneBase {
     protected readonly tilemap = {
         key: "greatTree",
-        path: "/assets/tilemaps/Chapter4/GreatTree.json"
+        path: "/assets/tilemaps/Chapter3/GreatTree.json"
     };
 
     protected static readonly assetBundle: AssetBundle = {

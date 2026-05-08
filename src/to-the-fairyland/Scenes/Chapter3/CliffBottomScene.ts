@@ -1,18 +1,16 @@
 import { TiledObject, TiledTilemapData } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData";
 import AnimatedSprite from "../../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
-import ForestSceneBase from "../ForestSceneBase";
+import ForestSceneBase from "./ForestSceneBase";
 import DeeperForestScene from "./DeeperForestScene";
 import { AssetBundle } from "../MappedAdventureScene";
-import StoryManager from "../../GameSystems/StorySystem/StoryManager";
 import PlayerAI from "../../AI/Player/PlayerAI";
 import { PlayerControlMode } from "../../AI/Player/PlayerController";
 import ToothFairyApproachBehavior from "../../AI/NPC/NPCBehavior/ToothFairyApproachBehavior";
 
-
 export default class CliffBottomScene extends ForestSceneBase {
     protected readonly tilemap = {
         key: "cliffBottom",
-        path: "/assets/tilemaps/Chapter4/CliffBottom.json"
+        path: "/assets/tilemaps/Chapter3/CliffBottom.json"
     };
 
     protected static readonly assetBundle: AssetBundle = {
@@ -37,7 +35,6 @@ export default class CliffBottomScene extends ForestSceneBase {
         images: {}
     };
 
-    private readonly storyManager = StoryManager.getInstance();
     private faintSprite: AnimatedSprite | null = null;
     private faintLockActive = false;
     private toothFairies: AnimatedSprite[] = [];
@@ -64,7 +61,7 @@ export default class CliffBottomScene extends ForestSceneBase {
             });
         }
         
-        if (this.storyManager.chapter4.isPlayerFainted()) {
+        if (this.storyManager.chapter3.isPlayerFainted()) {
             this.playerFaint();
         }
     }
@@ -133,19 +130,19 @@ export default class CliffBottomScene extends ForestSceneBase {
         }
 
         this.toothFairyIntroStarted = true;
-        this.storyManager.chapter4.markToothFairyAttracted();
+        this.storyManager.chapter3.markToothFairyAttracted();
         this.playerFaint();
     }
 
     private healByToothFairy(): void {
-        this.storyManager.chapter4.markHealedByToothFairy();
+        this.storyManager.chapter3.markHealedByToothFairy();
         this.playerUnfaint();
     
         // optional healed dialogue / animation
     }
     
     private finishToothFairyIntro(): void {
-        this.storyManager.chapter4.markNeedExcalibur();
+        this.storyManager.chapter3.markNeedExcalibur();
     }
     
     private playerFaint(): void {

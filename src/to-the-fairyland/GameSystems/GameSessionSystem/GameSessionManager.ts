@@ -2,8 +2,8 @@ import {
     GameSessionState,
     createInitialChapter1GameSessionState,
     createInitialChapter2GameSessionState,
-    createInitialChapter4GameSessionState,
-    createInitialChapter6GameSessionState
+    createInitialChapter3GameSessionState,
+    createInitialChapter4GameSessionState
 } from "./GameSessionState";
 import { PlayerState } from "../PlayerSystem/PlayerState";
 import { StoryState } from "../StorySystem/StoryState";
@@ -64,11 +64,11 @@ export default class GameSessionManager {
         this.currentSession = createInitialChapter2GameSessionState();
     }
 
+    public startNewChapter3Game(): void {
+        this.currentSession = createInitialChapter3GameSessionState();
+    }
     public startNewChapter4Game(): void {
         this.currentSession = createInitialChapter4GameSessionState();
-    }
-    public startNewChapter6Game(): void {
-        this.currentSession = createInitialChapter6GameSessionState();
     }
     
 

@@ -1,7 +1,7 @@
 import { AssetBundle } from "../MappedAdventureScene";
 import MappedAdventureChapter2Scene from "./MappedAdventureChapter2Scene";
 import { TiledTilemapData } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData";
-import LycanChaseSceneBase from "../LycanChaseSceneBase";
+import LycanChaseSceneBase from "./LycanChaseSceneBase";
 
 export default abstract class RoadSceneBase extends LycanChaseSceneBase {
     protected static readonly roadAssetBundle: AssetBundle = {
