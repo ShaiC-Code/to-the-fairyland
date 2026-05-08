@@ -6,6 +6,7 @@ import { AssetBundle } from "../MappedAdventureScene";
 import StoryManager from "../../GameSystems/StorySystem/StoryManager";
 import PlayerAI from "../../AI/Player/PlayerAI";
 import { PlayerControlMode } from "../../AI/Player/PlayerController";
+import ToothFairyApproachBehavior from "../../AI/NPC/NPCBehavior/ToothFairyApproachBehavior";
 
 
 export default class CliffBottomScene extends ForestSceneBase {
@@ -34,6 +35,8 @@ export default class CliffBottomScene extends ForestSceneBase {
     private readonly storyManager = StoryManager.getInstance();
     private faintSprite: AnimatedSprite | null = null;
     private faintLockActive = false;
+    private toothFairies: AnimatedSprite[] = [];
+
 
     protected override combinedAssetBundles(): AssetBundle {
         return this.mergeAssetBundles(super.combinedAssetBundles(), CliffBottomScene.assetBundle);
@@ -42,6 +45,12 @@ export default class CliffBottomScene extends ForestSceneBase {
     public override startScene(): void {
         super.startScene();
 
+        for (const fairy of this.toothFairies) {
+            fairy.addAI(ToothFairyApproachBehavior, {
+                player: this.player
+            });
+        }
+        
         if (this.storyManager.chapter4.isPlayerFainted()) {
             this.playerFaint();
         }
@@ -58,17 +67,20 @@ export default class CliffBottomScene extends ForestSceneBase {
 
     protected override spawnMapObjects(tilemapData: TiledTilemapData): void {
         super.spawnMapObjects(tilemapData);
-
+    
+        this.toothFairies = [];
+    
         const fairyLayer = tilemapData.layers.find(
             layer => layer.name === this.fairySpawnLayerName
         );
-
+    
         const fairySpawns = fairyLayer?.objects ?? [];
-
+    
         for (const spawn of fairySpawns) {
             this.spawnToothFairy(spawn);
         }
     }
+    
 
     private spawnToothFairy(spawn: TiledObject): void {
         const fairy = this.add.animatedSprite(
@@ -90,6 +102,8 @@ export default class CliffBottomScene extends ForestSceneBase {
 
         const facing = spawn.properties?.find(prop => prop.name === "facing")?.value;
         fairy.animation.play(facing === "left" ? "IDLE_LEFT" : "IDLE_RIGHT", true);
+
+        this.toothFairies.push(fairy);
     }
 
 
