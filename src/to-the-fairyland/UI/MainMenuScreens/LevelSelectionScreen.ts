@@ -3,6 +3,19 @@ import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 import UIScreen, { UIScreenOptions } from "../UIScreen";
 
 export default class LevelSelectionScreen extends UIScreen {
+    private readonly levelNames: Map<string, string> = new Map([
+        ["level1", "Epilogue"],
+        ["level2", "Entering Village"],
+        ["level3", "Leaving Village"],
+        ["level4", "Returned to Village"],
+        ["level5", "Cliff Jump"],
+        ["level6", "After the Fall"],
+        ["level7", "Entering Great Tree"],
+        ["level8", "Leaving Great Tree"],
+        ["level9", "The Desert"],
+        ["level10", "Drowning"]
+    ]);
+
     constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, options?: UIScreenOptions) {
         super(layerName, scene, getViewportCenter, getViewportHalfSize, options);
         this.initializeUI();
@@ -23,7 +36,7 @@ export default class LevelSelectionScreen extends UIScreen {
         const levelButtons = Array.from({ length: 10 }, (_, i) => ({
             key: `level${i + 1}Btn`,
             pos: new Vec2(screenCenter.x, listTop + verticalOffset * i),
-            text: `LEVEL ${i + 1}`,
+            text: this.levelNames.get(`level${i + 1}`) || `Level ${i + 1}`,
             eventId: `level${i + 1}`
         }));
         

@@ -1,5 +1,5 @@
 import { TiledTilemapData } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData";
-import MappedAdventureChapter3Scene from "./MappedAdventureChapter2Scene";
+import MappedAdventureChapter3Scene from "./MappedAdventureChapter3Scene";
 
 export default abstract class ForestSceneBase extends MappedAdventureChapter3Scene {
     protected override configureLayers(): void {
