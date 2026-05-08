@@ -4,11 +4,12 @@ import UIImage from "../UI/CustomUIElements/UIImage";
 import ClickableOverlay from "../UI/CustomUIElements/ClickableOverlay";
 import { CustomUIElementType } from "../UI/CustomUIElements/CustomUIElementTypes";
 import SplashScreen from "../UI/SplashScreenScreens/SplashScreen";
-import MainMenu from "./MainMenu";
 import { PlayerInput } from "../AI/Player/PlayerController";
 import Color from "../../Wolfie2D/Utils/Color";
 import Rect from "../../Wolfie2D/Nodes/Graphics/Rect";
 import { GraphicType } from "../../Wolfie2D/Nodes/Graphics/GraphicTypes";
+import GameSessionManager from "../GameSystems/GameSessionSystem/GameSessionManager";
+import { changeToNewGameStartScene, changeToResumePointScene } from "./MainMenu";
 
 type AssetRef = Readonly<{
     key: string;
@@ -29,6 +30,7 @@ export default class GameOverScreenScene extends Scene {
     private fadeCover!: Rect;
     private fadeElapsed = 0;
     private readonly fadeInDuration = 0.8;
+    private readonly gameSessionManager = GameSessionManager.getInstance();
 
     protected gameOverScreen!: SplashScreen;
 
@@ -52,16 +54,7 @@ export default class GameOverScreenScene extends Scene {
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize(),
             this.GameOverScreenImage.key,
-            () => this.sceneManager.changeToScene(
-                MainMenu, // Should be send to player to checkpoint, but is MainMenu for now
-                undefined,
-                undefined,
-                {
-                    useFadeTransition: true,
-                    fadeOutMs: 500,
-                    fadeInMs: 500
-                }
-            ),
+            () => this.respawnToCheckpointOrResume(),
             {
                 onClickSFXKey: this.gameOverScreenProceedSFX.key,
                 uiActions: {
@@ -94,6 +87,29 @@ export default class GameOverScreenScene extends Scene {
     
             const progress = Math.min(this.fadeElapsed / this.fadeInDuration, 1);
             this.fadeCover.alpha = 1 - progress;
+        }
+    }
+
+    private respawnToCheckpointOrResume(): void {
+        const checkpointKey = this.gameSessionManager.getActiveCheckpointKey();
+
+        if (!(checkpointKey && this.gameSessionManager.loadCheckpoint(checkpointKey))) {
+            console.warn("No valid checkpoint found, attempting to restore session from cookie...");
+            this.gameSessionManager.restoreSessionFromCookie();
+        }
+
+        const resumePoint = this.gameSessionManager.getResumePoint();
+        console.log("Loaded resume point:", resumePoint);
+
+        if (!resumePoint) {
+            this.gameSessionManager.startNewGame();
+            changeToNewGameStartScene(this.sceneManager);
+            return;
+        }
+
+        if (!changeToResumePointScene(this.sceneManager, resumePoint)) {
+            this.gameSessionManager.startNewGame();
+            changeToNewGameStartScene(this.sceneManager);
         }
     }
 }

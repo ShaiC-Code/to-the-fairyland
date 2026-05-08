@@ -18,6 +18,16 @@ export default class Chapter3StoryManager {
         return this.getState().mainQuestStep;
     }
 
+    private getState(): Chapter3StoryState {
+        const state = this.getStoryState().chapter3;
+
+        if (!state) {
+            throw new Error("Chapter 3 story state has not been initialized yet.");
+        }
+
+        return state;
+    }
+
     public hasReachedStep(step: Chapter3MainQuestStep): boolean {
         const currentIndex = CHAPTER3_MAIN_QUEST_ORDER.indexOf(this.getState().mainQuestStep);
         const targetIndex = CHAPTER3_MAIN_QUEST_ORDER.indexOf(step);
@@ -93,15 +103,5 @@ export default class Chapter3StoryManager {
             state.mainQuestStep = Chapter3MainQuestStep.VINE_EXIT_OPEN;
             this.syncWorldState();
         }
-    }
-
-    private getState(): Chapter3StoryState {
-        const state = this.getStoryState().chapter3;
-
-        if (!state) {
-            throw new Error("Chapter 3 story state has not been initialized yet.");
-        }
-
-        return state;
     }
 }

@@ -13,7 +13,7 @@ export default class Road3Scene extends RoadSceneBase {
 
     public override startScene(): void {
         super.startScene();
-        this.storyManager.chapter2.markArrivedAtRoad3();
+        this.storyManager.chapter2.markLeaveVillage();
     }
     
     protected override canUseSleepingBagHere(): boolean {
@@ -66,8 +66,6 @@ export default class Road3Scene extends RoadSceneBase {
     }
     
     private triggerVillageShake(): void {
-        this.storyManager.chapter2.markVillageShakeStarted();
-
         AudioController.getInstance().playSFX(this.assets.sounds.somethingBigSFX.key);
         this.cameraController.shake(2200, 40);
     
@@ -77,7 +75,7 @@ export default class Road3Scene extends RoadSceneBase {
                 "The tremor came from the direction of the village."
             ],
             {
-                onComplete: () => this.storyManager.chapter2.markVillageShakeComplete()
+                onComplete: () => this.storyManager.chapter2.markApproachCliff()
             }
         ));
     }

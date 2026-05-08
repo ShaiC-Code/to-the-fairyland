@@ -4,7 +4,7 @@ import { TiledTilemapData } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData
 import LycanChaseSceneBase from "./LycanChaseSceneBase";
 
 export default abstract class RoadSceneBase extends LycanChaseSceneBase {
-    protected static readonly roadAssetBundle: AssetBundle = {
+    protected static readonly assetBundle: AssetBundle = {
         tilemaps: {},
         spritesheets: {},
         sprites: {
@@ -35,7 +35,7 @@ export default abstract class RoadSceneBase extends LycanChaseSceneBase {
     }
 
     protected combinedAssetBundles(): AssetBundle {
-        const sharedAssets = this.mergeAssetBundles(super.combinedAssetBundles(), RoadSceneBase.roadAssetBundle);
+        const sharedAssets = this.mergeAssetBundles(super.combinedAssetBundles(), RoadSceneBase.assetBundle);
 
         return this.mergeAssetBundles(sharedAssets, {
             tilemaps: { [this.tilemap.key]: this.tilemap },

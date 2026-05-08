@@ -64,6 +64,11 @@ export default class VillageScene extends LycanChaseSceneBase {
                 alpha: 0.4
             }
         );
+
+        if (this.storyManager.chapter2.needsToCheckVillage()) {
+            this.storyManager.chapter2.markReturnedToVillage();
+        }
+        
         if (this.storyManager.chapter2.needsToEscapeLycans()) {
             this.startAllLycanChases();
         }
@@ -170,8 +175,6 @@ export default class VillageScene extends LycanChaseSceneBase {
                 }
             })
         );
-        
-        this.storyManager.chapter2.markEscapeLycansStarted();
     }
     
     protected override tryStartSceneInteractionAtTile(tile: Vec2): boolean {
