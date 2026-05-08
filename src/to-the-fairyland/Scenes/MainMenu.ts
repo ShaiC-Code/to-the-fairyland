@@ -477,7 +477,7 @@ export default class MainMenu extends Scene {
                     throw new Error("Chapter 3 story state was not initialized.");
                 }
 
-                chapter3.mainQuestStep = Chapter3MainQuestStep.EXCALIBUR_PULLED;
+                chapter3.mainQuestStep = Chapter3MainQuestStep.VINE_EXIT_OPEN;
 
                 this.sceneManager.changeToScene(
                     GreatTreeScene,

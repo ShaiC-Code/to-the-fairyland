@@ -612,7 +612,7 @@ export default abstract class MappedAdventureScene extends Scene {
     }
 
     protected shouldPauseWorldForScene(): boolean {
-        return this.scenePauseOverlays.some(overlay => overlay.getIsVisible());
+        return this.scenePauseOverlays.some(overlay => overlay.shouldPauseWorld());
     }
 
     protected getWorldPauseLayerExceptions(): ReadonlyArray<string> {

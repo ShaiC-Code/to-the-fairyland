@@ -7,14 +7,25 @@ import OverlayLayer, { OverlayLayerOptions } from "./OverlayLayer";
 export type TitleOverlayOptions = OverlayLayerOptions & {
     backgroundColor?: Color;
     defaultTextColor?: TitleOverlayTextColor;
+    fadeInSeconds?: number;
+    fadeOutSeconds?: number;
     fontSize?: number;
     titleHeight?: number;
     horizontalPadding?: number;
     minTitleWidth?: number;
     pauseScene?: boolean;
+    startDelaySeconds?: number;
 };
 
 export type TitleOverlayTextColor = "white" | "red" | "green";
+
+export type TitleOverlayShowOptions = {
+    fadeInSeconds?: number;
+    fadeOutSeconds?: number;
+    startDelaySeconds?: number;
+};
+
+type TitleOverlayPhase = "hidden" | "delay" | "fadeIn" | "hold" | "fadeOut";
 
 type ScenePauseRegistrar = {
     registerScenePauseOverlay: (overlay: OverlayLayer) => void;
@@ -26,13 +37,23 @@ export default class TitleOverlay extends OverlayLayer {
 
     private readonly backgroundColor: Color;
     private readonly defaultTextColor: TitleOverlayTextColor;
+    private readonly defaultFadeInSeconds: number;
+    private readonly defaultFadeOutSeconds: number;
     private readonly fontSize: number;
     private readonly titleHeight: number;
     private readonly horizontalPadding: number;
     private readonly minTitleWidth: number;
+    private readonly defaultStartDelaySeconds: number;
 
     private titleText = "";
-    private hideTimer: number | null = null;
+    private phase: TitleOverlayPhase = "hidden";
+    private phaseElapsedSeconds = 0;
+    private holdDurationSeconds: number | undefined;
+    private fadeInSeconds = 0;
+    private fadeOutSeconds = 0;
+    private fadeOutStartAlpha = 1;
+    private overlayAlpha = 0;
+    private startDelaySeconds = 0;
     private autoHideResolve: (() => void) | null = null;
 
     constructor(
@@ -49,10 +70,13 @@ export default class TitleOverlay extends OverlayLayer {
 
         this.backgroundColor = options?.backgroundColor ?? new Color(0, 0, 0, 0.95);
         this.defaultTextColor = options?.defaultTextColor ?? "red";
+        this.defaultFadeInSeconds = options?.fadeInSeconds ?? 0.35;
+        this.defaultFadeOutSeconds = options?.fadeOutSeconds ?? 0.35;
         this.fontSize = options?.fontSize ?? 64;
         this.titleHeight = options?.titleHeight ?? 160;
         this.horizontalPadding = options?.horizontalPadding ?? 80;
         this.minTitleWidth = options?.minTitleWidth ?? 400;
+        this.defaultStartDelaySeconds = options?.startDelaySeconds ?? 0;
 
         if (options?.pauseScene) {
             this.registerScenePauseOverlay();
@@ -83,6 +107,7 @@ export default class TitleOverlay extends OverlayLayer {
         }
 
         this.layer.setHidden(true);
+        this.setOverlayAlpha(0);
     }
 
     public override update(deltaT: number): void {
@@ -93,6 +118,7 @@ export default class TitleOverlay extends OverlayLayer {
         }
 
         this.updateBounds();
+        this.updatePhase(deltaT);
     }
 
     public setText(text: string): void {
@@ -107,41 +133,43 @@ export default class TitleOverlay extends OverlayLayer {
     public showTitle(
         text: string,
         durationSeconds?: number,
-        textColor: TitleOverlayTextColor = this.defaultTextColor
+        textColor: TitleOverlayTextColor = this.defaultTextColor,
+        options?: TitleOverlayShowOptions
     ): Promise<void> {
-        this.clearHideTimer();
         this.resolveAutoHide();
+        const completionPromise = new Promise<void>(resolve => {
+            this.autoHideResolve = resolve;
+        });
+
         this.setText(text);
         this.setTextColor(textColor);
         this.updateBounds();
         this.show();
 
-        if (durationSeconds === undefined) {
-            return Promise.resolve();
+        this.holdDurationSeconds = durationSeconds === undefined
+            ? undefined
+            : Math.max(0, durationSeconds);
+        this.fadeInSeconds = Math.max(0, options?.fadeInSeconds ?? this.defaultFadeInSeconds);
+        this.fadeOutSeconds = Math.max(0, options?.fadeOutSeconds ?? this.defaultFadeOutSeconds);
+        this.startDelaySeconds = Math.max(0, options?.startDelaySeconds ?? this.defaultStartDelaySeconds);
+        this.phaseElapsedSeconds = 0;
+        this.phase = this.startDelaySeconds > 0 ? "delay" : "fadeIn";
+        this.setOverlayAlpha(0);
+
+        if (this.phase === "fadeIn" && this.fadeInSeconds === 0) {
+            this.enterHoldPhase();
         }
 
-        return new Promise(resolve => {
-            this.autoHideResolve = resolve;
-            this.hideTimer = window.setTimeout(
-                () => this.hide(),
-                Math.max(0, durationSeconds) * 1000
-            );
-        });
+        return completionPromise;
     }
 
     public override hide(): void {
-        this.clearHideTimer();
-        super.hide();
-        this.resolveAutoHide();
-    }
-
-    private clearHideTimer(): void {
-        if (this.hideTimer === null) {
+        if (this.phase === "hidden") {
+            this.resolveAutoHide();
             return;
         }
 
-        window.clearTimeout(this.hideTimer);
-        this.hideTimer = null;
+        this.beginFadeOut();
     }
 
     private resolveAutoHide(): void {
@@ -152,6 +180,10 @@ export default class TitleOverlay extends OverlayLayer {
         const resolve = this.autoHideResolve;
         this.autoHideResolve = null;
         resolve();
+    }
+
+    public override shouldPauseWorld(): boolean {
+        return this.phase === "hold";
     }
 
     private registerScenePauseOverlay(): void {
@@ -184,6 +216,100 @@ export default class TitleOverlay extends OverlayLayer {
             screenCenter.clone(),
             this.getTitleSize(viewportSize)
         );
+    }
+
+    private updatePhase(deltaT: number): void {
+        this.phaseElapsedSeconds += deltaT;
+
+        switch (this.phase) {
+            case "delay":
+                this.setOverlayAlpha(0);
+
+                if (this.phaseElapsedSeconds >= this.startDelaySeconds) {
+                    this.phase = "fadeIn";
+                    this.phaseElapsedSeconds = 0;
+
+                    if (this.fadeInSeconds === 0) {
+                        this.enterHoldPhase();
+                    }
+                }
+                break;
+            case "fadeIn":
+                this.setOverlayAlpha(this.getPhaseProgress(this.fadeInSeconds));
+
+                if (this.phaseElapsedSeconds >= this.fadeInSeconds) {
+                    this.enterHoldPhase();
+                }
+                break;
+            case "hold":
+                this.setOverlayAlpha(1);
+
+                if (this.holdDurationSeconds !== undefined
+                    && this.phaseElapsedSeconds >= this.holdDurationSeconds
+                ) {
+                    this.beginFadeOut();
+                }
+                break;
+            case "fadeOut":
+                this.setOverlayAlpha(this.fadeOutStartAlpha * (1 - this.getPhaseProgress(this.fadeOutSeconds)));
+
+                if (this.phaseElapsedSeconds >= this.fadeOutSeconds) {
+                    this.finishHide();
+                }
+                break;
+            case "hidden":
+                break;
+        }
+    }
+
+    private enterHoldPhase(): void {
+        this.phase = "hold";
+        this.phaseElapsedSeconds = 0;
+        this.setOverlayAlpha(1);
+
+        if (this.holdDurationSeconds === 0) {
+            this.beginFadeOut();
+        }
+    }
+
+    private beginFadeOut(): void {
+        if (this.phase === "fadeOut") {
+            return;
+        }
+
+        this.fadeOutStartAlpha = this.overlayAlpha;
+
+        if (this.fadeOutSeconds === 0 || this.fadeOutStartAlpha <= 0) {
+            this.finishHide();
+            return;
+        }
+
+        this.phase = "fadeOut";
+        this.phaseElapsedSeconds = 0;
+    }
+
+    private finishHide(): void {
+        this.phase = "hidden";
+        this.phaseElapsedSeconds = 0;
+        this.setOverlayAlpha(0);
+        super.hide();
+        this.resolveAutoHide();
+    }
+
+    private getPhaseProgress(durationSeconds: number): number {
+        if (durationSeconds <= 0) {
+            return 1;
+        }
+
+        return Math.max(0, Math.min(this.phaseElapsedSeconds / durationSeconds, 1));
+    }
+
+    private setOverlayAlpha(alpha: number): void {
+        const clampedAlpha = Math.max(0, Math.min(alpha, 1));
+        this.overlayAlpha = clampedAlpha;
+
+        this.getOverlayElement(this.backgroundKey)!.alpha = clampedAlpha;
+        this.getOverlayElement(this.titleKey)!.alpha = clampedAlpha;
     }
 
     private getTitleSize(viewportSize: Vec2): Vec2 {
