@@ -9,47 +9,41 @@ import SleepingBag from "../../GameSystems/ItemSystem/Items/SleepingBag";
 import ObsidianBoots from "../../GameSystems/ItemSystem/Items/ObsidianBoots";
 import { ItemUseAction, ItemUseActions, ItemUseResult } from "../../GameSystems/ItemSystem/ItemUseActions";
 import { TimeOfDay } from "../../GameSystems/WorldSystem/WorldState";
-import CliffBottomScene from "../Chapter3/CliffBottomScene";
+import AudioController from "../../GameSystems/AudioController";
+import DesertLandScene from "../Chapter4/DesertLandScene";
 
-export default abstract class MappedAdventureChapter2Scene extends MappedAdventureScene {
+export default abstract class MappedAdventureChapter3Scene extends MappedAdventureScene {
     protected static readonly assetBundle: AssetBundle = {
         tilemaps: {},
         spritesheets: {},
-        sprites: {},
-        sounds: {
-            somethingBigSFX: { key: "something-big", path: "/assets/sounds/something-big.ogg" }
+        sprites: {
+            bushBerriesSprite: { key: "bushBerries", path: "/assets/sprites/BushBerries.png" },
+            forestTreeSprite: { key: "forestTree1", path: "/assets/sprites/ForestTree1.png" }
         },
+        sounds: {},
         images: {}
     };
 
     protected readonly chapterDefinition: ChapterSceneDefinition = {
-        dialogueCompleteActionHandlers: {
-            [DialogueCompleteActions.GIVE_FLOWER_RING]: () => this.giveFlowerRing(),
-            [DialogueCompleteActions.GIVE_OBSIDIAN_BOOTS]: () => this.giveObsidianBoots()
-        },
-        dialogueChoiceActionHandlers: {
-            [DialogueChoiceActions.TAKE_FRESH_PRETTY_TOOTH]: () => this.giveFreshPrettyTooth(),
-            [DialogueChoiceActions.TAKE_LOFTY_BREAD]: () => this.giveLoftyBread(),
-            [DialogueChoiceActions.TAKE_SLEEPING_BAG]: () => this.giveSleepingBag()
-        }
+        dialogueCompleteActionHandlers: {},
+        dialogueChoiceActionHandlers: {}
     };
-    
     
     protected readonly storyManager = StoryManager.getInstance();
 
     protected combinedAssetBundles(): AssetBundle {
-        return this.mergeAssetBundles(super.combinedAssetBundles(), MappedAdventureChapter2Scene.assetBundle);
+        return this.mergeAssetBundles(super.combinedAssetBundles(), MappedAdventureChapter3Scene.assetBundle);
     }
 
     public override unloadScene(): void {
         super.unloadScene();
-        this.keepAssets(MappedAdventureChapter2Scene.assetBundle);
+        this.keepAssets(MappedAdventureChapter3Scene.assetBundle);
     }
-    
-    protected gotoChapter3(): void {
-        this.storyManager.unlockChapter3();
+        
+    protected gotoChapter4(): void {
+        this.storyManager.unlockChapter4();
         this.sceneManager.changeToScene(
-            CliffBottomScene,
+            DesertLandScene,
             {
                 cheatsEnabled: this.cheatsEnabled,
                 spawnName: "RoadStart"

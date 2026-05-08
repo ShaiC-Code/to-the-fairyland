@@ -25,72 +25,10 @@ export default class Chapter4StoryManager {
         return currentIndex !== -1 && targetIndex !== -1 && currentIndex >= targetIndex;
     }
 
-    public isPlayerFainted(): boolean {
-        const step = this.getState().mainQuestStep;
-    
-        return step === Chapter4MainQuestStep.FAINTED
-            || step === Chapter4MainQuestStep.ATTRACT_TOOTH_FAIRY;
-    }
-    
-    public markToothFairyAttracted(): void {
+    public markEscapedCentipedes(): void {
         const state = this.getState();
-    
-        if (state.mainQuestStep === Chapter4MainQuestStep.FAINTED) {
-            state.mainQuestStep = Chapter4MainQuestStep.ATTRACT_TOOTH_FAIRY;
-            this.syncWorldState();
-        }
-    }
-    
-    public markHealedByToothFairy(): void {
-        const state = this.getState();
-    
-        if (state.mainQuestStep === Chapter4MainQuestStep.ATTRACT_TOOTH_FAIRY) {
-            state.mainQuestStep = Chapter4MainQuestStep.HEALED_BY_TOOTH_FAIRY;
-            this.syncWorldState();
-        }
-    }
-    
-    public markNeedExcalibur(): void {
-        const state = this.getState();
-    
-        if (state.mainQuestStep === Chapter4MainQuestStep.HEALED_BY_TOOTH_FAIRY) {
-            state.mainQuestStep = Chapter4MainQuestStep.NEED_EXCALIBUR;
-            this.syncWorldState();
-        }
-    }
-    
-    
-    public markExcaliburPulled(): void {
-        const state = this.getState();
-
-        if (state.mainQuestStep === Chapter4MainQuestStep.NEED_EXCALIBUR) {
-            state.mainQuestStep = Chapter4MainQuestStep.EXCALIBUR_PULLED;
-            this.syncWorldState();
-        }
-    }
-
-    public canTriggerVineExitClose(): boolean {
-        return this.getState().mainQuestStep === Chapter4MainQuestStep.EXCALIBUR_PULLED;
-    }
-
-    public markVineExitClosed(): void {
-        const state = this.getState();
-
-        if (state.mainQuestStep === Chapter4MainQuestStep.EXCALIBUR_PULLED) {
-            state.mainQuestStep = Chapter4MainQuestStep.VINE_EXIT_CLOSED;
-            this.syncWorldState();
-        }
-    }
-
-    public isVineExitClosed(): boolean {
-        return this.getState().mainQuestStep === Chapter4MainQuestStep.VINE_EXIT_CLOSED;
-    }
-
-    public markVineExitOpened(): void {
-        const state = this.getState();
-
-        if (state.mainQuestStep === Chapter4MainQuestStep.VINE_EXIT_CLOSED) {
-            state.mainQuestStep = Chapter4MainQuestStep.VINE_EXIT_OPEN;
+        if (state.mainQuestStep === Chapter4MainQuestStep.ESCAPE_DESERT_CENTIPEDES) {
+            state.mainQuestStep = Chapter4MainQuestStep.JUMP_INTO_EMERALD_POND;
             this.syncWorldState();
         }
     }

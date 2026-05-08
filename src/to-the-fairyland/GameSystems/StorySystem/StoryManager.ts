@@ -1,11 +1,13 @@
 import GameSessionManager from "../GameSessionSystem/GameSessionManager";
 import Chapter1StoryManager from "./Chapter1/Chapter1StoryManager";
 import Chapter2StoryManager from "./Chapter2/Chapter2StoryManager";
+import Chapter3StoryManager from "./Chapter3/Chapter3StoryManager";
 import Chapter4StoryManager from "./Chapter4/Chapter4StoryManager";
 import {
     ActiveChapter,
     StoryState,
     createInitialChapter2State,
+    createInitialChapter3State,
     createInitialChapter4State
 } from "./StoryState";
 import { getTimeOfDayForStory } from "./StoryRules";
@@ -19,8 +21,8 @@ export default class StoryManager {
 
     public readonly chapter1: Chapter1StoryManager;
     public readonly chapter2: Chapter2StoryManager;
+    public readonly chapter3: Chapter3StoryManager;
     public readonly chapter4: Chapter4StoryManager;
-
 
     private constructor() {
         this.gameSessionManager = GameSessionManager.getInstance();
@@ -35,11 +37,15 @@ export default class StoryManager {
             () => this.syncWorldStateFromStory()
         );
 
+        this.chapter3 = new Chapter3StoryManager(
+            () => this.getState(),
+            () => this.syncWorldStateFromStory()
+        );
+
         this.chapter4 = new Chapter4StoryManager(
             () => this.getState(),
             () => this.syncWorldStateFromStory()
         );
-        
     }
 
     /**
@@ -72,6 +78,17 @@ export default class StoryManager {
         }
 
         state.activeChapter = ActiveChapter.CHAPTER2;
+        this.syncWorldStateFromStory();
+    }
+
+    public unlockChapter3(): void {
+        const state = this.getState();
+    
+        if (!state.chapter3) {
+            state.chapter3 = createInitialChapter3State();
+        }
+    
+        state.activeChapter = ActiveChapter.CHAPTER3;
         this.syncWorldStateFromStory();
     }
 

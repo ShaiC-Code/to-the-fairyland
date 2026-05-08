@@ -1,5 +1,5 @@
 import { TiledObject, TiledTilemapData } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData";
-import ForestSceneBase from "../ForestSceneBase";
+import ForestSceneBase from "./ForestSceneBase";
 import GreatTreeScene from "./GreatTreeScene";
 import Sprite from "../../../Wolfie2D/Nodes/Sprites/Sprite";
 import Timer from "../../../Wolfie2D/Timing/Timer";
@@ -7,9 +7,8 @@ import { dialogue, DialogueCompleteActions } from "../../GameSystems/Interaction
 import Excalibur from "../../GameSystems/ItemSystem/Items/Excalibur";
 import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 import PlayerAI from "../../AI/Player/PlayerAI";
-import StoryManager from "../../GameSystems/StorySystem/StoryManager";
 import OrthogonalTilemap from "../../../Wolfie2D/Nodes/Tilemaps/OrthogonalTilemap";
-import { Chapter4MainQuestStep } from "../../GameSystems/StorySystem/StoryState";
+import { Chapter3MainQuestStep } from "../../GameSystems/StorySystem/StoryState";
 import VineAttackController, { VineAttackOptions } from "../../AI/NPC/NPCController/VineAttackController";
 import VineShooterWaveController, { VINE_INDICATOR_LAYER_NAME } from "../../AI/NPC/NPCController/VineShooterWaveController";
 import TitleOverlay from "../../Overlays/TitleOverlay";
@@ -19,7 +18,7 @@ import AudioController from "../../GameSystems/AudioController";
 export default class TreeInnerScene extends ForestSceneBase {
     protected readonly tilemap = {
         key: "treeInner",
-        path: "/assets/tilemaps/Chapter4/TreeInner.json"
+        path: "/assets/tilemaps/Chapter3/TreeInner.json"
     };
 
     protected static readonly assetBundle: AssetBundle = {
@@ -37,8 +36,6 @@ export default class TreeInnerScene extends ForestSceneBase {
         },
         images: {}
     };
-    
-    private readonly storyManager = StoryManager.getInstance();
 
     private excaliburSprite: Sprite | null = null;
     private excaliburObject: TiledObject | null = null;
@@ -156,7 +153,7 @@ export default class TreeInnerScene extends ForestSceneBase {
             scene: this,
             ground: this.ground,
             getPlayerAI: () => this.player.ai as PlayerAI,
-            shouldRun: () => this.storyManager.chapter4.getMainQuestStep() === Chapter4MainQuestStep.VINE_EXIT_CLOSED,
+            shouldRun: () => this.storyManager.chapter3.getMainQuestStep() === Chapter3MainQuestStep.VINE_EXIT_CLOSED,
             isDialogueActive: () => this.dialogueController.isActive,
             waitSeconds: seconds => this.waitSeconds(seconds),
             showWaveTitle: (text, duration) => this.showVineWaveTitle(text, duration),
@@ -171,7 +168,7 @@ export default class TreeInnerScene extends ForestSceneBase {
         this.vineExitCollisionTemplate = this.getRequiredTilemap(this.vineExitCollisionLayerName);
         this.vineExitCollisionTemplate.visible = false;
 
-        if (this.storyManager.chapter4.isVineExitClosed()) {
+        if (this.storyManager.chapter3.isVineExitClosed()) {
             this.applyVineExitCollision();
         }
     
@@ -238,19 +235,19 @@ export default class TreeInnerScene extends ForestSceneBase {
     }
 
     private openVineExit(): void {
-        this.storyManager.chapter4.markVineExitOpened();
+        this.storyManager.chapter3.markVineExitOpened();
         this.clearVineExitCollision();
         this.vineAttackController.destroyMatching(attack => attack.type === "exit");
         AudioController.getInstance().stopMusic(5);
     }
 
     private hasExcaliburBeenPulled(): boolean {
-        return this.storyManager.chapter4.hasReachedStep(Chapter4MainQuestStep.EXCALIBUR_PULLED);
+        return this.storyManager.chapter3.hasReachedStep(Chapter3MainQuestStep.EXCALIBUR_PULLED);
     }
 
     private closeVineExit(): void {
         this.applyVineExitCollision();
-        this.storyManager.chapter4.markVineExitClosed();
+        this.storyManager.chapter3.markVineExitClosed();
     }
     
 
@@ -347,7 +344,7 @@ export default class TreeInnerScene extends ForestSceneBase {
         this.excaliburSprite = null;
     
         this.giveExcalibur();
-        this.storyManager.chapter4.markExcaliburPulled();
+        this.storyManager.chapter3.markExcaliburPulled();
         this.unlockPlayerInput();
     
         this.startDialogue(dialogue([
@@ -437,7 +434,7 @@ export default class TreeInnerScene extends ForestSceneBase {
         _originTile: Vec2,
         _direction: Vec2
     ): number {
-        if (!this.storyManager.chapter4.canTriggerVineExitClose()) {
+        if (!this.storyManager.chapter3.canTriggerVineExitClose()) {
             return -1;
         }
 
@@ -449,7 +446,7 @@ export default class TreeInnerScene extends ForestSceneBase {
     }
 
     private checkVineTrapTriggers(): void {
-        if (!this.storyManager.chapter4.canTriggerVineExitClose()) {
+        if (!this.storyManager.chapter3.canTriggerVineExitClose()) {
             return;
         }
 
