@@ -29,21 +29,12 @@ export default abstract class RoadSceneBase extends LycanChaseSceneBase {
         this.updateDelayedLycanSpawn(deltaT);
     }
     
-    
     protected getLycanChaseSpawnPrefix(): string | null {
         return null;
     }
 
     protected combinedAssetBundles(): AssetBundle {
-        const sharedAssets = this.mergeAssetBundles(super.combinedAssetBundles(), RoadSceneBase.assetBundle);
-
-        return this.mergeAssetBundles(sharedAssets, {
-            tilemaps: { [this.tilemap.key]: this.tilemap },
-            spritesheets: {},
-            sprites: {},
-            sounds: {},
-            images: {}
-        });
+        return this.mergeAssetBundles(super.combinedAssetBundles(), RoadSceneBase.assetBundle);
     }
 
     protected changeToRoadSection(scene: new (...args: any[]) => MappedAdventureChapter2Scene, spawnName: string): void {

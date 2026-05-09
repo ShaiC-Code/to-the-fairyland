@@ -34,6 +34,7 @@ import AudioController from "../GameSystems/AudioController";
 import OverlayLayer from "../Overlays/OverlayLayer";
 import LowHealthOverlay from "../Overlays/LowHealthOverlay";
 import { resolveCheckpointStoryKey } from "../GameSystems/GameSessionSystem/LevelCheckpointMapping";
+import AmbienceController from "../GameSystems/WorldSystem/AmbienceController";
 import RedFlashOverlay from "../Overlays/RedFlashOverlay";
 import PlayerDeathHitOverlay from "../Overlays/PlayerDeathHitOverlay";
 import GameOverScreenScene from "./GameOverScreenScene";
@@ -96,6 +97,7 @@ export default abstract class MappedAdventureScene extends Scene {
             swordCutSFX: { key: "sword-cut", path: "/assets/sounds/sword-cut.ogg" },
             swordAttackSFX: { key: "sword-attack", path: "/assets/sounds/sword-attack.ogg" },
             swordAttackHitSFX: { key: "sword-attack-hit", path: "/assets/sounds/sword-attack-hit.ogg" },
+            playerHurtSFX: { key: "player-hurt", path: "/assets/sounds/player-hurt.ogg" },
             battleTreeMusic: { key: "battle-tree-music", path: "/assets/sounds/battle-tree-music.ogg" }
         },
         images: {
@@ -393,7 +395,7 @@ export default abstract class MappedAdventureScene extends Scene {
             () => this.viewport.getHalfSize(),
             () => { this.pauseScreen?.hide(); this.pauseControlsScreen?.show() },
             () => this.saveGameWithFeedback(),
-            () => this.sceneManager.changeToScene(MainMenu),
+            () => { AmbienceController.getInstance().stopAllAmbience() ;this.sceneManager.changeToScene(MainMenu) },
             {
                 onEnterSFXKey: this.assets.sounds.uiHoverSFX.key,
                 onClickSFXKey: this.assets.sounds.uiClickSFX.key,

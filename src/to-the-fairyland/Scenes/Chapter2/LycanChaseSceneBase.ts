@@ -78,6 +78,8 @@ export default abstract class LycanChaseSceneBase extends MappedAdventureChapter
         if (this.storyManager.chapter2.needsToEscapeLycans() || this.storyManager.chapter2.needsToJumpOffCliff()) {
             AudioController.getInstance().playSFX(this.assets.sounds.wolvesRunningSFX.key, true, true);
             AudioController.getInstance().playSFX(this.assets.sounds.wolvesFerociousSFX.key, true, true);
+        } else {
+            this.playCurrentAmbience();
         }
     }
 
