@@ -230,4 +230,6 @@ export default class VillageScene extends LycanChaseSceneBase {
             );
         }
     }
+
+    protected override playCurrentAmbience(): void {}
 }

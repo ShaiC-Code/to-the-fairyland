@@ -92,6 +92,7 @@ export default abstract class MappedAdventureScene extends Scene {
             swordCutSFX: { key: "sword-cut", path: "/assets/sounds/sword-cut.ogg" },
             swordAttackSFX: { key: "sword-attack", path: "/assets/sounds/sword-attack.ogg" },
             swordAttackHitSFX: { key: "sword-attack-hit", path: "/assets/sounds/sword-attack-hit.ogg" },
+            playerHurtSFX: { key: "player-hurt", path: "/assets/sounds/player-hurt.ogg" },
             battleTreeMusic: { key: "battle-tree-music", path: "/assets/sounds/battle-tree-music.ogg" }
         },
         images: {

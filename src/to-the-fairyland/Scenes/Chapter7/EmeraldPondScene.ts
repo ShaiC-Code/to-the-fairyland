@@ -43,7 +43,9 @@ export default class EmeraldPondScene extends MappedAdventureScene {
             bubble3: { key: "bubble3", path: "/assets/sprites/particles/Bubble3.png" }
 
         },
-        sounds: {},
+        sounds: {
+            underwaterAmbienceSFX: { key: "ambience-underwater", path: "/assets/sounds/ambience-underwater.ogg" }
+        },
         images: {}
     };
 

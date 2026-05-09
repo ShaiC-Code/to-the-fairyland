@@ -10,6 +10,8 @@ import ObsidianBoots from "../../GameSystems/ItemSystem/Items/ObsidianBoots";
 import { ItemUseAction, ItemUseActions, ItemUseResult } from "../../GameSystems/ItemSystem/ItemUseActions";
 import { TimeOfDay } from "../../GameSystems/WorldSystem/WorldState";
 import CliffBottomScene from "../Chapter3/CliffBottomScene";
+import AmbienceController from "../../GameSystems/WorldSystem/AmbienceController";
+import { AudioChannelType } from "../../../Wolfie2D/Sound/AudioManager";
 
 export default abstract class MappedAdventureChapter2Scene extends MappedAdventureScene {
     protected static readonly assetBundle: AssetBundle = {
@@ -17,7 +19,9 @@ export default abstract class MappedAdventureChapter2Scene extends MappedAdventu
         spritesheets: {},
         sprites: {},
         sounds: {
-            somethingBigSFX: { key: "something-big", path: "/assets/sounds/something-big.ogg" }
+            somethingBigSFX: { key: "something-big", path: "/assets/sounds/something-big.ogg" },
+            forestDayAmbienceSFX: { key: "ambience-forest-day", path: "/assets/sounds/ambience-forest-day.ogg" },
+            forestNightAmbienceSFX: { key: "ambience-forest-night", path: "/assets/sounds/ambience-forest-night.ogg" }
         },
         images: {}
     };
@@ -34,11 +38,15 @@ export default abstract class MappedAdventureChapter2Scene extends MappedAdventu
         }
     };
     
-    
     protected readonly storyManager = StoryManager.getInstance();
 
     protected combinedAssetBundles(): AssetBundle {
         return this.mergeAssetBundles(super.combinedAssetBundles(), MappedAdventureChapter2Scene.assetBundle);
+    }
+
+    public override startScene(): void {
+        super.startScene();
+        this.playCurrentAmbience();
     }
 
     public override unloadScene(): void {
@@ -185,5 +193,14 @@ export default abstract class MappedAdventureChapter2Scene extends MappedAdventu
         this.storyManager.chapter2.markSleepOnRoad();
     
         return result;
+    }
+    
+    protected playCurrentAmbience(): void {
+        const ambienceChannel = AudioChannelType.CUSTOM_1;
+        if (this.gameSessionManager.getWorldState().timeOfDay === TimeOfDay.DAY) {
+            AmbienceController.getInstance().playAmbience(ambienceChannel, this.assets.sounds.forestDayAmbienceSFX.key);
+        } else {
+            AmbienceController.getInstance().playAmbience(ambienceChannel, this.assets.sounds.forestNightAmbienceSFX.key);
+        }
     }
 }
