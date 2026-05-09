@@ -1,6 +1,7 @@
 import Scene from "../../../Wolfie2D/Scene/Scene";
 import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 import UIScreen, { UIScreenOptions } from "../UIScreen";
+import { LevelSelectionId } from "../../GameSystems/GameSessionSystem/LevelCheckpointMapping";
 
 export default class LevelSelectionScreen extends UIScreen {
     private readonly levelNames: Map<string, string> = new Map([
@@ -15,6 +16,8 @@ export default class LevelSelectionScreen extends UIScreen {
         ["level9", "The Desert"],
         ["level10", "Drowning"]
     ]);
+    
+    private unlockedLevels = new Set<LevelSelectionId>();
 
     constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, options?: UIScreenOptions) {
         super(layerName, scene, getViewportCenter, getViewportHalfSize, options);
@@ -32,12 +35,13 @@ export default class LevelSelectionScreen extends UIScreen {
         const listTop = screenTop + 120;
         const verticalOffset = 60;
 
-        const levelButtonSize = new Vec2(viewportSize.x, 50);
-        const levelButtons = Array.from({ length: 10 }, (_, i) => ({
-            key: `level${i + 1}Btn`,
+        const levelButtonSize = new Vec2(viewportSize.x - 200, 50);
+        const levels = Array.from(this.levelNames.keys());
+        const levelButtons = levels.map((levelId, i) => ({
+            key: `${levelId}Btn`,
             pos: new Vec2(screenCenter.x, listTop + verticalOffset * i),
-            text: this.levelNames.get(`level${i + 1}`) || `Level ${i + 1}`,
-            eventId: `level${i + 1}`
+            text: this.levelNames.get(levelId) || `Level ${i + 1}`,
+            eventId: levelId
         }));
         
         levelButtons.push({
@@ -62,5 +66,14 @@ export default class LevelSelectionScreen extends UIScreen {
 
         // Hide by default
         this.layer.setHidden(true);
+    }
+
+    public setUnlockedLevels(unlockedLevels: Set<LevelSelectionId>): void {
+        this.unlockedLevels = unlockedLevels;
+        for (const levelId of this.levelNames.keys()) {
+            const buttonKey = `${levelId}Btn`;
+            const isUnlocked = this.unlockedLevels.has(levelId as LevelSelectionId);
+            this.setUIElementEnabled(buttonKey, isUnlocked);
+        }
     }
 }

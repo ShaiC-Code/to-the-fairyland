@@ -3,6 +3,7 @@ import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 import UIScreen, { UIScreenOptions } from "../UIScreen";
 import Button from "../../../Wolfie2D/Nodes/UIElements/Button";
 import GameSessionManager from "../../GameSystems/GameSessionSystem/GameSessionManager";
+import { CookieStorage } from "../../GameSystems/GameSessionSystem/CookieStorage";
 
 export default class TestScreen extends UIScreen {
     constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, options?: UIScreenOptions) {
@@ -64,20 +65,31 @@ export default class TestScreen extends UIScreen {
         );
 
         this.addButton(
+            "unlockAllLevelsBtn",
+            new Vec2(screenCenter.x + 180, listTop + 360),
+            new Vec2(380, 40),
+            "Unlock All Levels",
+            {
+                onClickEventId: "unlockAllLevels"
+            }
+        );
+
+        this.addButton(
             "clearDataBtn",
-            new Vec2(screenCenter.x + 180, listTop + 380),
+            new Vec2(screenCenter.x + 180, listTop + 420),
             new Vec2(380, 40),
             "Clear Saved Data",
             {
                 onClickEventId: "clearSavedData",
                 onClick: () => {
                     GameSessionManager.getInstance().clearSession();
+                    CookieStorage.removeItem("unlockedLevels");
                 }
             }
         );
 
         const buttonSize = new Vec2(280, 60);
-        const buttonsY = listTop + 460;
+        const buttonsY = listTop + 540;
         const buttonsGap = 40;
         const buttonOffsetX = (buttonSize.x / 2) + (buttonsGap / 2);
 
@@ -99,6 +111,7 @@ export default class TestScreen extends UIScreen {
 
         this.setNavigationButtons([
             "activateCheatsBtn",
+            "unlockAllLevelsBtn",
             "clearDataBtn",
             "goBackBtn",
             "mainMenuBtn"
