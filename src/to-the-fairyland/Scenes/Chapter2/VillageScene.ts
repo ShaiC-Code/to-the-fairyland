@@ -213,7 +213,8 @@ export default class VillageScene extends LycanChaseSceneBase {
                 this.startDialogue(
                     dialogue([
                         "You felt like you forgot something.",
-                        "There may still be things here that matter."
+                        "There may still be things here that matter.",
+                        "*Some NPCs can be interacted with more than once*"
                     ])
                 );
     

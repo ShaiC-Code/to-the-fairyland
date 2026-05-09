@@ -68,9 +68,7 @@ export default class CliffScene extends RoadSceneBase {
                         choiceOption(
                             "Yes",
                             dialogue(
-                                [
-                                    "You step forward."
-                                ],
+                                ["You step forward."],
                                 {
                                     onComplete: async () => {
                                         this.setWorldTimeScale(1);
@@ -84,9 +82,7 @@ export default class CliffScene extends RoadSceneBase {
                         choiceOption(
                             "No",
                             dialogue(
-                                [
-                                    "You step back from the edge."
-                                ],
+                                ["You step back from the edge."],
                                 {
                                     onComplete: async () => {
                                         this.setWorldTimeScale(1);

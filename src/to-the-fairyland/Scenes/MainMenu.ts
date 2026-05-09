@@ -234,6 +234,7 @@ export default class MainMenu extends Scene {
         this.receiver.subscribe("activateCheats");
         this.receiver.subscribe("backToMain");
         this.receiver.subscribe("currentLevel");
+        this.receiver.subscribe("newGame");
         this.receiver.subscribe("level1");
         this.receiver.subscribe("level2");
         this.receiver.subscribe("level3");
@@ -291,6 +292,11 @@ export default class MainMenu extends Scene {
 
         case "currentLevel":
             this.resumeCurrentGame();
+            break;
+
+        case "newGame":
+            this.gameSessionManager.startNewGame();
+            changeToNewGameStartScene(this.sceneManager);
             break;
 
         case "level1":
@@ -588,7 +594,8 @@ export function changeToNewGameStartScene(sceneManager: SceneManager): void {
         {
             cheatsEnabled: false,
             spawnName: "SideOfBed",
-            facing: Vec2.DOWN
+            facing: Vec2.DOWN,
+            playIntroCutscene: true
         },
         undefined,
         levelLoadTransition
