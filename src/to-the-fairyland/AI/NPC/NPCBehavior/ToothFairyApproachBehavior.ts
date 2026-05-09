@@ -20,6 +20,8 @@ export default class ToothFairyApproachBehavior implements AI {
     private startDelay = 2;
     private delayTimer = 0;
     private attracted = false;
+    private arrived = false;
+    private onArrive?: (fairy: AnimatedSprite) => void;
 
     private drag = 0.85;
 
@@ -63,6 +65,7 @@ export default class ToothFairyApproachBehavior implements AI {
         this.startDelay = options.startDelay ?? this.startDelay;
         this.delayTimer = this.startDelay;
         this.attracted = options.startAttracted ?? this.attracted;
+        this.onArrive = options.onArrive;
 
         this.drag = options.drag ?? this.drag;
 
@@ -129,6 +132,7 @@ export default class ToothFairyApproachBehavior implements AI {
         this.steerToward(desiredVelocity, deltaT);
         this.owner.position.add(this.velocity.scaled(deltaT));
 
+        this.checkArrival();
         this.playFacingAnimation();
     }
 
@@ -141,6 +145,10 @@ export default class ToothFairyApproachBehavior implements AI {
     public startAttraction(): void {
         this.attracted = true;
         this.delayTimer = 0;
+    }
+
+    public hasArrived(): boolean {
+        return this.arrived;
     }
 
     protected getWanderVelocity(): Vec2 {
@@ -264,6 +272,19 @@ export default class ToothFairyApproachBehavior implements AI {
         const waveVelocity = perpendicular.scaled(wave * this.waveStrength * speedRatio);
 
         return forwardVelocity.add(waveVelocity);
+    }
+
+    private checkArrival(): void {
+        if (!this.attracted || this.arrived) {
+            return;
+        }
+
+        if (this.owner.position.distanceTo(this.player.position) > this.stopDistance) {
+            return;
+        }
+
+        this.arrived = true;
+        this.onArrive?.(this.owner);
     }
 
     private getHoverAcceleration(): Vec2 {
