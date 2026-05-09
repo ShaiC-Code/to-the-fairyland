@@ -34,6 +34,7 @@ import AudioController from "../GameSystems/AudioController";
 import OverlayLayer from "../Overlays/OverlayLayer";
 import LowHealthOverlay from "../Overlays/LowHealthOverlay";
 import { resolveCheckpointStoryKey } from "../GameSystems/GameSessionSystem/LevelCheckpointMapping";
+import AmbienceController from "../GameSystems/WorldSystem/AmbienceController";
 
 export type AssetRef = Readonly<{
     readonly key: string;
@@ -382,7 +383,7 @@ export default abstract class MappedAdventureScene extends Scene {
             () => this.viewport.getHalfSize(),
             () => { this.pauseScreen?.hide(); this.pauseControlsScreen?.show() },
             () => this.saveGameWithFeedback(),
-            () => this.sceneManager.changeToScene(MainMenu),
+            () => { AmbienceController.getInstance().stopAllAmbience() ;this.sceneManager.changeToScene(MainMenu) },
             {
                 onEnterSFXKey: this.assets.sounds.uiHoverSFX.key,
                 onClickSFXKey: this.assets.sounds.uiClickSFX.key,

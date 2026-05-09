@@ -9,6 +9,8 @@ import AnimatedSprite from "../../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
 import { TiledObject, TiledTilemapData } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData";
 import DolphinPathBehavior from "../../AI/NPC/NPCBehavior/DolphinPathBehavior";
 import MainMenu from "../MainMenu";
+import AmbienceController from "../../GameSystems/WorldSystem/AmbienceController";
+import { AudioChannelType } from "../../../Wolfie2D/Sound/AudioManager";
 
 export default class EmeraldPondScene extends MappedAdventureScene {
     protected readonly tilemap = {
@@ -47,6 +49,11 @@ export default class EmeraldPondScene extends MappedAdventureScene {
             underwaterAmbienceSFX: { key: "ambience-underwater", path: "/assets/sounds/ambience-underwater.ogg" }
         },
         images: {}
+    };
+    
+    protected readonly chapterDefinition: ChapterSceneDefinition = {
+        dialogueCompleteActionHandlers: {},
+        dialogueChoiceActionHandlers: {}
     };
 
     private readonly bubbleBackLayerName = "BubblesBack";
@@ -94,15 +101,11 @@ export default class EmeraldPondScene extends MappedAdventureScene {
         scaleGrowth: 0.25
     };
 
+    private readonly ambienceChannel = AudioChannelType.CUSTOM_2;
+
     protected override playIdleForFacing(_facing: Vec2): void {
         this.player.animation.play("Drown", true);
-    }    
-    
-
-    protected readonly chapterDefinition: ChapterSceneDefinition = {
-        dialogueCompleteActionHandlers: {},
-        dialogueChoiceActionHandlers: {}
-    };
+    }
 
     private readonly pondDepthLayerName = "PondDepth";
     private pondDepthBackground!: Sprite;
@@ -113,6 +116,11 @@ export default class EmeraldPondScene extends MappedAdventureScene {
 
     protected override combinedAssetBundles(): AssetBundle {
         return this.mergeAssetBundles(super.combinedAssetBundles(), EmeraldPondScene.assetBundle);
+    }
+
+    public override unloadScene(): void {
+        super.unloadScene();
+        AmbienceController.getInstance().stopAllAmbience();
     }
 
     // =============== Start Scene =======================
@@ -126,6 +134,7 @@ export default class EmeraldPondScene extends MappedAdventureScene {
         this.setupPondDepthBackground();
         this.setupBubblePool();
         this.setupDolphin();
+        AmbienceController.getInstance().playAmbience(this.ambienceChannel, this.assets.sounds.underwaterAmbienceSFX.key);
     }
 
     // =============== Update Scene =======================
@@ -215,8 +224,6 @@ export default class EmeraldPondScene extends MappedAdventureScene {
         return Number.isFinite(seconds) && seconds > 0 ? seconds : 0;
     }
     
-
-
     private setupPondDepthBackground(): void {
         this.addLayer(this.pondDepthLayerName, 0);
     

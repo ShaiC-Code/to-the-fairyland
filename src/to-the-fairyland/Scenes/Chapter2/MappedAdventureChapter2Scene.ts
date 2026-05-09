@@ -39,14 +39,10 @@ export default abstract class MappedAdventureChapter2Scene extends MappedAdventu
     };
     
     protected readonly storyManager = StoryManager.getInstance();
+    protected readonly ambienceChannel = AudioChannelType.CUSTOM_2;
 
     protected combinedAssetBundles(): AssetBundle {
         return this.mergeAssetBundles(super.combinedAssetBundles(), MappedAdventureChapter2Scene.assetBundle);
-    }
-
-    public override startScene(): void {
-        super.startScene();
-        this.playCurrentAmbience();
     }
 
     public override unloadScene(): void {
@@ -190,17 +186,17 @@ export default abstract class MappedAdventureChapter2Scene extends MappedAdventu
                 : TimeOfDay.DAY;
     
         this.timeController.setTimeOfDay(worldState.timeOfDay);
+        this.playCurrentAmbience();
         this.storyManager.chapter2.markSleepOnRoad();
     
         return result;
     }
     
     protected playCurrentAmbience(): void {
-        const ambienceChannel = AudioChannelType.CUSTOM_2;
         if (this.gameSessionManager.getWorldState().timeOfDay === TimeOfDay.DAY) {
-            AmbienceController.getInstance().playAmbience(ambienceChannel, this.assets.sounds.forestDayAmbienceSFX.key);
+            AmbienceController.getInstance().playAmbience(this.ambienceChannel, this.assets.sounds.forestDayAmbienceSFX.key);
         } else {
-            AmbienceController.getInstance().playAmbience(ambienceChannel, this.assets.sounds.forestNightAmbienceSFX.key);
+            AmbienceController.getInstance().playAmbience(this.ambienceChannel, this.assets.sounds.forestNightAmbienceSFX.key);
         }
     }
 }
