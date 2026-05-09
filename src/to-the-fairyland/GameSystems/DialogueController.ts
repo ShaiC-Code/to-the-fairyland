@@ -252,11 +252,16 @@ export default class DialogueController implements Updateable {
         this.ignoreNextConfirm = false;
         this.activeStartOptions = {};
         if (!callbackHandledByReadCompletion) {
+            this.cutsceneScreen.clearOnCompleteCallback();
+            this.dialogueScreen.clearOnCompleteCallback();
             this.textDisplay.clearOnCompleteCallback();
         }
-        this.textDisplay.hideChoices();
-        this.textDisplay.hide();
-        this.textDisplay.setSpeakerName(undefined);
+        this.cutsceneScreen.hideChoices();
+        this.dialogueScreen.hideChoices();
+        this.cutsceneScreen.hide();
+        this.dialogueScreen.hide();
+        this.cutsceneScreen.setSpeakerName(undefined);
+        this.dialogueScreen.setSpeakerName(undefined);
         this.activeSpeakerName = undefined;
     }
 
