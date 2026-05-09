@@ -39,6 +39,21 @@ export default class Chapter2StoryManager {
         return state;
     }
 
+    private hasReachedStep(step: Chapter2MainQuestStep): boolean {
+        const currentIndex = CHAPTER2_MAIN_QUEST_ORDER.indexOf(this.getState().mainQuestStep);
+        const targetIndex = CHAPTER2_MAIN_QUEST_ORDER.indexOf(step);
+    
+        return currentIndex !== -1 && targetIndex !== -1 && currentIndex >= targetIndex;
+    }
+    
+    private advanceToStep(step: Chapter2MainQuestStep): void {
+        if (this.hasReachedStep(step)) {
+            return;
+        }
+    
+        this.getState().mainQuestStep = step;
+    }
+
     public markVillageItemReceived(item: Chapter2VillageItem): void {
         const state = this.getState();
     
@@ -54,10 +69,6 @@ export default class Chapter2StoryManager {
         return this.getState().villageItems[item];
     }
     
-    public canLeaveVillage(): boolean {
-        return this.hasReachedStep(Chapter2MainQuestStep.READY_TO_LEAVE_VILLAGE);
-    }    
-    
     private advanceIfVillageItemsComplete(): void {
         const state = this.getState();
     
@@ -65,77 +76,67 @@ export default class Chapter2StoryManager {
             state.mainQuestStep === Chapter2MainQuestStep.COLLECT_VILLAGE_ITEMS &&
             REQUIRED_VILLAGE_ITEMS.every(item => state.villageItems[item])
         ) {
-            state.mainQuestStep = Chapter2MainQuestStep.READY_TO_LEAVE_VILLAGE;
+            state.mainQuestStep = Chapter2MainQuestStep.LEAVE_VILLAGE;
         }
     }
+    
+    public canLeaveVillage(): boolean {
+        return this.hasReachedStep(Chapter2MainQuestStep.LEAVE_VILLAGE);
+    }
 
-    public markArrivedAtRoad3(): void {
-        this.advanceToStep(Chapter2MainQuestStep.NEED_TO_SLEEP_ON_ROAD);
+    public needsToLeaveVillage(): boolean {
+        return this.getState().mainQuestStep === Chapter2MainQuestStep.LEAVE_VILLAGE;
+    }
+
+    public markLeaveVillage(): void {
+        this.advanceToStep(Chapter2MainQuestStep.SLEEP_ON_ROAD);
     }    
     
     public canSleepOnRoad(): boolean {
-        return this.getState().mainQuestStep === Chapter2MainQuestStep.NEED_TO_SLEEP_ON_ROAD;
+        return this.getState().mainQuestStep === Chapter2MainQuestStep.SLEEP_ON_ROAD;
     }
     
-    public markSleptOnRoad(): void {
-        this.advanceToStep(Chapter2MainQuestStep.NEED_TO_APPROACH_CLIFF);
+    public markSleepOnRoad(): void {
+        this.advanceToStep(Chapter2MainQuestStep.APPROACH_CLIFF);
     }
     
     public needsToApproachCliff(): boolean {
-        return this.getState().mainQuestStep === Chapter2MainQuestStep.NEED_TO_APPROACH_CLIFF;
+        return this.getState().mainQuestStep === Chapter2MainQuestStep.APPROACH_CLIFF;
     }
     
-    public markVillageShakeStarted(): void {
-        this.advanceToStep(Chapter2MainQuestStep.VILLAGE_SHAKE);
-    }
-    
-    public markVillageShakeComplete(): void {
+    public markApproachCliff(): void {
         this.advanceToStep(Chapter2MainQuestStep.CHECK_VILLAGE);
     }
     
     public needsToCheckVillage(): boolean {
         return this.getState().mainQuestStep === Chapter2MainQuestStep.CHECK_VILLAGE;
     }
-    
 
-    private hasReachedStep(step: Chapter2MainQuestStep): boolean {
-        const currentIndex = CHAPTER2_MAIN_QUEST_ORDER.indexOf(this.getState().mainQuestStep);
-        const targetIndex = CHAPTER2_MAIN_QUEST_ORDER.indexOf(step);
-    
-        return currentIndex !== -1 && targetIndex !== -1 && currentIndex >= targetIndex;
+    public markCheckVillage(): void {
+        this.advanceToStep(Chapter2MainQuestStep.RETURNED_TO_VILLAGE);
     }
 
-
-    private advanceToStep(step: Chapter2MainQuestStep): void {
-        if (this.hasReachedStep(step)) {
-            return;
-        }
-    
-        this.getState().mainQuestStep = step;
-    }
-    
-    public markDetectedByLycans(): void {
-        this.advanceToStep(Chapter2MainQuestStep.DETECTED_BY_LYCANS);
+    public hasReturnedToVillage(): boolean {
+        return this.getState().mainQuestStep === Chapter2MainQuestStep.RETURNED_TO_VILLAGE;
     }
     
     public needsLycanDetection(): boolean {
-        return this.getState().mainQuestStep === Chapter2MainQuestStep.CHECK_VILLAGE;
+        return this.getState().mainQuestStep === Chapter2MainQuestStep.RETURNED_TO_VILLAGE;
     }
     
-    public wasDetectedByLycans(): boolean {
-        return this.getState().mainQuestStep === Chapter2MainQuestStep.DETECTED_BY_LYCANS;
-    }
-    
-    public markEscapeLycansStarted(): void {
+    public markReturnedToVillage(): void {
         this.advanceToStep(Chapter2MainQuestStep.ESCAPE_LYCANS);
     }
     
     public needsToEscapeLycans(): boolean {
         return this.getState().mainQuestStep === Chapter2MainQuestStep.ESCAPE_LYCANS;
     }
-    
-    public hasReachedCheckVillage(): boolean {
-        return this.hasReachedStep(Chapter2MainQuestStep.CHECK_VILLAGE);
+
+    public markEscapeLycans(): void {
+        this.advanceToStep(Chapter2MainQuestStep.CLIFF_JUMP);
     }
-    
+
+    public needsToJumpOffCliff(): boolean {
+        return this.getState().mainQuestStep === Chapter2MainQuestStep.CLIFF_JUMP;
+    }
 }

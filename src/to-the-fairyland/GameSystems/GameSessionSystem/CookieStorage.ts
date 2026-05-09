@@ -1,4 +1,5 @@
 import { GameSessionResumePoint, GameSessionState } from "./GameSessionState";
+import type { CheckpointStoryKey } from "./LevelCheckpointMapping";
 import Inventory from "../ItemSystem/Inventory";
 import InventoryItem from "../ItemSystem/InventoryItem";
 import FreshPrettyTooth from "../ItemSystem/Items/FreshPrettyTooth";
@@ -15,7 +16,9 @@ import Excalibur from "../ItemSystem/Items/Excalibur";
  * Utility for managing game session data in browser cookies.
  */
 export class CookieStorage {
-    private static readonly SESSION_COOKIE_NAME = "gameSession";
+    private static readonly MANUAL_SESSION_COOKIE_NAME = "gameSessionManual";
+    private static readonly CHECKPOINT_COOKIE_NAME = "gameSessionCheckpoints";
+    private static readonly LEGACY_SESSION_COOKIE_NAME = "gameSession";
     private static readonly COOKIE_MAX_AGE = 30 * 24 * 60 * 60; // 30 days in seconds
 
     /**
@@ -67,15 +70,15 @@ export class CookieStorage {
     /**
      * Saves the game session to a cookie.
      */
-    public static saveSession(session: GameSessionState): void {
-        this.setItem(this.SESSION_COOKIE_NAME, this.serializeSession(session));
+    public static saveManualSession(session: GameSessionState): void {
+        this.setItem(this.MANUAL_SESSION_COOKIE_NAME, this.serializeSession(session));
     }
 
     /**
      * Retrieves the saved game session from a cookie.
      */
-    public static loadSession(): GameSessionState | null {
-        const saved = this.getItem(this.SESSION_COOKIE_NAME);
+    public static loadManualSession(): GameSessionState | null {
+        const saved = this.getItem(this.MANUAL_SESSION_COOKIE_NAME) ?? this.getItem(this.LEGACY_SESSION_COOKIE_NAME);
 
         if (!saved || typeof saved !== "object") {
             return null;
@@ -87,8 +90,52 @@ export class CookieStorage {
     /**
      * Clears the saved game session from cookies.
      */
+    public static clearManualSession(): void {
+        this.removeItem(this.MANUAL_SESSION_COOKIE_NAME);
+        this.removeItem(this.LEGACY_SESSION_COOKIE_NAME);
+    }
+
+    /**
+     * Saves a checkpoint snapshot for a specific level slot.
+     */
+    public static saveCheckpoint(checkpointKey: CheckpointStoryKey, session: GameSessionState): void {
+        const checkpoints = this.loadStoredCheckpoints();
+        checkpoints[checkpointKey] = this.serializeSession(session);
+        this.setItem(this.CHECKPOINT_COOKIE_NAME, checkpoints);
+    }
+
+    public static loadCheckpoint(checkpointKey: CheckpointStoryKey): GameSessionState | null {
+        const saved = this.loadStoredCheckpoints()[checkpointKey];
+
+        if (!saved) {
+            return null;
+        }
+
+        return this.deserializeSession(saved);
+    }
+
+    public static hasCheckpoint(checkpointKey: CheckpointStoryKey): boolean {
+        return this.loadStoredCheckpoints()[checkpointKey] !== undefined;
+    }
+
+    public static clearCheckpoint(checkpointKey: CheckpointStoryKey): void {
+        const checkpoints = this.loadStoredCheckpoints();
+
+        if (!checkpoints[checkpointKey]) {
+            return;
+        }
+
+        delete checkpoints[checkpointKey];
+        this.setItem(this.CHECKPOINT_COOKIE_NAME, checkpoints);
+    }
+
+    public static clearAllCheckpoints(): void {
+        this.removeItem(this.CHECKPOINT_COOKIE_NAME);
+    }
+
     public static clearSession(): void {
-        this.removeItem(this.SESSION_COOKIE_NAME);
+        this.clearManualSession();
+        this.clearAllCheckpoints();
     }
 
     private static serializeSession(session: GameSessionState): StoredGameSessionState {
@@ -104,8 +151,19 @@ export class CookieStorage {
             },
             story: session.story,
             world: session.world,
-            resumePoint: session.resumePoint
+            resumePoint: session.resumePoint,
+            activeCheckpointKey: session.activeCheckpointKey
         };
+    }
+
+    private static loadStoredCheckpoints(): StoredCheckpointSessions {
+        const saved = this.getItem(this.CHECKPOINT_COOKIE_NAME);
+
+        if (!saved || typeof saved !== "object") {
+            return {};
+        }
+
+        return saved as StoredCheckpointSessions;
     }
 
     private static deserializeSession(saved: StoredGameSessionState): GameSessionState | null {
@@ -130,12 +188,8 @@ export class CookieStorage {
             },
             story: saved.story,
             world: saved.world,
-            resumePoint: saved.resumePoint ?? {
-                sceneId: saved.story.activeChapter === "CHAPTER2" ? "VillageScene" : "ShelterScene",
-                spawnName: saved.story.activeChapter === "CHAPTER2" ? "RoadStart" : "SideOfBed",
-                cheatsEnabled: false,
-                playerPos: undefined
-            }
+            resumePoint: saved.resumePoint,
+            activeCheckpointKey: saved.activeCheckpointKey
         };
     }
 
@@ -169,6 +223,8 @@ export class CookieStorage {
     }
 }
 
+type StoredCheckpointSessions = Partial<Record<CheckpointStoryKey, StoredGameSessionState>>;
+
 type StoredInventoryState = {
     capacity: number;
     items: string[];
@@ -186,4 +242,5 @@ type StoredGameSessionState = {
     story: GameSessionState["story"];
     world: GameSessionState["world"];
     resumePoint: GameSessionResumePoint;
+    activeCheckpointKey?: CheckpointStoryKey;
 };

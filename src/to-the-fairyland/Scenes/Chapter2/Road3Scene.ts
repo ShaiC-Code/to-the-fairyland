@@ -10,11 +10,6 @@ export default class Road3Scene extends RoadSceneBase {
         key: "road3",
         path: "/assets/tilemaps/Chapter2/Road3.json"
     };
-
-    public override startScene(): void {
-        super.startScene();
-        this.storyManager.chapter2.markArrivedAtRoad3();
-    }
     
     protected override canUseSleepingBagHere(): boolean {
         return true;
@@ -53,6 +48,7 @@ export default class Road3Scene extends RoadSceneBase {
             }
 
             if (this.storyManager.chapter2.needsToEscapeLycans()) {
+                this.storyManager.chapter2.markEscapeLycans();
                 this.changeToRoadSection(CliffScene, "RoadStart");
                 return;
             }
@@ -66,8 +62,6 @@ export default class Road3Scene extends RoadSceneBase {
     }
     
     private triggerVillageShake(): void {
-        this.storyManager.chapter2.markVillageShakeStarted();
-
         AudioController.getInstance().playSFX(this.assets.sounds.somethingBigSFX.key);
         this.cameraController.shake(2200, 40);
     
@@ -77,7 +71,7 @@ export default class Road3Scene extends RoadSceneBase {
                 "The tremor came from the direction of the village."
             ],
             {
-                onComplete: () => this.storyManager.chapter2.markVillageShakeComplete()
+                onComplete: () => this.storyManager.chapter2.markApproachCliff()
             }
         ));
     }

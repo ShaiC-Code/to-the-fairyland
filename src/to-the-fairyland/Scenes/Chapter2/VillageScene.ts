@@ -64,11 +64,12 @@ export default class VillageScene extends LycanChaseSceneBase {
                 alpha: 0.4
             }
         );
+        
         if (this.storyManager.chapter2.needsToEscapeLycans()) {
             this.startAllLycanChases();
         }
         
-        if (this.storyManager.chapter2.hasReachedCheckVillage()) {
+        if (this.storyManager.chapter2.hasReturnedToVillage()) {
             this.bloodMistEffectLayer.show();
         }
     }
@@ -85,7 +86,7 @@ export default class VillageScene extends LycanChaseSceneBase {
         this.npcs = [];
         this.resetLycans();
     
-        if (this.storyManager.chapter2.hasReachedCheckVillage()) {
+        if (this.storyManager.chapter2.hasReturnedToVillage()) {
             this.spawnCheckVillageLycans(tilemapData);
             return;
         }
@@ -153,7 +154,7 @@ export default class VillageScene extends LycanChaseSceneBase {
             return;
         }
     
-        this.storyManager.chapter2.markDetectedByLycans();
+        this.storyManager.chapter2.markReturnedToVillage();
         this.startLycanChase(detectedLycan);
     }
 
@@ -170,8 +171,6 @@ export default class VillageScene extends LycanChaseSceneBase {
                 }
             })
         );
-        
-        this.storyManager.chapter2.markEscapeLycansStarted();
     }
     
     protected override tryStartSceneInteractionAtTile(tile: Vec2): boolean {

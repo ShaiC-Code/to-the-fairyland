@@ -1,5 +1,6 @@
 import Vec2 from "../../Wolfie2D/DataTypes/Vec2";
 import Scene from "../../Wolfie2D/Scene/Scene";
+import SceneManager from "../../Wolfie2D/Scene/SceneManager";
 import GameEvent from "../../Wolfie2D/Events/GameEvent";
 import HoverButton from "../UI/CustomUIElements/HoverButton";
 import UIImage from "../UI/CustomUIElements/UIImage";
@@ -20,6 +21,8 @@ import HelpScreen from "../UI/MainMenuScreens/HelpScreen";
 import MainScreen from "../UI/MainMenuScreens/MainScreen";
 import TestScreen from "../UI/MainMenuScreens/TestScreen";
 import GameSessionManager from "../GameSystems/GameSessionSystem/GameSessionManager";
+import { GameSessionResumePoint } from "../GameSystems/GameSessionSystem/GameSessionState";
+import { LEVEL_TO_CHECKPOINT_STORY_KEY, LevelSelectionId } from "../GameSystems/GameSessionSystem/LevelCheckpointMapping";
 import { PlayerInput } from "../AI/Player/PlayerController";
 import { UIScreenActionBindings, UIScreenOptions } from "../UI/UIScreen";
 import RoadScene from "./Chapter2/RoadScene";
@@ -50,6 +53,13 @@ type AssetBundle = {
     sounds: AssetManifest;
     images: AssetManifest;
     [category: string]: AssetManifest | undefined;
+};
+
+const levelLoadTransition = {
+    showLoadingOverlay: true,
+    useFadeTransition: true,
+    fadeOutMs: 500,
+    fadeInMs: 500
 };
 
 export default class MainMenu extends Scene {
@@ -161,12 +171,13 @@ export default class MainMenu extends Scene {
         images.forEach(image => {this.load.keepImage(image.key)});
     }
 
-    public startScene(){
+    public startScene(): void {
         const uiActions: UIScreenActionBindings = {
             navigatePrevious: () => Input.isJustPressed(PlayerInput.MOVE_LEFT) || Input.isJustPressed(PlayerInput.MOVE_UP),
             navigateNext: () => Input.isJustPressed(PlayerInput.MOVE_RIGHT) || Input.isJustPressed(PlayerInput.MOVE_DOWN),
             confirm: () => Input.isJustPressed(PlayerInput.INTERACT)
         };
+
         const uiOptions: UIScreenOptions = {
             onEnterSFXKey: this.assets.sounds.uiHoverSFX.key,
             onClickSFXKey: this.assets.sounds.uiClickSFX.key,
@@ -183,8 +194,6 @@ export default class MainMenu extends Scene {
             this.assets.images.mainScreenImage.key,
             uiOptions
         );
-        this.mainMenu.setResumeEnabled(this.gameSessionManager.hasSavedSession());
-        this.mainMenu.show();
 
         this.levelMenu = new LevelSelectionScreen(
             "levelMenu",
@@ -234,14 +243,14 @@ export default class MainMenu extends Scene {
         this.receiver.subscribe("level7");
         this.receiver.subscribe("level8");
         this.receiver.subscribe("level9");
-
-
         this.receiver.subscribe("level10");
 
+        this.mainMenu.setResumeEnabled(this.gameSessionManager.hasSavedSession());
+        this.mainMenu.show();
     }
 
-    public updateScene(deltaT: number){
-        while(this.receiver.hasNextEvent()){
+    public updateScene(deltaT: number): void {
+        while (this.receiver.hasNextEvent()) {
             this.handleEvent(this.receiver.getNextEvent());
         }
 
@@ -256,287 +265,232 @@ export default class MainMenu extends Scene {
 
     public handleEvent(event: GameEvent): void {
         switch (event.type) {
-            case "openLevelMenu": {
-                this.showScreen("levelMenu");
-                break;
-            }
-            case "openControlsMenu": {
-                this.showScreen("controlsMenu");
-                break;
-            }
-            case "openHelpMenu": {
-                this.showScreen("helpMenu");
-                break;
-            }
-            case "openTestMenu": {
-                this.showScreen("testMenu");
-                break;
-            }
-            case "activateCheats": {
-                this.cheatsEnabled = !this.cheatsEnabled;
-                break;
-            }
-            case "backToMain": {
-                this.showScreen("mainMenu");
-                break;
-            }
-            case "currentLevel": {
-                this.resumeCurrentGame();
-                break;
-            }
-            case "level1": {
-                this.gameSessionManager.startNewChapter1Game();
-                this.sceneManager.changeToScene(
-                    ShelterScene,
-                    {
-                        cheatsEnabled: this.cheatsEnabled,
-                        spawnName: "SideOfBed",
-                        facing: Vec2.DOWN
-                    },
-                    undefined,
-                    {
-                        showLoadingOverlay: true,
-                        useFadeTransition: true,
-                        fadeOutMs: 500,
-                        fadeInMs: 500
-                    }
-                );
-                break;
-            }
-            case "level2": {
-                this.gameSessionManager.startNewChapter2Game();
-                this.sceneManager.changeToScene(
-                    VillageScene,
-                    {
-                        cheatsEnabled: this.cheatsEnabled,
-                        spawnName: "RoadStart"
-                    },
-                    undefined,
-                    {
-                        showLoadingOverlay: true,
-                        useFadeTransition: true,
-                        fadeOutMs: 500,
-                        fadeInMs: 500
-                    }
-                );
-                break;
-            }
-            case "level3": {
-                this.gameSessionManager.startNewChapter2Game();
+        case "openLevelMenu":
+            this.showScreen("levelMenu");
+            break;
 
-                const chapter2 = this.gameSessionManager.getStoryState().chapter2;
-                if (!chapter2) {
-                    throw new Error("Chapter 2 story state was not initialized.");
+        case "openControlsMenu":
+            this.showScreen("controlsMenu");
+            break;
+
+        case "openHelpMenu":
+            this.showScreen("helpMenu");
+            break;
+
+        case "openTestMenu":
+            this.showScreen("testMenu");
+            break;
+
+        case "activateCheats":
+            this.cheatsEnabled = !this.cheatsEnabled;
+            break;
+
+        case "backToMain":
+            this.showScreen("mainMenu");
+            break;
+
+        case "currentLevel":
+            this.resumeCurrentGame();
+            break;
+
+        case "level1":
+            this.enterLevel(
+                "level1",
+                ShelterScene,
+                () => this.gameSessionManager.startNewChapter1Game(),
+                {
+                    cheatsEnabled: this.cheatsEnabled,
+                    spawnName: "SideOfBed",
+                    facing: Vec2.DOWN
                 }
+            );
+            break;
 
-                chapter2.mainQuestStep = Chapter2MainQuestStep.READY_TO_LEAVE_VILLAGE;
-
-                // =============== Fake inventory state =====================
-                const inventory = this.gameSessionManager.getPlayerState().inventory;
-
-                if (inventory.find(item => item instanceof SleepingBag) === null) {
-                    inventory.add(new SleepingBag());
+        case "level2":
+            this.enterLevel(
+                "level2",
+                VillageScene,
+                () => this.gameSessionManager.startNewChapter2Game(),
+                {
+                    cheatsEnabled: this.cheatsEnabled,
+                    spawnName: "RoadStart"
                 }
-                // ==========================================================
+            );
+            break;
 
-                this.sceneManager.changeToScene(
-                    RoadScene,
-                    {
-                        cheatsEnabled: this.cheatsEnabled,
-                        spawnName: "RoadStart"
-                    },
-                    undefined,
-                    {
-                        showLoadingOverlay: true,
-                        useFadeTransition: true,
-                        fadeOutMs: 500,
-                        fadeInMs: 500
+        case "level3":
+            this.enterLevel(
+                "level3",
+                RoadScene,
+                () => {
+                    this.gameSessionManager.startNewChapter2Game();
+
+                    const chapter2 = this.gameSessionManager.getStoryState().chapter2;
+                    if (!chapter2) {
+                        throw new Error("Chapter 2 story state was not initialized.");
                     }
-                );
-                break;
-            }
-            case "level4": {
-                this.gameSessionManager.startNewChapter2Game();
 
-                const chapter2 = this.gameSessionManager.getStoryState().chapter2;
-                if (!chapter2) {
-                    throw new Error("Chapter 2 story state was not initialized.");
-                }
-
-                chapter2.mainQuestStep = Chapter2MainQuestStep.CHECK_VILLAGE;
-                this.gameSessionManager.getWorldState().timeOfDay = TimeOfDay.NIGHT;
-
-                this.sceneManager.changeToScene(
-                    VillageScene,
-                    {
-                        cheatsEnabled: this.cheatsEnabled,
-                        spawnName: "RoadEnd"
-                    },
-                    undefined,
-                    {
-                        showLoadingOverlay: true,
-                        useFadeTransition: true,
-                        fadeOutMs: 500,
-                        fadeInMs: 500
+                    const inventory = this.gameSessionManager.getPlayerState().inventory;
+                    if (inventory.find(item => item instanceof SleepingBag) === null) {
+                        inventory.add(new SleepingBag());
                     }
-                );
-                break;
-            }
-            case "level5": {
-                this.gameSessionManager.startNewChapter2Game();
-                this.gameSessionManager.getWorldState().timeOfDay = TimeOfDay.NIGHT;
 
-                const chapter2 = this.gameSessionManager.getStoryState().chapter2;
-                if (!chapter2) {
-                    throw new Error("Chapter 2 story state was not initialized.");
+                    chapter2.mainQuestStep = Chapter2MainQuestStep.LEAVE_VILLAGE;
+                    this.gameSessionManager.setResumePoint("VillageScene", "RoadStart");
+                },
+                {
+                    cheatsEnabled: this.cheatsEnabled,
+                    spawnName: "RoadStart"
                 }
+            );
+            break;
 
-                chapter2.mainQuestStep = Chapter2MainQuestStep.ESCAPE_LYCANS;
+        case "level4":
+            this.enterLevel(
+                "level4",
+                VillageScene,
+                () => {
+                    this.gameSessionManager.startNewChapter2Game();
 
-                this.sceneManager.changeToScene(
-                    CliffScene,
-                    {
-                        cheatsEnabled: this.cheatsEnabled,
-                        spawnName: "RoadStart"
-                    },
-                    undefined,
-                    {
-                        showLoadingOverlay: true,
-                        useFadeTransition: true,
-                        fadeOutMs: 500,
-                        fadeInMs: 500
+                    const chapter2 = this.gameSessionManager.getStoryState().chapter2;
+                    if (!chapter2) {
+                        throw new Error("Chapter 2 story state was not initialized.");
                     }
-                );
 
-                break;
-            }
-            case "level6": {
-                this.gameSessionManager.startNewChapter3Game();
-                this.gameSessionManager.getPlayerState().health = 1;
-
-                const inventory = this.gameSessionManager.getPlayerState().inventory;
-
-                if (inventory.find(item => item instanceof FreshPrettyTooth) === null) {
-                    inventory.add(new FreshPrettyTooth());
+                    chapter2.mainQuestStep = Chapter2MainQuestStep.RETURNED_TO_VILLAGE;
+                    this.gameSessionManager.getWorldState().timeOfDay = TimeOfDay.NIGHT;
+                    this.gameSessionManager.setResumePoint("VillageScene", "RoadEnd");
+                },
+                {
+                    cheatsEnabled: this.cheatsEnabled,
+                    spawnName: "RoadEnd"
                 }
+            );
+            break;
 
-                this.sceneManager.changeToScene(
-                    CliffBottomScene,
-                    {
-                        cheatsEnabled: this.cheatsEnabled,
-                        spawnName: "RoadStart"
-                    },
-                    undefined,
-                    {
-                        showLoadingOverlay: true,
-                        useFadeTransition: true,
-                        fadeOutMs: 500,
-                        fadeInMs: 500
+        case "level5":
+            this.enterLevel(
+                "level5",
+                CliffScene,
+                () => {
+                    this.gameSessionManager.startNewChapter2Game();
+                    this.gameSessionManager.getWorldState().timeOfDay = TimeOfDay.NIGHT;
+
+                    const chapter2 = this.gameSessionManager.getStoryState().chapter2;
+                    if (!chapter2) {
+                        throw new Error("Chapter 2 story state was not initialized.");
                     }
-                );
 
-                break;
-            }
-            case "level7": {
-                this.gameSessionManager.startNewChapter3Game();
-
-                const chapter3 = this.gameSessionManager.getStoryState().chapter3;
-                if (!chapter3) {
-                    throw new Error("Chapter 3 story state was not initialized.");
+                    chapter2.mainQuestStep = Chapter2MainQuestStep.CLIFF_JUMP;
+                    this.gameSessionManager.setResumePoint("CliffScene", "RoadStart");
+                },
+                {
+                    cheatsEnabled: this.cheatsEnabled,
+                    spawnName: "RoadStart"
                 }
+            );
+            break;
 
-                chapter3.mainQuestStep = Chapter3MainQuestStep.NEED_EXCALIBUR;
+        case "level6":
+            this.enterLevel(
+                "level6",
+                CliffBottomScene,
+                () => {
+                    this.gameSessionManager.startNewChapter3Game();
+                    this.gameSessionManager.getPlayerState().health = 1;
+
+                    const chapter3 = this.gameSessionManager.getStoryState().chapter3;
+                    if (!chapter3) {
+                        throw new Error("Chapter 3 story state was not initialized.");
+                    }
+
+                    const inventory = this.gameSessionManager.getPlayerState().inventory;
+                    if (inventory.find(item => item instanceof FreshPrettyTooth) === null) {
+                        inventory.add(new FreshPrettyTooth());
+                    }
+
+                    chapter3.mainQuestStep = Chapter3MainQuestStep.FAINTED;
+                    this.gameSessionManager.setResumePoint("CliffBottomScene", "RoadStart");
+                },
+                {
+                    cheatsEnabled: this.cheatsEnabled,
+                    spawnName: "RoadStart"
+                }
+            );
+            break;
+
+        case "level7":
+            this.enterLevel(
+                "level7",
+                TreeInnerScene,
+                () => {
+                    this.gameSessionManager.startNewChapter3Game();
+
+                    const chapter3 = this.gameSessionManager.getStoryState().chapter3;
+                    if (!chapter3) {
+                        throw new Error("Chapter 3 story state was not initialized.");
+                    }
+
+                    chapter3.mainQuestStep = Chapter3MainQuestStep.NEED_EXCALIBUR;
+                    this.gameSessionManager.setResumePoint("GreatTreeScene", "TreeInner");
+                },
+                {
+                    cheatsEnabled: this.cheatsEnabled,
+                    spawnName: "TreeInner"
+                }
+            );
+            break;
+
+        case "level8":
+            this.enterLevel(
+                "level8",
+                GreatTreeScene,
+                () => {
+                    this.gameSessionManager.startNewChapter3Game();
+
+                    const chapter3 = this.gameSessionManager.getStoryState().chapter3;
+                    if (!chapter3) {
+                        throw new Error("Chapter 3 story state was not initialized.");
+                    }
+
+                    const inventory = this.gameSessionManager.getPlayerState().inventory;
+                    if (inventory.find(item => item instanceof Excalibur) === null) {
+                        inventory.add(new Excalibur());
+                    }
+
+                    chapter3.mainQuestStep = Chapter3MainQuestStep.VINE_EXIT_OPEN;
+                    this.gameSessionManager.setResumePoint("GreatTreeScene", "TreeOuter");
+                },
+                {
+                    cheatsEnabled: this.cheatsEnabled,
+                    spawnName: "TreeOuter"
+                }
+            );
+            break;
             
-                this.sceneManager.changeToScene(
-                    TreeInnerScene,
-                    {
-                        cheatsEnabled: this.cheatsEnabled,
-                        spawnName: "TreeInner"
-                    },
-                    undefined,
-                    {
-                        showLoadingOverlay: true,
-                        useFadeTransition: true,
-                        fadeOutMs: 500,
-                        fadeInMs: 500
-                    }
-                );
-
-                break;
-            }
-            case "level8": {
-                this.gameSessionManager.startNewChapter3Game();
-
-                const inventory = this.gameSessionManager.getPlayerState().inventory;
-
-                if (inventory.find(item => item instanceof Excalibur) === null) {
-                    inventory.add(new Excalibur());
+        case "level9":
+            this.enterLevel(
+                "level9",
+                DesertLandScene1,
+                () => this.gameSessionManager.startNewChapter4Game(),
+                {
+                    cheatsEnabled: this.cheatsEnabled,
+                    spawnName: "RoadStart"
                 }
+            );
+            break;
 
-                const chapter3 = this.gameSessionManager.getStoryState().chapter3;
-                if (!chapter3) {
-                    throw new Error("Chapter 3 story state was not initialized.");
+        case "level10":
+            this.enterLevel(
+                "level10",
+                EmeraldPondScene,
+                () => this.gameSessionManager.startNewGame(),
+                {
+                    cheatsEnabled: this.cheatsEnabled,
+                    spawnName: "Fate"
                 }
-
-                chapter3.mainQuestStep = Chapter3MainQuestStep.VINE_EXIT_OPEN;
-
-                this.sceneManager.changeToScene(
-                    GreatTreeScene,
-                    {
-                        cheatsEnabled: this.cheatsEnabled,
-                        spawnName: "TreeOuter"
-                    },
-                    undefined,
-                    {
-                        showLoadingOverlay: true,
-                        useFadeTransition: true,
-                        fadeOutMs: 500,
-                        fadeInMs: 500
-                    }
-                );
-
-                break;
-            }
-            case "level9": {
-                this.gameSessionManager.startNewChapter4Game();
-            
-                this.sceneManager.changeToScene(
-                    DesertLandScene1,
-                    {
-                        cheatsEnabled: this.cheatsEnabled,
-                        spawnName: "RoadStart"
-                    },
-                    undefined,
-                    {
-                        showLoadingOverlay: true,
-                        useFadeTransition: true,
-                        fadeOutMs: 500,
-                        fadeInMs: 500
-                    }
-                );
-            
-                break;
-            }
-            
-            case "level10": {
-                this.gameSessionManager.startNewChapter2Game();
-
-                this.sceneManager.changeToScene(
-                    EmeraldPondScene,
-                    {
-                        cheatsEnabled: this.cheatsEnabled,
-                        spawnName: "Fate"
-                    },
-                    undefined,
-                    {
-                        showLoadingOverlay: true,
-                        useFadeTransition: true,
-                        fadeOutMs: 500,
-                        fadeInMs: 500
-                    }
-                );
-                break;
-            }
+            );
+            break;
         }
     }
 
@@ -546,174 +500,52 @@ export default class MainMenu extends Scene {
 
         if (!resumePoint) {
             this.gameSessionManager.startNewGame();
-            this.sceneManager.changeToScene(
-                ShelterScene,
-                {
-                    cheatsEnabled: false,
-                    spawnName: "SideOfBed",
-                    facing: Vec2.DOWN
-                },
-                undefined,
-                {
-                    showLoadingOverlay: true,
-                    useFadeTransition: true,
-                    fadeOutMs: 500,
-                    fadeInMs: 500
-                }
-            );
+            changeToNewGameStartScene(this.sceneManager);
             return;
         }
 
-        const initData = {
-            cheatsEnabled: resumePoint.cheatsEnabled ?? false,
-            spawnName: resumePoint.spawnName,
-            fromResume: true
-        };
-
-        switch (resumePoint.sceneId) {
-            // Chapter 1
-            case "ShelterScene":
-                this.sceneManager.changeToScene(ShelterScene, { ...initData, facing: Vec2.DOWN }, undefined, {
-                    showLoadingOverlay: true,
-                    useFadeTransition: true,
-                    fadeOutMs: 500,
-                    fadeInMs: 500
-                });
-                break;
-            case "ForestScene":
-                this.sceneManager.changeToScene(ForestScene, initData, undefined, {
-                    showLoadingOverlay: true,
-                    useFadeTransition: true,
-                    fadeOutMs: 500,
-                    fadeInMs: 500
-                });
-                break;
-            // Chapter 2
-            case "VillageScene":
-                this.sceneManager.changeToScene(VillageScene, initData, undefined, {
-                    showLoadingOverlay: true,
-                    useFadeTransition: true,
-                    fadeOutMs: 500,
-                    fadeInMs: 500
-                });
-                break;
-            case "RoadScene":
-                this.sceneManager.changeToScene(RoadScene, initData, undefined, {
-                    showLoadingOverlay: true,
-                    useFadeTransition: true,
-                    fadeOutMs: 500,
-                    fadeInMs: 500
-                });
-                break;
-            case "Road1Scene":
-                this.sceneManager.changeToScene(Road1Scene, initData, undefined, {
-                    showLoadingOverlay: true,
-                    useFadeTransition: true,
-                    fadeOutMs: 500,
-                    fadeInMs: 500
-                });
-                break;
-            case "Road2Scene":
-                this.sceneManager.changeToScene(Road2Scene, initData, undefined, {
-                    showLoadingOverlay: true,
-                    useFadeTransition: true,
-                    fadeOutMs: 500,
-                    fadeInMs: 500
-                });
-                break;
-            case "Road3Scene":
-                this.sceneManager.changeToScene(Road3Scene, initData, undefined, {
-                    showLoadingOverlay: true,
-                    useFadeTransition: true,
-                    fadeOutMs: 500,
-                    fadeInMs: 500
-                });
-                break;
-            case "CliffScene":
-                this.sceneManager.changeToScene(CliffScene, initData, undefined, {
-                    showLoadingOverlay: true,
-                    useFadeTransition: true,
-                    fadeOutMs: 500,
-                    fadeInMs: 500
-                });
-                break;
-            // Chapter 3
-            case "CliffBottomScene":
-                this.sceneManager.changeToScene(CliffBottomScene, initData, undefined, {
-                    showLoadingOverlay: true,
-                    useFadeTransition: true,
-                    fadeOutMs: 500,
-                    fadeInMs: 500
-                });
-                break;  
-            case "DeeperForestScene":
-                this.sceneManager.changeToScene(DeeperForestScene, initData, undefined, {
-                    showLoadingOverlay: true,
-                    useFadeTransition: true,
-                    fadeOutMs: 500,
-                    fadeInMs: 500
-                });
-                break;
-            case "GreatTreeScene":
-                this.sceneManager.changeToScene(GreatTreeScene, initData, undefined, {
-                    showLoadingOverlay: true,
-                    useFadeTransition: true,
-                    fadeOutMs: 500,
-                    fadeInMs: 500
-                });
-                break;
-            case "TreeInnerScene":
-                this.sceneManager.changeToScene(TreeInnerScene, initData, undefined, {
-                    showLoadingOverlay: true,
-                    useFadeTransition: true,
-                    fadeOutMs: 500,
-                    fadeInMs: 500
-                });
-                break;
-            // Chapter 4
-            case "DesertLandScene":
-                this.sceneManager.changeToScene(DesertLandScene, initData, undefined, {
-                    showLoadingOverlay: true,
-                    useFadeTransition: true,
-                    fadeOutMs: 500,
-                    fadeInMs: 500
-                });
-                break;
-            case "DesertLandScene1":
-                this.sceneManager.changeToScene(DesertLandScene1, initData, undefined, {
-                    showLoadingOverlay: true,
-                    useFadeTransition: true,
-                    fadeOutMs: 500,
-                    fadeInMs: 500
-                });
-                break;
-            // Chapter 7
-            case "EmeraldPondScene":
-                this.sceneManager.changeToScene(EmeraldPondScene, initData, undefined, {
-                    showLoadingOverlay: true,
-                    useFadeTransition: true,
-                    fadeOutMs: 500,
-                    fadeInMs: 500
-                });
-                break;
-            default:
-                this.gameSessionManager.startNewGame();
-                this.sceneManager.changeToScene(
-                    ShelterScene,
-                    {
-                        cheatsEnabled: false,
-                        spawnName: "SideOfBed",
-                        facing: Vec2.DOWN
-                    },
-                    undefined,
-                    {
-                        showLoadingOverlay: true,
-                        useFadeTransition: true,
-                        fadeOutMs: 500,
-                        fadeInMs: 500
-                    }
-                );
+        if (!changeToResumePointScene(this.sceneManager, resumePoint)) {
+            this.gameSessionManager.startNewGame();
+            changeToNewGameStartScene(this.sceneManager);
         }
+    }
+
+    private enterLevel(
+        levelId: LevelSelectionId,
+        scene: new (...args: any[]) => Scene,
+        initializeSession: () => void,
+        sceneInit: Record<string, any>
+    ): void {
+        const checkpointKey = LEVEL_TO_CHECKPOINT_STORY_KEY[levelId];
+
+        if (this.gameSessionManager.loadCheckpoint(checkpointKey)) {
+            this.gameSessionManager.setActiveCheckpointKey(checkpointKey);
+            const resumePoint = this.gameSessionManager.getResumePoint();
+
+            this.sceneManager.changeToScene(
+                scene,
+                {
+                    cheatsEnabled: resumePoint?.cheatsEnabled ?? sceneInit.cheatsEnabled ?? false,
+                    spawnName: resumePoint?.spawnName ?? sceneInit.spawnName,
+                    fromResume: true
+                },
+                undefined,
+                levelLoadTransition
+            );
+
+            return;
+        }
+
+        initializeSession();
+        this.gameSessionManager.setActiveCheckpointKey(checkpointKey);
+        this.gameSessionManager.saveCheckpoint(checkpointKey);
+
+        this.sceneManager.changeToScene(
+            scene,
+            sceneInit,
+            undefined,
+            levelLoadTransition
+        );
     }
 
     private showScreen(screen: "mainMenu" | "levelMenu" | "controlsMenu" | "helpMenu" | "testMenu"): void {
@@ -747,5 +579,76 @@ export default class MainMenu extends Scene {
         } else {
             demoTextBox.stopTypewriter();
         }
+    }
+}
+
+export function changeToNewGameStartScene(sceneManager: SceneManager): void {
+    sceneManager.changeToScene(
+        ShelterScene,
+        {
+            cheatsEnabled: false,
+            spawnName: "SideOfBed",
+            facing: Vec2.DOWN
+        },
+        undefined,
+        levelLoadTransition
+    );
+}
+
+export function changeToResumePointScene(sceneManager: SceneManager, resumePoint: GameSessionResumePoint): boolean {
+    const initData = {
+        cheatsEnabled: resumePoint.cheatsEnabled ?? false,
+        spawnName: resumePoint.spawnName,
+        fromResume: true
+    };
+
+    switch (resumePoint.sceneId) {
+        case "ShelterScene":
+            sceneManager.changeToScene(ShelterScene, { ...initData, facing: Vec2.DOWN }, undefined, levelLoadTransition);
+            return true;
+        case "ForestScene":
+            sceneManager.changeToScene(ForestScene, initData, undefined, levelLoadTransition);
+            return true;
+        case "VillageScene":
+            sceneManager.changeToScene(VillageScene, initData, undefined, levelLoadTransition);
+            return true;
+        case "RoadScene":
+            sceneManager.changeToScene(RoadScene, initData, undefined, levelLoadTransition);
+            return true;
+        case "Road1Scene":
+            sceneManager.changeToScene(Road1Scene, initData, undefined, levelLoadTransition);
+            return true;
+        case "Road2Scene":
+            sceneManager.changeToScene(Road2Scene, initData, undefined, levelLoadTransition);
+            return true;
+        case "Road3Scene":
+            sceneManager.changeToScene(Road3Scene, initData, undefined, levelLoadTransition);
+            return true;
+        case "CliffScene":
+            sceneManager.changeToScene(CliffScene, initData, undefined, levelLoadTransition);
+            return true;
+        case "CliffBottomScene":
+            sceneManager.changeToScene(CliffBottomScene, initData, undefined, levelLoadTransition);
+            return true;
+        case "DeeperForestScene":
+            sceneManager.changeToScene(DeeperForestScene, initData, undefined, levelLoadTransition);
+            return true;
+        case "GreatTreeScene":
+            sceneManager.changeToScene(GreatTreeScene, initData, undefined, levelLoadTransition);
+            return true;
+        case "TreeInnerScene":
+            sceneManager.changeToScene(TreeInnerScene, initData, undefined, levelLoadTransition);
+            return true;
+        case "DesertLandScene":
+            sceneManager.changeToScene(DesertLandScene, initData, undefined, levelLoadTransition);
+            return true;
+        case "DesertLandScene1":
+            sceneManager.changeToScene(DesertLandScene1, initData, undefined, levelLoadTransition);
+            return true;
+        case "EmeraldPondScene":
+            sceneManager.changeToScene(EmeraldPondScene, initData, undefined, levelLoadTransition);
+            return true;
+        default:
+            return false;
     }
 }

@@ -33,6 +33,7 @@ import SwordHitDispatcher from "../GameSystems/CombatSystem/SwordHitDispatcher";
 import AudioController from "../GameSystems/AudioController";
 import OverlayLayer from "../Overlays/OverlayLayer";
 import LowHealthOverlay from "../Overlays/LowHealthOverlay";
+import { resolveCheckpointStoryKey } from "../GameSystems/GameSessionSystem/LevelCheckpointMapping";
 
 export type AssetRef = Readonly<{
     readonly key: string;
@@ -339,6 +340,8 @@ export default abstract class MappedAdventureScene extends Scene {
             ai.moveStart = restoredPlayerPosition.clone();
             ai.moveEnd = restoredPlayerPosition.clone();
         }
+
+        this.captureLevelStartCheckpointIfApplicable(ai);
         this.playIdleForFacing(ai.facing);
 
         this.playerAttackController = new PlayerAttackController({
@@ -1220,6 +1223,34 @@ export default abstract class MappedAdventureScene extends Scene {
         const clampedX = Math.max(0, Math.min(dimensions.x - 1, Math.floor(savedPos.x)));
         const clampedY = Math.max(0, Math.min(dimensions.y - 1, Math.floor(savedPos.y)));
         return new Vec2(clampedX, clampedY);
+    }
+
+    private captureLevelStartCheckpointIfApplicable(ai: PlayerAI): void {
+        const storyState = this.gameSessionManager.getStoryState();
+        const checkpointKey = resolveCheckpointStoryKey(storyState);
+
+        if (!checkpointKey) {
+            return;
+        }
+
+        const activeCheckpointKey = this.gameSessionManager.getActiveCheckpointKey();
+        if (activeCheckpointKey === checkpointKey) {
+            return;
+        }
+
+        this.gameSessionManager.setActiveCheckpointKey(checkpointKey);
+
+        const entryTile = ai.currentTile.clone();
+        this.gameSessionManager.setResumePoint(
+            this.constructor.name,
+            this.spawnName,
+            this.cheatsEnabled,
+            { x: entryTile.x, y: entryTile.y }
+        );
+
+        if (!this.fromResumeLoad) {
+            this.gameSessionManager.saveCheckpoint(checkpointKey);
+        }
     }
     
 }

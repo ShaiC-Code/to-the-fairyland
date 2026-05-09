@@ -5,15 +5,25 @@ import { TiledObject, TiledTilemapData } from "../../../Wolfie2D/DataTypes/Tiles
 import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 
 export default class CliffScene extends RoadSceneBase {
-    private cliffJumpLycansSpawned = false;
-
     protected readonly tilemap = {
         key: "cliff",
         path: "/assets/tilemaps/Chapter2/Cliff.json"
     };
 
+    private cliffJumpLycansSpawned = false;
+
     protected override handleAutoTransition(obj: TiledObject): void {
         if (obj.name === "PathToRoad3") {
+            if (this.storyManager.chapter2.needsToJumpOffCliff()) {
+                this.rejectAutoTransitionEntry();
+    
+                this.startDialogue(dialogue([
+                    "You can't go back there.",
+                    "They're hot on your tail."
+                ]));
+    
+                return;
+            }
             this.changeToRoadSection(Road3Scene, "RoadEnd");
         }
     }

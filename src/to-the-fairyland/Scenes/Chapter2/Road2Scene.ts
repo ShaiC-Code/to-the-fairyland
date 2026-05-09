@@ -13,6 +13,9 @@ export default class Road2Scene extends RoadSceneBase {
         if (obj.name === "PathToRoad1") {
             this.changeToRoadSection(Road1Scene, "RoadEnd");
         } else if (obj.name === "PathToRoad3") {
+            if (this.storyManager.chapter2.needsToLeaveVillage()) {
+                this.storyManager.chapter2.markLeaveVillage();
+            }
             this.changeToRoadSection(Road3Scene, "RoadStart");
         }
     }

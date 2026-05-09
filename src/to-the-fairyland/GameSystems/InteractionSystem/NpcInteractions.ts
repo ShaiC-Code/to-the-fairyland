@@ -88,7 +88,7 @@ function getVilaInteraction(context: NpcInteractionContext): DialogueInteraction
             }
         );
 
-    case Chapter2MainQuestStep.READY_TO_LEAVE_VILLAGE:
+    case Chapter2MainQuestStep.LEAVE_VILLAGE:
         return dialogue([
             "You still have my little gift, don't you?",
             "Good.",
@@ -116,7 +116,7 @@ function getLucyInteraction(context: NpcInteractionContext): DialogueInteraction
             "Move along."
         ]);
 
-    case Chapter2MainQuestStep.READY_TO_LEAVE_VILLAGE:
+    case Chapter2MainQuestStep.LEAVE_VILLAGE:
         return dialogue([
             "Why are you still here?"
         ]);
@@ -149,7 +149,7 @@ function getArgusInteraction(context: NpcInteractionContext): DialogueInteractio
             "<yellow>[You received a set of Obsidian Boots]",
         ], { completeAction: DialogueCompleteActions.GIVE_OBSIDIAN_BOOTS });
 
-    case Chapter2MainQuestStep.READY_TO_LEAVE_VILLAGE:
+    case Chapter2MainQuestStep.LEAVE_VILLAGE:
         return dialogue([
             "You should not stay here long..."
         ]);
@@ -185,7 +185,7 @@ function getJInteraction(context: NpcInteractionContext): DialogueInteraction {
             "<yellow>[You receieved the Flower Ring]"
         ], { completeAction: DialogueCompleteActions.GIVE_FLOWER_RING });
 
-    case Chapter2MainQuestStep.READY_TO_LEAVE_VILLAGE:
+    case Chapter2MainQuestStep.LEAVE_VILLAGE:
         return dialogue([
             "You are leaving soon, aren't you?",
             "Please be careful beyond the village.",
@@ -274,7 +274,7 @@ function getKInteraction(context: NpcInteractionContext): DialogueInteraction {
             "Please don't ask for more."
         ]);
 
-        case Chapter2MainQuestStep.READY_TO_LEAVE_VILLAGE:
+        case Chapter2MainQuestStep.LEAVE_VILLAGE:
             return dialogue([
                 "I believe I have given you enough...",
                 "Please don't ask for more."
