@@ -11,7 +11,8 @@ export const DialogueCompleteActions = {
     GOTO_CHAPTER2: "gotoChapter2",
     GIVE_FLOWER_RING: "giveFlowerRing",
     GIVE_OBSIDIAN_BOOTS: "giveObsidianBoots",
-    PULL_EXCALIBUR: "pullExcalibur"
+    PULL_EXCALIBUR: "pullExcalibur",
+    SLEEP_IN_BED: "sleepInBed"
 } as const;
 
 export type DialogueCompleteAction =

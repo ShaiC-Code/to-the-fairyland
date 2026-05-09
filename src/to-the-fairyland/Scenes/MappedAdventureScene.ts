@@ -3,6 +3,7 @@ import AABB from "../../Wolfie2D/DataTypes/Shapes/AABB";
 import { TiledObject, TiledTilemapData, TiledLayerData} from "../../Wolfie2D/DataTypes/Tilesets/TiledData";
 import OrthogonalTilemap from "../../Wolfie2D/Nodes/Tilemaps/OrthogonalTilemap";
 import Scene from "../../Wolfie2D/Scene/Scene";
+import Color from "../../Wolfie2D/Utils/Color";
 import PlayerActor from "../Actors/PlayerActor";
 import PlayerAI from "../AI/Player/PlayerAI";
 import PauseScreen from "../UI/PauseScreen";
@@ -51,6 +52,7 @@ import PlayerDeathHitOverlay from "../Overlays/PlayerDeathHitOverlay";
 import GameOverScreenScene from "./GameOverScreenScene";
 import PlayerHealthController, { PlayerDamageOptions } from "../GameSystems/PlayerSystem/PlayerHealthController";
 import { AudioChannelType } from "../../Wolfie2D/Sound/AudioManager";
+import TitleOverlay from "../Overlays/TitleOverlay";
 
 export type AssetRef = Readonly<{
     readonly key: string;
@@ -83,6 +85,12 @@ export interface ChapterSceneDefinition {
     dialogueCompleteActionHandlers: Readonly<Partial<Record<DialogueCompleteAction, () => void>>>;
     dialogueChoiceActionHandlers: Readonly<Partial<Record<DialogueChoiceAction, () => void>>>;
 }
+
+type FullScreenFadeTransitionOptions = {
+    fadeToBlackSeconds?: number;
+    holdBlackSeconds?: number;
+    fadeFromBlackSeconds?: number;
+};
 
 export default abstract class MappedAdventureScene extends Scene {
     // The tilemap to load for the scene, pass from sub scenes
@@ -169,6 +177,8 @@ export default abstract class MappedAdventureScene extends Scene {
     protected playerHealthController!: PlayerHealthController;
     protected playerHurtFlashOverlay!: RedFlashOverlay;
     protected playerDeathHitOverlay!: PlayerDeathHitOverlay;
+    private fullScreenFadeOverlay!: TitleOverlay;
+    private fullScreenFadeTransitionActive = false;
     private playerDeathSequenceActive = false;
     
     protected cameraController!: CameraController;
@@ -188,6 +198,10 @@ export default abstract class MappedAdventureScene extends Scene {
     protected readonly lowHealthOverlayLayerName = "LowHealthOverlay";
     protected readonly playerHurtFlashLayerName = "PlayerHurtFlashOverlay";
     protected readonly playerDeathHitLayerName = "PlayerDeathHitOverlay";
+    private readonly fullScreenFadeLayerName = "FullScreenFadeOverlay";
+    private readonly defaultFadeToBlackSeconds = 0.6;
+    private readonly defaultFadeHoldBlackSeconds = 0.2;
+    private readonly defaultFadeFromBlackSeconds = 0.6;
     protected readonly lowHealthOverlayThresholdRatio = 0.4;
     protected readonly lowHealthOverlayMaxAlpha = 0.45;
     protected readonly lowHealthOverlayPulseAmount = 0.20;
@@ -531,6 +545,26 @@ export default abstract class MappedAdventureScene extends Scene {
         this.weatherController = new WeatherController(this, this.viewport);
         this.weatherController.sceneAssets = this.assets;
         this.weatherController.setWeather(WeatherType.NONE);
+
+        this.fullScreenFadeOverlay = new TitleOverlay(
+            this.fullScreenFadeLayerName,
+            this,
+            () => this.viewport.getCenter(),
+            () => this.viewport.getHalfSize(),
+            {
+                backgroundColor: Color.BLACK,
+                defaultTextColor: "white",
+                fontSize: 1,
+                titleHeight: 1,
+                horizontalPadding: 0,
+                minTitleWidth: 1,
+                pauseScene: true,
+                pauseDuringTransition: true,
+                fadeInSeconds: this.defaultFadeToBlackSeconds,
+                fadeOutSeconds: this.defaultFadeFromBlackSeconds,
+                depth: 10002
+            }
+        );
     }
 
     public override updateScene(deltaT: number): void {
@@ -580,6 +614,7 @@ export default abstract class MappedAdventureScene extends Scene {
         this.lowHealthOverlay.update(deltaT);
         this.playerHurtFlashOverlay.update(deltaT);
         this.playerDeathHitOverlay.update(deltaT);
+        this.fullScreenFadeOverlay.update(deltaT);
         
         this.cameraController.update(deltaT);
         this.dialogueController.update(deltaT);
@@ -1359,6 +1394,35 @@ export default abstract class MappedAdventureScene extends Scene {
         return new Promise(resolve => {
             window.setTimeout(resolve, seconds * 1000);
         });
+    }
+
+    protected async playFullScreenFadeTransition(
+        onFullyCovered: () => void,
+        options: FullScreenFadeTransitionOptions = {}
+    ): Promise<void> {
+        if (this.fullScreenFadeTransitionActive) {
+            return;
+        }
+
+        this.fullScreenFadeTransitionActive = true;
+        const wasTransitioning = this.transitioning;
+        this.transitioning = true;
+
+        try {
+            await this.fullScreenFadeOverlay.showTitle(
+                "",
+                Math.max(0, options.holdBlackSeconds ?? this.defaultFadeHoldBlackSeconds),
+                "white",
+                {
+                    fadeInSeconds: Math.max(0, options.fadeToBlackSeconds ?? this.defaultFadeToBlackSeconds),
+                    fadeOutSeconds: Math.max(0, options.fadeFromBlackSeconds ?? this.defaultFadeFromBlackSeconds),
+                    onFullyVisible: onFullyCovered
+                }
+            );
+        } finally {
+            this.fullScreenFadeTransitionActive = false;
+            this.transitioning = wasTransitioning;
+        }
     }
 
     protected saveGameWithFeedback(): void {

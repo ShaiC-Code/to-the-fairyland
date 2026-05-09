@@ -14,6 +14,7 @@ export type TitleOverlayOptions = OverlayLayerOptions & {
     horizontalPadding?: number;
     minTitleWidth?: number;
     pauseScene?: boolean;
+    pauseDuringTransition?: boolean;
     startDelaySeconds?: number;
 };
 
@@ -23,6 +24,7 @@ export type TitleOverlayShowOptions = {
     fadeInSeconds?: number;
     fadeOutSeconds?: number;
     startDelaySeconds?: number;
+    onFullyVisible?: () => void;
 };
 
 type TitleOverlayPhase = "hidden" | "delay" | "fadeIn" | "hold" | "fadeOut";
@@ -44,6 +46,7 @@ export default class TitleOverlay extends OverlayLayer {
     private readonly horizontalPadding: number;
     private readonly minTitleWidth: number;
     private readonly defaultStartDelaySeconds: number;
+    private readonly pauseDuringTransition: boolean;
 
     private titleText = "";
     private phase: TitleOverlayPhase = "hidden";
@@ -55,6 +58,7 @@ export default class TitleOverlay extends OverlayLayer {
     private overlayAlpha = 0;
     private startDelaySeconds = 0;
     private autoHideResolve: (() => void) | null = null;
+    private onFullyVisible: (() => void) | null = null;
 
     constructor(
         layerName: string,
@@ -77,6 +81,7 @@ export default class TitleOverlay extends OverlayLayer {
         this.horizontalPadding = options?.horizontalPadding ?? 80;
         this.minTitleWidth = options?.minTitleWidth ?? 400;
         this.defaultStartDelaySeconds = options?.startDelaySeconds ?? 0;
+        this.pauseDuringTransition = options?.pauseDuringTransition ?? false;
 
         if (options?.pauseScene) {
             this.registerScenePauseOverlay();
@@ -152,6 +157,7 @@ export default class TitleOverlay extends OverlayLayer {
         this.fadeInSeconds = Math.max(0, options?.fadeInSeconds ?? this.defaultFadeInSeconds);
         this.fadeOutSeconds = Math.max(0, options?.fadeOutSeconds ?? this.defaultFadeOutSeconds);
         this.startDelaySeconds = Math.max(0, options?.startDelaySeconds ?? this.defaultStartDelaySeconds);
+        this.onFullyVisible = options?.onFullyVisible ?? null;
         this.phaseElapsedSeconds = 0;
         this.phase = this.startDelaySeconds > 0 ? "delay" : "fadeIn";
         this.setOverlayAlpha(0);
@@ -183,6 +189,10 @@ export default class TitleOverlay extends OverlayLayer {
     }
 
     public override shouldPauseWorld(): boolean {
+        if (this.pauseDuringTransition) {
+            return this.phase !== "hidden";
+        }
+
         return this.phase === "hold";
     }
 
@@ -266,6 +276,7 @@ export default class TitleOverlay extends OverlayLayer {
         this.phase = "hold";
         this.phaseElapsedSeconds = 0;
         this.setOverlayAlpha(1);
+        this.invokeFullyVisibleCallback();
 
         if (this.holdDurationSeconds === 0) {
             this.beginFadeOut();
@@ -292,8 +303,15 @@ export default class TitleOverlay extends OverlayLayer {
         this.phase = "hidden";
         this.phaseElapsedSeconds = 0;
         this.setOverlayAlpha(0);
+        this.onFullyVisible = null;
         super.hide();
         this.resolveAutoHide();
+    }
+
+    private invokeFullyVisibleCallback(): void {
+        const callback = this.onFullyVisible;
+        this.onFullyVisible = null;
+        callback?.();
     }
 
     private getPhaseProgress(durationSeconds: number): number {

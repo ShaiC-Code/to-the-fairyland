@@ -149,11 +149,13 @@ export function getBedDialogue(step: Chapter1MainQuestStep): DialogueInteraction
                 options: [
                     choiceOption(
                         "Yes",
-                        dialogue([
-                            "You had terrible dreams.",
-                            "<red>You dreamt you were being mauled by wolves.",
-                        ]),
-                        { choiceAction: DialogueChoiceActions.SLEEP }
+                        dialogue(
+                            [
+                                "You had terrible dreams.",
+                                "<red>You dreamt you were being mauled by wolves.",
+                            ],
+                            { completeAction: DialogueCompleteActions.SLEEP_IN_BED }
+                        )
                     ),
                     choiceOption(
                         "No",
