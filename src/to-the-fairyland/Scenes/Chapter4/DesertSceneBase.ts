@@ -1,4 +1,5 @@
 import { TiledObject, TiledTilemapData } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData";
+import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 import DesertCentipedeController from "../../AI/NPC/NPCController/DesertCentipedeController";
 import AudioController from "../../GameSystems/AudioController";
 import { WeatherType } from "../../GameSystems/WorldSystem/WorldState";
@@ -12,6 +13,7 @@ export default abstract class DesertSceneBase extends MappedAdventureScene {
             sandParticle1Sprite: { key: "sandParticle1", path: "/assets/sprites/particles/SandParticle1.png" },
             sandParticle2Sprite: { key: "sandParticle2", path: "/assets/sprites/particles/SandParticle2.png" },
             sandParticle3Sprite: { key: "sandParticle3", path: "/assets/sprites/particles/SandParticle3.png" },
+            rockSprite: { key: "desertRock", path: "/assets/sprites/Rock.png" },
             desertCentipedeHead: {
                 key: "desertCentipedeHead",
                 path: "/assets/spritesheets/desertCentipede_pieces1.png"
@@ -58,6 +60,17 @@ export default abstract class DesertSceneBase extends MappedAdventureScene {
     protected readonly centipedeMaxAggroDurationSeconds = 1.3;
     protected readonly centipedeChargeGuidanceDurationSeconds = 0.3;
     protected readonly centipedeChargeDurationSeconds = 2;
+    protected readonly centipedeCatchUpStartDistance = 1050;
+    protected readonly centipedeCatchUpMaxDistance = 1800;
+    protected readonly centipedeCatchUpMaxSpeedMultiplier = 1.8;
+    protected readonly centipedeCatchUpTurnSpeedMultiplier = 1.8;
+
+    protected readonly centipedeMovementVariation = 0.14;
+    protected readonly centipedeTurnVariation = 0.18;
+    protected readonly centipedeTimingVariation = 0.22;
+    protected readonly centipedeSpacingVariation = 0.08;
+    protected readonly centipedeScaleVariation = 0.08;
+    protected readonly centipedeCatchUpVariation = 0.16;
 
     private readonly centipedes: DesertCentipedeController[] = [];
 
@@ -106,42 +119,71 @@ export default abstract class DesertSceneBase extends MappedAdventureScene {
 
     private spawnDesertCentipede(spawn: TiledObject): void {
         const spawnTile = this.getObjectTile(spawn);
-        const spawnPosition = this.ground.getTileCenter(spawnTile.x, spawnTile.y);
 
-        this.centipedes.push(new DesertCentipedeController({
-            scene: this,
-            layerName: this.centipedeLayerName,
-            startPosition: spawnPosition,
+        this.spawnDesertCentipedeAtTile(spawnTile, {
             facing: this.getStringProperty(spawn, "facing"),
             bodySegments: this.getNumberProperty(
                 spawn,
                 "bodySegments",
                 this.defaultCentipedeBodySegments
-            ),
+            )
+        });
+    }
+
+    protected spawnDesertCentipedeAtTile(
+        spawnTile: Vec2,
+        options: { facing?: string; bodySegments?: number } = {}
+    ): void {
+        const spawnPosition = this.ground.getTileCenter(spawnTile.x, spawnTile.y);
+        const movementMultiplier = this.getRandomMultiplier(this.centipedeMovementVariation);
+        const chargeMultiplier = this.getRandomMultiplier(this.centipedeMovementVariation);
+        const turnMultiplier = this.getRandomMultiplier(this.centipedeTurnVariation);
+        const timingMultiplier = this.getRandomMultiplier(this.centipedeTimingVariation);
+        const scaleMultiplier = this.getRandomMultiplier(this.centipedeScaleVariation);
+        const spacingMultiplier = scaleMultiplier * this.getRandomMultiplier(this.centipedeSpacingVariation);
+        const catchUpDistanceMultiplier = this.getRandomMultiplier(this.centipedeCatchUpVariation);
+        const catchUpSpeedMultiplier = this.getRandomMultiplier(this.centipedeCatchUpVariation);
+        const catchUpTurnMultiplier = this.getRandomMultiplier(this.centipedeCatchUpVariation);
+
+        this.centipedes.push(new DesertCentipedeController({
+            scene: this,
+            layerName: this.centipedeLayerName,
+            startPosition: spawnPosition,
+            facing: options.facing,
+            bodySegments: options.bodySegments ?? this.defaultCentipedeBodySegments,
             spriteKeys: {
                 head: this.assets.sprites.desertCentipedeHead.key,
                 body: this.assets.sprites.desertCentipedeBody.key,
                 tail: this.assets.sprites.desertCentipedeTail.key
             },
-            headToBodySegmentSpacing: this.centipedeHeadToBodySegmentSpacing,
-            bodyToBodySegmentSpacing: this.centipedeBodyToBodySegmentSpacing,
-            bodyToTailSegmentSpacing: this.centipedeBodyToTailSegmentSpacing,
-            moveSpeed: this.centipedeMoveSpeed,
-            chargeMoveSpeed: this.centipedeChargeMoveSpeed,
-            headSteerTurnSpeed: this.degreesToRadians(this.centipedeHeadSteerTurnSpeedDegrees),
-            aggroStartDistance: this.centipedeAggroStartDistance,
-            minAggroDuration: this.centipedeMinAggroDurationSeconds,
-            maxAggroDuration: this.centipedeMaxAggroDurationSeconds,
-            chargeGuidanceDuration: this.centipedeChargeGuidanceDurationSeconds,
-            chargeDuration: this.centipedeChargeDurationSeconds,
-            maxTurnSpeed: this.degreesToRadians(this.centipedeMaxTurnSpeedDegrees),
+            headToBodySegmentSpacing: this.centipedeHeadToBodySegmentSpacing * spacingMultiplier,
+            bodyToBodySegmentSpacing: this.centipedeBodyToBodySegmentSpacing * spacingMultiplier,
+            bodyToTailSegmentSpacing: this.centipedeBodyToTailSegmentSpacing * spacingMultiplier,
+            moveSpeed: this.centipedeMoveSpeed * movementMultiplier,
+            chargeMoveSpeed: this.centipedeChargeMoveSpeed * chargeMultiplier,
+            headSteerTurnSpeed: this.degreesToRadians(this.centipedeHeadSteerTurnSpeedDegrees) * turnMultiplier,
+            aggroStartDistance: this.centipedeAggroStartDistance * this.getRandomMultiplier(this.centipedeMovementVariation),
+            minAggroDuration: this.centipedeMinAggroDurationSeconds * timingMultiplier,
+            maxAggroDuration: this.centipedeMaxAggroDurationSeconds * timingMultiplier,
+            chargeGuidanceDuration: this.centipedeChargeGuidanceDurationSeconds * timingMultiplier,
+            chargeDuration: this.centipedeChargeDurationSeconds * this.getRandomMultiplier(this.centipedeTimingVariation),
+            maxTurnSpeed: this.degreesToRadians(this.centipedeMaxTurnSpeedDegrees) * turnMultiplier,
+            catchUpStartDistance: this.centipedeCatchUpStartDistance * catchUpDistanceMultiplier,
+            catchUpMaxDistance: this.centipedeCatchUpMaxDistance * catchUpDistanceMultiplier,
+            catchUpMaxSpeedMultiplier: this.centipedeCatchUpMaxSpeedMultiplier * catchUpSpeedMultiplier,
+            catchUpTurnSpeedMultiplier: this.centipedeCatchUpTurnSpeedMultiplier * catchUpTurnMultiplier,
             rotationOffset: this.degreesToRadians(this.centipedeRotationOffsetDegrees),
-            scale: this.centipedeScale
+            scale: this.centipedeScale * scaleMultiplier
         }));
     }
 
     private degreesToRadians(degrees: number): number {
         return degrees * Math.PI / 180;
+    }
+
+    private getRandomMultiplier(variation: number): number {
+        const clampedVariation = Math.max(0, Math.min(variation, 0.9));
+        return 1 - clampedVariation + Math.random() * clampedVariation * 2;
     }
 
     private getStringProperty(obj: TiledObject, name: string): string | undefined {

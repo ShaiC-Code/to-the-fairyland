@@ -74,7 +74,7 @@ export default class DesertLandScene extends DesertSceneBase {
                 [
                     "The sign is half-buried in windblown sand.",
                     "<red>Warning: desert centipedes hunt beyond this point.",
-                    "Keep moving. If the sand starts to shift, run.",
+                    "Keep moving. If the sand starts to sank, run.",
                     "Begin the final journey?"
                 ],
                 {

@@ -40,6 +40,10 @@ export type DesertCentipedeOptions = {
     chargeGuidanceDuration?: number;
     chargeDuration?: number;
     maxTurnSpeed?: number;
+    catchUpStartDistance?: number;
+    catchUpMaxDistance?: number;
+    catchUpMaxSpeedMultiplier?: number;
+    catchUpTurnSpeedMultiplier?: number;
     rotationOffset?: number;
     scale?: number;
 };
@@ -60,6 +64,10 @@ export default class DesertCentipedeController {
     private readonly chargeGuidanceDuration: number;
     private readonly chargeDuration: number;
     private readonly maxTurnSpeed: number;
+    private readonly catchUpStartDistance: number;
+    private readonly catchUpMaxDistance: number;
+    private readonly catchUpMaxSpeedMultiplier: number;
+    private readonly catchUpTurnSpeedMultiplier: number;
     private readonly rotationOffset: number;
     private readonly scale: number;
     private readonly segmentSortTile = Vec2.ZERO;
@@ -67,6 +75,7 @@ export default class DesertCentipedeController {
     private readonly segments: DesertCentipedeSegment[] = [];
     private moveMode: DesertCentipedeMoveMode = "approach";
     private moveModeTimer = 0;
+    private currentCatchUpTurnSpeedMultiplier = 1;
 
     public constructor(options: DesertCentipedeOptions) {
         this.scene = options.scene;
@@ -87,6 +96,13 @@ export default class DesertCentipedeController {
         this.chargeGuidanceDuration = options.chargeGuidanceDuration ?? 0;
         this.chargeDuration = options.chargeDuration ?? 1.35;
         this.maxTurnSpeed = options.maxTurnSpeed ?? Math.PI * 4;
+        this.catchUpStartDistance = options.catchUpStartDistance ?? 700;
+        this.catchUpMaxDistance = Math.max(
+            this.catchUpStartDistance + 1,
+            options.catchUpMaxDistance ?? 1400
+        );
+        this.catchUpMaxSpeedMultiplier = Math.max(1, options.catchUpMaxSpeedMultiplier ?? 2);
+        this.catchUpTurnSpeedMultiplier = Math.max(1, options.catchUpTurnSpeedMultiplier ?? 2);
         this.rotationOffset = options.rotationOffset ?? 0;
         this.scale = options.scale ?? 1;
     
@@ -150,11 +166,27 @@ export default class DesertCentipedeController {
         const head = this.segments[0];
         const toTarget = head.sprite.position.vecTo(targetPosition);
         const distance = toTarget.mag();
+        const catchUpAmount = this.getCatchUpAmount(distance);
+        const catchUpSpeedMultiplier = this.getCatchUpSpeedMultiplier(catchUpAmount);
+
+        this.currentCatchUpTurnSpeedMultiplier = this.getCatchUpTurnSpeedMultiplier(catchUpAmount);
 
         this.updateMoveMode(distance, deltaT);
 
         if (this.moveMode === "charge") {
-            this.moveHeadForward(head, deltaT);
+            if (catchUpAmount > 0 && distance > 0.001) {
+                const desiredDirection = toTarget.scale(1 / distance);
+                const direction = this.getSteeredHeadDirection(
+                    head,
+                    desiredDirection,
+                    this.headSteerTurnSpeed * this.currentCatchUpTurnSpeedMultiplier * deltaT
+                );
+
+                this.moveHeadInDirection(head, direction, deltaT, this.chargeMoveSpeed * catchUpSpeedMultiplier);
+                return;
+            }
+
+            this.moveHeadForward(head, deltaT, this.chargeMoveSpeed * catchUpSpeedMultiplier);
             return;
         }
 
@@ -163,21 +195,52 @@ export default class DesertCentipedeController {
         }
 
         const desiredDirection = toTarget.scale(1 / distance);
-        const currentDirection = head.lastDirection.clone().normalize();
-        const currentAngle = Math.atan2(currentDirection.y, currentDirection.x);
-        const desiredAngle = Math.atan2(desiredDirection.y, desiredDirection.x);
-        const nextAngle = this.rotateToward(
-            currentAngle,
-            desiredAngle,
-            this.headSteerTurnSpeed * deltaT
+        const direction = this.getSteeredHeadDirection(
+            head,
+            desiredDirection,
+            this.headSteerTurnSpeed * this.currentCatchUpTurnSpeedMultiplier * deltaT
         );
-        const direction = new Vec2(Math.cos(nextAngle), Math.sin(nextAngle));
         this.moveHeadInDirection(
             head,
             direction,
             deltaT,
-            this.moveMode === "guidedCharge" ? this.chargeMoveSpeed : this.moveSpeed
+            (this.moveMode === "guidedCharge" ? this.chargeMoveSpeed : this.moveSpeed) * catchUpSpeedMultiplier
         );
+    }
+
+    private getCatchUpAmount(distanceToTarget: number): number {
+        if (distanceToTarget <= this.catchUpStartDistance) {
+            return 0;
+        }
+
+        const t = Math.max(0, Math.min(
+            1,
+            (distanceToTarget - this.catchUpStartDistance)
+                / (this.catchUpMaxDistance - this.catchUpStartDistance)
+        ));
+
+        return t * t * (3 - 2 * t);
+    }
+
+    private getCatchUpSpeedMultiplier(catchUpAmount: number): number {
+        return 1 + catchUpAmount * (this.catchUpMaxSpeedMultiplier - 1);
+    }
+
+    private getCatchUpTurnSpeedMultiplier(catchUpAmount: number): number {
+        return 1 + catchUpAmount * (this.catchUpTurnSpeedMultiplier - 1);
+    }
+
+    private getSteeredHeadDirection(
+        head: DesertCentipedeSegment,
+        desiredDirection: Vec2,
+        maxTurnStep: number
+    ): Vec2 {
+        const currentDirection = head.lastDirection.clone().normalize();
+        const currentAngle = Math.atan2(currentDirection.y, currentDirection.x);
+        const desiredAngle = Math.atan2(desiredDirection.y, desiredDirection.x);
+        const nextAngle = this.rotateToward(currentAngle, desiredAngle, maxTurnStep);
+
+        return new Vec2(Math.cos(nextAngle), Math.sin(nextAngle));
     }
 
     private updateMoveMode(distanceToTarget: number, deltaT: number): void {
@@ -228,9 +291,13 @@ export default class DesertCentipedeController {
         );
     }
 
-    private moveHeadForward(head: DesertCentipedeSegment, deltaT: number): void {
+    private moveHeadForward(
+        head: DesertCentipedeSegment,
+        deltaT: number,
+        moveSpeed = this.chargeMoveSpeed
+    ): void {
         const direction = head.lastDirection.clone().normalize();
-        this.moveHeadInDirection(head, direction, deltaT, this.chargeMoveSpeed);
+        this.moveHeadInDirection(head, direction, deltaT, moveSpeed);
     }
 
     private moveHeadInDirection(
@@ -278,7 +345,7 @@ export default class DesertCentipedeController {
     }
 
     private updateRotations(deltaT: number): void {
-        const maxStep = this.maxTurnSpeed * deltaT;
+        const maxStep = this.maxTurnSpeed * this.currentCatchUpTurnSpeedMultiplier * deltaT;
 
         for (let i = 0; i < this.segments.length; i++) {
             const direction = this.getSegmentRotationDirection(i);

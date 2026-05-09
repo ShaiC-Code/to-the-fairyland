@@ -34,6 +34,7 @@ export default class PlayerAI extends StateMachineAI implements AI {
     public moveDuration = 0.12; //Player speed, time to finish moving 1 tile
     public currentMoveDuration = this.moveDuration; //for diagonal normalization where speed changes
     private takeDamage: ((amount: number) => void) | null = null;
+    private canMoveToTileRule: ((currentTile: Vec2, direction: Vec2, nextTile: Vec2) => boolean) | null = null;
     
     public initializeAI(owner: PlayerActor, opts: Record<string, any>): void {
         this.currentMoveDuration = this.moveDuration;
@@ -52,6 +53,7 @@ export default class PlayerAI extends StateMachineAI implements AI {
         this.moveProgress = 0;
         this.currentMoveDuration = this.moveDuration;
         this.takeDamage = opts.takeDamage ?? null;
+        this.canMoveToTileRule = opts.canMoveToTile ?? null;
 
         // Add the players states to it's StateMachine
         this.addState(PlayerStateType.IDLE, new Idle(this, this.owner));
@@ -110,6 +112,10 @@ export default class PlayerAI extends StateMachineAI implements AI {
         const nextTile = currentTile.clone().add(direction);
     
         if (!this.canEnterTile(nextTile)) {
+            return false;
+        }
+
+        if (this.canMoveToTileRule && !this.canMoveToTileRule(currentTile, direction, nextTile)) {
             return false;
         }
     

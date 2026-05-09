@@ -266,15 +266,20 @@
             "scaleInEditor": 1
         },
         "tilemaps/Chapter4/DesertLandParallax.json": {
+            "expandedObjectLayers": [
+                8,
+                2,
+                9
+            ],
             "scale": 0.5,
-            "selectedLayer": 1,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 1229,
-                "y": 269
+                "x": 1197,
+                "y": 365
             }
         },
         "tilemaps/Chapter4/DesertLandParallax.json#DesertLand": {
-            "scaleInDock": 0.75
+            "scaleInDock": 0.5
         },
         "tilemaps/Chapter4/GreatTree.json": {
             "expandedObjectLayers": [
