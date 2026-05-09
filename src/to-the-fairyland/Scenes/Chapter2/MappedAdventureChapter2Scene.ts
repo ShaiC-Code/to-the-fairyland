@@ -177,7 +177,19 @@ export default abstract class MappedAdventureChapter2Scene extends MappedAdventu
         if (!result.success) {
             return result;
         }
+
+        void this.playFullScreenFadeTransition(() => this.applySleepingBagRest());
     
+        return result;
+    }
+
+    private applySleepingBagRest(): void {
+        const result = this.previewSleepWithSleepingBag();
+    
+        if (!result.success) {
+            return;
+        }
+
         const worldState = this.gameSessionManager.getWorldState();
     
         worldState.timeOfDay =
@@ -188,8 +200,6 @@ export default abstract class MappedAdventureChapter2Scene extends MappedAdventu
         this.timeController.setTimeOfDay(worldState.timeOfDay);
         this.playCurrentAmbience();
         this.storyManager.chapter2.markSleepOnRoad();
-    
-        return result;
     }
     
     protected playCurrentAmbience(): void {

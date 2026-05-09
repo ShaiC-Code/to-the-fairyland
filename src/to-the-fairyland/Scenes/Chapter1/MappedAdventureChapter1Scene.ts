@@ -29,15 +29,12 @@ export default abstract class MappedAdventureChapter1Scene extends MappedAdventu
 
     protected readonly chapterDefinition: ChapterSceneDefinition = {
         dialogueCompleteActionHandlers: {
-            [DialogueCompleteActions.GOTO_CHAPTER2]: () => this.gotoChapter2()
+            [DialogueCompleteActions.GOTO_CHAPTER2]: () => this.gotoChapter2(),
+            [DialogueCompleteActions.SLEEP_IN_BED]: () => this.sleepInBedWithFade()
         },
         dialogueChoiceActionHandlers: {
             [DialogueChoiceActions.COLLECT_FROZEN_BERRIES]: () => this.giveFrozenBerries(),
             [DialogueChoiceActions.COOK_FROZEN_BERRIES]: () => this.giveCookedBerries(),
-            [DialogueChoiceActions.SLEEP]: () => {
-                this.storyManager.chapter1.markReturnToBed();
-                this.timeController.setTimeOfDay(this.gameSessionManager.getWorldState().timeOfDay);
-            },
             [DialogueChoiceActions.PICKUP_MAP]: () => this.pickupMap()
         }
     };
@@ -75,6 +72,13 @@ export default abstract class MappedAdventureChapter1Scene extends MappedAdventu
                 fadeInMs: 500
             }
         );
+    }
+
+    private sleepInBedWithFade(): void {
+        void this.playFullScreenFadeTransition(() => {
+            this.storyManager.chapter1.markReturnToBed();
+            this.timeController.setTimeOfDay(this.gameSessionManager.getWorldState().timeOfDay);
+        });
     }
 
     protected onMapPickedUp(): void {}

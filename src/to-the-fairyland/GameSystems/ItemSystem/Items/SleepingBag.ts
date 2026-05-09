@@ -27,10 +27,12 @@ export default class SleepingBag extends InventoryItem {
                     options: [
                         choiceOption(
                             "Yes",
-                            dialogue(result.lines),
-                            {
-                                onSelect: () => context.runItemAction(ItemUseActions.SLEEP_WITH_SLEEPING_BAG)
-                            }
+                            dialogue(
+                                result.lines,
+                                {
+                                    onComplete: () => context.runItemAction(ItemUseActions.SLEEP_WITH_SLEEPING_BAG)
+                                }
+                            )
                         ),
                         choiceOption(
                             "No",
