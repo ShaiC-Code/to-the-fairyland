@@ -34,7 +34,7 @@ const STATIC_OBJECT_INTERACTIONS: Readonly<Record<string, InteractionData>> = {
                     dialogue([
                         "<yellow>[You obtained the World Map]",
                         "Whatever happened here, their final hope now rests with you.",
-                        "You consider resting more before what ought to be a long journey."
+                        "You embark on your journey."
                     ],
                     { completeAction: DialogueCompleteActions.GOTO_CHAPTER2 }),
                     { choiceAction: DialogueChoiceActions.PICKUP_MAP }
@@ -116,9 +116,9 @@ export function getBushBerriesDialogue(step: Chapter1MainQuestStep): DialogueInt
         );
 
     case Chapter1MainQuestStep.RETURN_TO_BED:
-    case Chapter1MainQuestStep.SLEPT:
         return dialogue(["You've collected enough berries for now."]);
 
+    case Chapter1MainQuestStep.SLEPT:
     case Chapter1MainQuestStep.MAP_PICKED:
         return dialogue(["They're cold to the touch..."]);
 
@@ -164,17 +164,8 @@ export function getBedDialogue(step: Chapter1MainQuestStep): DialogueInteraction
         );
 
     case Chapter1MainQuestStep.SLEPT:
-        return dialogue(["You already got some rest."]);
-
     case Chapter1MainQuestStep.MAP_PICKED:
-        return dialogue(
-            [
-                "...",
-                "You hear distant howling.",
-                "Rest can be had later."
-            ],
-            { completeAction: DialogueCompleteActions.GOTO_CHAPTER2 }
-        );
+        return dialogue(["You already got some rest."]);
 
     default:
         return dialogue(["..."]);
@@ -225,10 +216,8 @@ export function getPotDialogue(step: Chapter1MainQuestStep): DialogueInteraction
         return dialogue(["The pot is still warm."]);
 
     case Chapter1MainQuestStep.SLEPT:
-        return dialogue(["Remnants of your last meal remain."]);
-
     case Chapter1MainQuestStep.MAP_PICKED:
-        return dialogue(["Remnants remain..."]);
+        return dialogue(["Remnants of your last meal remain."]);
 
     default:
         return dialogue(["..."]);

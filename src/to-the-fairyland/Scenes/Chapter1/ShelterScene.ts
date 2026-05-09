@@ -110,10 +110,10 @@ export default class ShelterScene extends MappedAdventureChapter1Scene {
         this.dialogueController.setCutsceneMode(true);
         this.startDialogue(
             dialogue([
-                "The storm beats against the walls of your shelter",
-                "Nights are often like this in the mountains, but something about this one feels different.",
+                "The storm beats against the shuddering walls of your shelter.",
+                "Nights are often like this in these mountains, but something about this one feels different.",
                 "You try sleeping through the storm, but the growling of your stomach keeps you awake.",
-                "The only food around are barely edible berries, but they do the job.",
+                "The only food around these parts are barely edible berries, but they do the job.",
                 "There should be some nearby if you remember correctly.",
                 "*Move around with [↑ ← ↓ →] or [W A S D]*",
                 "*Press [Z/J/E] or [Enter] to interact with things in your environment*"
