@@ -14,6 +14,8 @@ import VineShooterWaveController, { VINE_INDICATOR_LAYER_NAME } from "../../AI/N
 import TitleOverlay from "../../Overlays/TitleOverlay";
 import { AssetBundle, ChapterSceneDefinition } from "../MappedAdventureScene";
 import AudioController from "../../GameSystems/AudioController";
+import Debug from "../../../Wolfie2D/Debug/Debug";
+import Color from "../../../Wolfie2D/Utils/Color";
 
 export default class TreeInnerScene extends ForestSceneBase {
     protected readonly tilemap = {
@@ -60,9 +62,11 @@ export default class TreeInnerScene extends ForestSceneBase {
     private readonly vineLayerName = "VineShooters";
     private readonly vineWaveTitleLayerName = "VineWaveTitleOverlay";
     private readonly vineExitSpeed = 400;
-    private readonly vineHurtDamage = 10;
+    private readonly vineHurtDamage = 5;
     private readonly vineHurtRadius = 22;
+    private readonly vineHurtCenterOffset = new Vec2(0, 34);
     private readonly vineHurtCooldown = 0.75;
+    private readonly showVineHurtDebug = false;
     private readonly vineTrapPairs: ReadonlyArray<readonly [string, string]> = [
         ["1_L", "1_R"],
         ["2_L", "2_R"],
@@ -109,6 +113,21 @@ export default class TreeInnerScene extends ForestSceneBase {
 
         this.vineWaveTitleOverlay.update(deltaT);
         this.syncTreeInnerInputLock();
+    }
+
+    public override render(): void {
+        super.render();
+
+        if (!this.showVineHurtDebug || !this.player) {
+            return;
+        }
+
+        Debug.drawCircle(
+            this.player.inRelativeCoordinates(this.getVineHurtCenter()),
+            this.vineHurtRadius * this.getViewScale(),
+            false,
+            new Color(255, 0, 0, 0.9)
+        );
     }
 
     protected override updateGameplay(deltaT: number): void {
@@ -434,7 +453,11 @@ export default class TreeInnerScene extends ForestSceneBase {
             return;
         }
 
-        if (!this.vineAttackController.currentVinesIntersectCircle(this.player.position, this.vineHurtRadius)) {
+        if (this.playerAttackController.isAttacking()) {
+            return;
+        }
+
+        if (!this.vineAttackController.currentVinesIntersectCircle(this.getVineHurtCenter(), this.vineHurtRadius)) {
             return;
         }
 
@@ -442,6 +465,10 @@ export default class TreeInnerScene extends ForestSceneBase {
             cooldownSeconds: this.vineHurtCooldown,
             source: "vine"
         });
+    }
+
+    private getVineHurtCenter(): Vec2 {
+        return this.player.position.clone().add(this.vineHurtCenterOffset);
     }
 
     private findVineTrapAtTile(tile: Vec2 | null): TiledObject | undefined {
