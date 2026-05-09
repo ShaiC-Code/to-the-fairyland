@@ -412,6 +412,7 @@ export default class MainMenu extends Scene {
             }
             case "level6": {
                 this.gameSessionManager.startNewChapter3Game();
+                this.gameSessionManager.getPlayerState().health = 1;
 
                 const inventory = this.gameSessionManager.getPlayerState().inventory;
 

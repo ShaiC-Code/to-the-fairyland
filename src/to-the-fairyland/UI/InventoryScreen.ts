@@ -6,10 +6,13 @@ import UIScreen, { UIScreenOptions } from "./UIScreen";
 import NullFunc from "../../Wolfie2D/DataTypes/Functions/NullFunc";
 import Inventory from "../GameSystems/ItemSystem/Inventory";
 import InventoryItem from "../GameSystems/ItemSystem/InventoryItem";
+import { PlayerState } from "../GameSystems/PlayerSystem/PlayerState";
+import Label from "../../Wolfie2D/Nodes/UIElements/Label";
 
 export default class InventoryScreen extends UIScreen {
-    private readonly inventory: Inventory;
+    private readonly playerState: PlayerState;
     private readonly onItemSelected: ((item: InventoryItem) => void) | (() => void);
+    private readonly maxHealthBarWidth = 300;
     private readonly itemButtonKeys = [
         "item1Btn",
         "item2Btn",
@@ -24,12 +27,12 @@ export default class InventoryScreen extends UIScreen {
         scene: Scene,
         getViewportCenter: () => Vec2,
         getViewportHalfSize: () => Vec2,
-        inventory: Inventory,
+        playerState: PlayerState,
         onItemSelected?: (item: InventoryItem) => void,
         options?: UIScreenOptions
     ) {
         super(layerName, scene, getViewportCenter, getViewportHalfSize, options);
-        this.inventory = inventory;
+        this.playerState = playerState;
         this.onItemSelected = onItemSelected ?? NullFunc;
         this.initializeUI();
         this.refreshItems();
@@ -37,11 +40,12 @@ export default class InventoryScreen extends UIScreen {
 
     public override show(): void {
         this.refreshItems();
+        this.refreshPlayerInfo();
         super.show();
     }
 
     private refreshItems(): void {
-        const items = Array.from(this.inventory.items());
+        const items = Array.from(this.playerState.inventory.items());
 
         for (let i = 0; i < this.itemButtonKeys.length; i++) {
             const button = this.getUIElement(this.itemButtonKeys[i]) as Button;
@@ -124,7 +128,7 @@ export default class InventoryScreen extends UIScreen {
         const playerInfoSize = {
             icon: new Vec2(150, 150),
             name: new Vec2(200, 50),
-            health: new Vec2(300, 10),
+            health: new Vec2(this.maxHealthBarWidth, 10),
             healthValue: new Vec2(100, 10)
         };
 
@@ -136,8 +140,30 @@ export default class InventoryScreen extends UIScreen {
         };
 
         this.addRect("playerIcon", playerInfoPos.icon, playerInfoSize.icon, new Color(0, 0, 150, 1));
-        this.addLabel("playerName", playerInfoPos.name, playerInfoSize.name, "FATE", 48, { halign: "left", valign: "center" });
+        this.addLabel("playerName", playerInfoPos.name, playerInfoSize.name, this.playerState.name, 48, { halign: "left", valign: "center" });
         this.addRect("playerHealth", playerInfoPos.health, playerInfoSize.health, new Color(150, 0, 0, 1));
-        this.addLabel("playerHealthValue", playerInfoPos.healthValue, playerInfoSize.healthValue, "100/100", 24, { halign: "left", valign: "center" });
+        this.addLabel("playerHealthValue", playerInfoPos.healthValue, playerInfoSize.healthValue, "", 24, { halign: "left", valign: "center" });
+        this.refreshPlayerInfo();
+    }
+
+    private refreshPlayerInfo(): void {
+        const nameLabel = this.getUIElement("playerName") as Label | undefined;
+        const healthBar = this.getUIElement("playerHealth") as Label | undefined;
+        const healthValueLabel = this.getUIElement("playerHealthValue") as Label | undefined;
+        const maxHealth = Math.max(1, this.playerState.maxHealth);
+        const health = Math.max(0, Math.min(this.playerState.health, maxHealth));
+        const healthRatio = health / maxHealth;
+
+        if (nameLabel) {
+            nameLabel.text = this.playerState.name;
+        }
+
+        if (healthBar) {
+            healthBar.size.x = this.maxHealthBarWidth * healthRatio;
+        }
+
+        if (healthValueLabel) {
+            healthValueLabel.text = `${health}/${maxHealth}`;
+        }
     }
 }

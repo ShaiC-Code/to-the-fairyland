@@ -32,6 +32,7 @@ import PlayerAttackController, { PlayerAttackHitbox } from "../GameSystems/Comba
 import SwordHitDispatcher from "../GameSystems/CombatSystem/SwordHitDispatcher";
 import AudioController from "../GameSystems/AudioController";
 import OverlayLayer from "../Overlays/OverlayLayer";
+import LowHealthOverlay from "../Overlays/LowHealthOverlay";
 
 export type AssetRef = Readonly<{
     readonly key: string;
@@ -92,7 +93,9 @@ export default abstract class MappedAdventureScene extends Scene {
             swordAttackHitSFX: { key: "sword-attack-hit", path: "/assets/sounds/sword-attack-hit.ogg" },
             battleTreeMusic: { key: "battle-tree-music", path: "/assets/sounds/battle-tree-music.ogg" }
         },
-        images: {}
+        images: {
+            lowHealthOverlay: { key: "lowHealthOverlay", path: "/assets/sprites/overlays/lowhealth.png" }
+        }
     };
 
     protected assets: AssetBundle = {
@@ -139,6 +142,7 @@ export default abstract class MappedAdventureScene extends Scene {
     protected pauseControlsScreen!: PauseControlsScreen;
     protected inventoryScreen!: InventoryScreen;
     protected worldPaused: boolean = false;
+    protected lowHealthOverlay!: LowHealthOverlay;
     
     protected cameraController!: CameraController;
     protected dialogueController!: DialogueController;
@@ -155,6 +159,11 @@ export default abstract class MappedAdventureScene extends Scene {
 
     
     protected readonly hudLayerName = "HUD";
+    protected readonly lowHealthOverlayLayerName = "LowHealthOverlay";
+    protected readonly lowHealthOverlayThresholdRatio = 0.4;
+    protected readonly lowHealthOverlayMaxAlpha = 0.45;
+    protected readonly lowHealthOverlayPulseAmount = 0.20;
+    protected readonly lowHealthOverlayPulseFrequencySeconds = 1.5;
     protected fromResumeLoad = false;
     
     // lets the scene receive data, ex: {spawnName: "Door1"}
@@ -393,7 +402,7 @@ export default abstract class MappedAdventureScene extends Scene {
             this,
             () => this.viewport.getCenter(),
             () => this.viewport.getHalfSize(),
-            playerState.inventory,
+            playerState,
             (item: InventoryItem) => this.consumeInventoryItem(item),
             {
                 onEnterSFXKey: this.assets.sounds.uiHoverSFX.key,
@@ -401,6 +410,25 @@ export default abstract class MappedAdventureScene extends Scene {
                 onShowSFXKey: this.assets.sounds.menuOpenSFX.key,
                 onHideSFXKey: this.assets.sounds.menuCloseSFX.key,
                 uiActions
+            }
+        );
+
+        this.lowHealthOverlay = new LowHealthOverlay(
+            this.lowHealthOverlayLayerName,
+            this,
+            () => this.viewport.getCenter(),
+            () => this.viewport.getHalfSize(),
+            this.assets.images.lowHealthOverlay.key,
+            {
+                depth: -100,
+                thresholdRatio: this.lowHealthOverlayThresholdRatio,
+                maxAlpha: this.lowHealthOverlayMaxAlpha,
+                pulseAmount: this.lowHealthOverlayPulseAmount,
+                pulseFrequencySeconds: this.lowHealthOverlayPulseFrequencySeconds,
+                getHealthRatio: () => {
+                    const maxHealth = Math.max(1, this.player.maxHealth);
+                    return this.player.health / maxHealth;
+                }
             }
         );
 
@@ -470,6 +498,7 @@ export default abstract class MappedAdventureScene extends Scene {
         this.pauseScreen.update(deltaT);
         this.pauseControlsScreen.update(deltaT);
         this.inventoryScreen.update(deltaT);
+        this.lowHealthOverlay.update(deltaT);
         
         this.cameraController.update(deltaT);
         this.dialogueController.update(deltaT);
