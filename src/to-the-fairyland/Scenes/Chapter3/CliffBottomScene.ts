@@ -175,14 +175,7 @@ export default class CliffBottomScene extends ForestSceneBase {
 
     private applyToothFairyHeal(): void {
         this.spawnHealingParticleBurst();
-
-        const nextHealth = Math.min(
-            this.player.maxHealth,
-            this.player.health + this.toothFairyHealAmount
-        );
-
-        this.player.health = nextHealth;
-        this.playerStateManager.setHealth(nextHealth);
+        this.healPlayer(this.toothFairyHealAmount);
     }
 
     private spawnHealingParticleBurst(): void {

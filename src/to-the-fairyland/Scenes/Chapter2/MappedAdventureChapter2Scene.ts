@@ -47,7 +47,7 @@ export default abstract class MappedAdventureChapter2Scene extends MappedAdventu
     }
     
     protected gotoChapter3(): void {
-        this.playerStateManager.setHealth(1);
+        this.setPlayerHealth(1);
         this.storyManager.unlockChapter3();
         this.sceneManager.changeToScene(
             CliffBottomScene,
