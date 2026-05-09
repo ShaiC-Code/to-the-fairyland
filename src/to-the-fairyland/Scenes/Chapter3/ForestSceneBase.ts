@@ -1,9 +1,11 @@
 import { TiledObject, TiledTilemapData } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData";
 import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 import AnimatedSprite from "../../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
+import { AudioChannelType } from "../../../Wolfie2D/Sound/AudioManager";
 import ToothFairyApproachBehavior from "../../AI/NPC/NPCBehavior/ToothFairyApproachBehavior";
 import { ItemUseAction, ItemUseActions, ItemUseResult } from "../../GameSystems/ItemSystem/ItemUseActions";
 import { Chapter3MainQuestStep } from "../../GameSystems/StorySystem/StoryState";
+import AmbienceController from "../../GameSystems/WorldSystem/AmbienceController";
 import { AssetBundle } from "../MappedAdventureScene";
 import MappedAdventureChapter3Scene from "./MappedAdventureChapter3Scene";
 
@@ -22,7 +24,9 @@ export default abstract class ForestSceneBase extends MappedAdventureChapter3Sce
                 path: "/assets/sprites/particles/FairyParticle1.png"
             }
         },
-        sounds: {},
+        sounds: {
+            fairiesFlutteringSFX: { key: "fairies-fluttering", path: "/assets/sounds/fairies-fluttering.ogg" },
+        },
         images: {}
     };
 
@@ -48,6 +52,8 @@ export default abstract class ForestSceneBase extends MappedAdventureChapter3Sce
     private fairyEscortHoldTimer = 0;
     private fairyEscortFadeOutTimer = 0;
 
+    protected readonly fairyAmbienceChannel = AudioChannelType.CUSTOM_3;
+
     protected override combinedAssetBundles(): AssetBundle {
         return this.mergeAssetBundles(super.combinedAssetBundles(), ForestSceneBase.assetBundle);
     }
@@ -63,6 +69,7 @@ export default abstract class ForestSceneBase extends MappedAdventureChapter3Sce
         super.startScene();
         this.initializeToothFairyAIs();
         this.startSceneFairyEscortIfNeeded();
+        this.playCurrentAmbience();
     }
 
     protected override updateGameplay(deltaT: number): void {
@@ -352,6 +359,13 @@ export default abstract class ForestSceneBase extends MappedAdventureChapter3Sce
                 fadeInMs: 300
             }
         );
+    }
+
+    protected override playCurrentAmbience(): void {
+        super.playCurrentAmbience();
+        if (this.toothFairies.length > 0) {
+            AmbienceController.getInstance().playAmbience(this.fairyAmbienceChannel, this.assets.sounds.fairiesFlutteringSFX.key);
+        }
     }
     
 }

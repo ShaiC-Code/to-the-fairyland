@@ -163,7 +163,7 @@ export default abstract class LycanChaseSceneBase extends MappedAdventureChapter
         AudioController.getInstance().stopSound(this.assets.sounds.wolvesFerociousSFX.key);
     
         this.lycanDeathHitOverlay.play({
-            deathSFXKey: this.assets.sounds.playerDeathSFX?.key,
+            deathSFXKey: this.assets.sounds.playerDeathSFX.key,
             onComplete: () => {
                 this.sceneManager.changeToScene(
                     GameOverScreenScene,

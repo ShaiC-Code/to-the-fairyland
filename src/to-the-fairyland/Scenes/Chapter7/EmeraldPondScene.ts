@@ -101,8 +101,6 @@ export default class EmeraldPondScene extends MappedAdventureScene {
         scaleGrowth: 0.25
     };
 
-    private readonly ambienceChannel = AudioChannelType.CUSTOM_2;
-
     protected override playIdleForFacing(_facing: Vec2): void {
         this.player.animation.play("Drown", true);
     }

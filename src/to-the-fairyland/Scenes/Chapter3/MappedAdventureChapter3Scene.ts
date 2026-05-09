@@ -2,6 +2,8 @@ import MappedAdventureScene, { AssetBundle, ChapterSceneDefinition } from "../Ma
 import StoryManager from "../../GameSystems/StorySystem/StoryManager";
 import { DialogueCompleteActions, DialogueChoiceActions } from "../../GameSystems/InteractionSystem/InteractionDatabase";
 import DesertLandScene from "../Chapter4/DesertLandScene";
+import AmbienceController from "../../GameSystems/WorldSystem/AmbienceController";
+import { TimeOfDay } from "../../GameSystems/WorldSystem/WorldState";
 
 export default abstract class MappedAdventureChapter3Scene extends MappedAdventureScene {
     protected static readonly assetBundle: AssetBundle = {
@@ -11,7 +13,10 @@ export default abstract class MappedAdventureChapter3Scene extends MappedAdventu
             bushBerriesSprite: { key: "bushBerries", path: "/assets/sprites/BushBerries.png" },
             forestTreeSprite: { key: "forestTree1", path: "/assets/sprites/ForestTree1.png" }
         },
-        sounds: {},
+        sounds: {
+            forestDayAmbienceSFX: { key: "ambience-forest-day", path: "/assets/sounds/ambience-forest-day.ogg" },
+            forestNightAmbienceSFX: { key: "ambience-forest-night", path: "/assets/sounds/ambience-forest-night.ogg" }
+        },
         images: {}
     };
 
@@ -48,5 +53,13 @@ export default abstract class MappedAdventureChapter3Scene extends MappedAdventu
                 fadeInMs: 500
             }
         );
+    }
+        
+    protected playCurrentAmbience(): void {
+    //     if (this.gameSessionManager.getWorldState().timeOfDay === TimeOfDay.DAY) {
+    //         AmbienceController.getInstance().playAmbience(this.ambienceChannel, this.assets.sounds.forestDayAmbienceSFX.key);
+    //     } else {
+    //         AmbienceController.getInstance().playAmbience(this.ambienceChannel, this.assets.sounds.forestNightAmbienceSFX.key);
+    //     }
     }
 }
