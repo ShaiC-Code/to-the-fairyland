@@ -1,15 +1,6 @@
 import MappedAdventureScene, { AssetBundle, ChapterSceneDefinition } from "../MappedAdventureScene";
 import StoryManager from "../../GameSystems/StorySystem/StoryManager";
 import { DialogueCompleteActions, DialogueChoiceActions } from "../../GameSystems/InteractionSystem/InteractionDatabase";
-import FreshPrettyTooth from "../../GameSystems/ItemSystem/Items/FreshPrettyTooth";
-import FlowerRing from "../../GameSystems/ItemSystem/Items/FlowerRing";
-import LoftyBread from "../../GameSystems/ItemSystem/Items/LoftyBread";
-import { Chapter2VillageItem } from "../../GameSystems/StorySystem/StoryState";
-import SleepingBag from "../../GameSystems/ItemSystem/Items/SleepingBag";
-import ObsidianBoots from "../../GameSystems/ItemSystem/Items/ObsidianBoots";
-import { ItemUseAction, ItemUseActions, ItemUseResult } from "../../GameSystems/ItemSystem/ItemUseActions";
-import { TimeOfDay } from "../../GameSystems/WorldSystem/WorldState";
-import AudioController from "../../GameSystems/AudioController";
 import DesertLandScene from "../Chapter4/DesertLandScene";
 
 export default abstract class MappedAdventureChapter3Scene extends MappedAdventureScene {

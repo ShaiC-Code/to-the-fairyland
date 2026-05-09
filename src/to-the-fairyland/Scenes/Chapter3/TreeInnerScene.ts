@@ -160,7 +160,10 @@ export default class TreeInnerScene extends ForestSceneBase {
             waitSeconds: seconds => this.waitSimulationSeconds(seconds),
             showWaveTitle: (text, duration) => this.showVineWaveTitle(text, duration),
             getTilesCrossedByWorldSegment: (start, end) => this.vineAttackController.getTilesCrossedByWorldSegment(start, end),
-            startVineAttack: (startObj, endObj, options) => this.vineAttackController.startFromObjects(startObj, endObj, options),
+            startVineAttack: (startObj, endObj, options) => {
+                AudioController.getInstance().playSound(this.assets.sounds.vineAttackSFX.key);
+                this.vineAttackController.startFromObjects(startObj, endObj, options)
+            },
             vineSpriteKey: this.assets.sprites.vinePartSprite.key,
             indicatorStyle: "line",
             onAllWavesComplete: () => this.openVineExit()

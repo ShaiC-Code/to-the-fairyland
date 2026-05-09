@@ -477,8 +477,14 @@ export default abstract class MappedAdventureScene extends Scene {
         this.playerHealthController = new PlayerHealthController({
             player: this.player,
             playerStateManager: this.playerStateManager,
-            playHurtFeedback: () => this.playerHurtFlashOverlay.play(),
-            onDeath: () => this.startPlayerDeathSequence()
+            playHurtFeedback: () => {
+                AudioController.getInstance().playSound(this.assets.sounds.playerHurtSFX.key);
+                this.playerHurtFlashOverlay.play();
+            },
+            onDeath: () => {
+                AudioController.getInstance().playSound(this.assets.sounds.playerHurtSFX.key);
+                this.startPlayerDeathSequence();
+            }
         });
 
         const worldState = this.gameSessionManager.getWorldState();
