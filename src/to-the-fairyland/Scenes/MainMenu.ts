@@ -44,6 +44,7 @@ import FreshPrettyTooth from "../GameSystems/ItemSystem/Items/FreshPrettyTooth";
 import AudioController from "../GameSystems/AudioController";
 import DesertLandScene from "./Chapter4/DesertLandScene";
 import DesertLandParallaxScene from "./Chapter4/DesertLandParallaxScene";
+import DesertPondScene from "./Chapter4/DesertPondScene";
 
 type AssetRef = Readonly<{
     readonly key: string;
@@ -748,6 +749,9 @@ export function changeToResumePointScene(sceneManager: SceneManager, resumePoint
             return true;
         case "DesertLandParallaxScene":
             sceneManager.changeToScene(DesertLandParallaxScene, initData, undefined, levelLoadTransition);
+            return true;
+        case "DesertPondScene":
+            sceneManager.changeToScene(DesertPondScene, initData, undefined, levelLoadTransition);
             return true;
         case "EmeraldPondScene":
             sceneManager.changeToScene(EmeraldPondScene, initData, undefined, levelLoadTransition);
