@@ -69,8 +69,8 @@ export default class CliffBottomScene extends ForestSceneBase {
         }
     }
 
-    public override updateScene(deltaT: number): void {
-        super.updateScene(deltaT);
+    protected override updateGameplay(deltaT: number): void {
+        super.updateGameplay(deltaT);
         this.updateToothFairyHealing(deltaT);
     }
 
@@ -150,7 +150,7 @@ export default class CliffBottomScene extends ForestSceneBase {
     }
 
     private updateToothFairyHealing(deltaT: number): void {
-        if (this.worldPaused || this.activeToothFairyHealers.size === 0) {
+        if (this.activeToothFairyHealers.size === 0) {
             return;
         }
 

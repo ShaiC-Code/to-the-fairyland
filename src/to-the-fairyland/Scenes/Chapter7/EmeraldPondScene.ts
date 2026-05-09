@@ -127,10 +127,10 @@ export default class EmeraldPondScene extends MappedAdventureScene {
     }
 
     // =============== Update Scene =======================
-    public override updateScene(deltaT: number): void {
-        super.updateScene(deltaT);
+    protected override updateGameplay(deltaT: number): void {
+        super.updateGameplay(deltaT);
 
-        if (this.worldPaused || this.dialogueController.isActive) {
+        if (this.dialogueController.isActive) {
             return;
         }
 

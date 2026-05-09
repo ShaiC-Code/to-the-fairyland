@@ -76,11 +76,15 @@ export default class VillageScene extends LycanChaseSceneBase {
     
     public override updateScene(deltaT: number): void {
         super.updateScene(deltaT);
-        this.updateLycanDetection();
         if (this.bloodMistEffectLayer) {
             this.bloodMistEffectLayer.update(deltaT);
         }
     }    
+
+    protected override updateGameplay(deltaT: number): void {
+        super.updateGameplay(deltaT);
+        this.updateLycanDetection();
+    }
 
     protected override spawnMapObjects(tilemapData: TiledTilemapData): void {
         this.npcs = [];
@@ -138,7 +142,6 @@ export default class VillageScene extends LycanChaseSceneBase {
     private updateLycanDetection(): void {
         if (
             !this.storyManager.chapter2.needsLycanDetection() ||
-            this.worldPaused ||
             this.dialogueController.isActive
         ) {
             return;

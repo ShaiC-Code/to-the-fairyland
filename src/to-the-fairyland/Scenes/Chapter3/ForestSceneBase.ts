@@ -65,8 +65,8 @@ export default abstract class ForestSceneBase extends MappedAdventureChapter3Sce
         this.startSceneFairyEscortIfNeeded();
     }
 
-    public override updateScene(deltaT: number): void {
-        super.updateScene(deltaT);
+    protected override updateGameplay(deltaT: number): void {
+        super.updateGameplay(deltaT);
         this.updateFairyEscort(deltaT);
     }
 
