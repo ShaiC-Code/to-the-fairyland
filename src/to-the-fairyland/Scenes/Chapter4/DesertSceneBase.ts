@@ -62,18 +62,7 @@ export default abstract class DesertSceneBase extends MappedAdventureScene {
     private readonly centipedes: DesertCentipedeController[] = [];
 
     protected override combinedAssetBundles(): AssetBundle {
-        const sharedAssets = this.mergeAssetBundles(
-            super.combinedAssetBundles(),
-            DesertSceneBase.desertAssetBundle
-        );
-
-        return this.mergeAssetBundles(sharedAssets, {
-            tilemaps: { [this.tilemap.key]: this.tilemap },
-            spritesheets: {},
-            sprites: {},
-            sounds: {},
-            images: {}
-        });
+        return this.mergeAssetBundles(super.combinedAssetBundles(), DesertSceneBase.desertAssetBundle);
     }
 
     public override unloadScene(): void {

@@ -7,7 +7,7 @@ import Color from "../../../Wolfie2D/Utils/Color";
 import WeatherParticleBehavior, { WeatherParticleSettings } from "../../AI/WeatherParticleBehavior";
 import TintEffectOverlay from "../../Overlays/TintEffectOverlay";
 import { AssetBundle } from "../../Scenes/MappedAdventureScene";
-import AudioController from "../AudioController";
+import AmbienceController from "./AmbienceController";
 import { WeatherType } from "./WorldState";
 
 type WeatherParticlePreset = Readonly<{
@@ -82,17 +82,17 @@ export default class WeatherController implements Updateable {
             return;
         }
 
-        AudioController.getInstance().playSound(
+        AmbienceController.getInstance().playAmbience(
+            this.weatherAmbienceChannel,
             this.getWeatherAmbianceKey(this.currentWeather),
             true,
             true,
-            this.weatherAmbienceChannel,
             this.weatherAmbienceFadeSeconds
         );
     }
 
     private stopWeatherAmbience(): void {
-        AudioController.getInstance().stopSound(this.getWeatherAmbianceKey(this.currentWeather));
+        AmbienceController.getInstance().stopAmbience(this.weatherAmbienceChannel);
     }
 
     

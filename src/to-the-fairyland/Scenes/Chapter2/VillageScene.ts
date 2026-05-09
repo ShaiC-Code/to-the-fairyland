@@ -8,6 +8,7 @@ import { dialogue, getNpcInteraction } from "../../GameSystems/InteractionSystem
 import ScrollingPatternWorldLayer from "../../Overlays/ScrollingPatternWorldLayer";
 import LycanChaseSceneBase from "./LycanChaseSceneBase";
 import AudioController from "../../GameSystems/AudioController";
+import AmbienceController from "../../GameSystems/WorldSystem/AmbienceController";
 
 type NpcRuntime = {
     name: string;
@@ -229,5 +230,9 @@ export default class VillageScene extends LycanChaseSceneBase {
                 }
             );
         }
+    }
+
+    protected override playCurrentAmbience(): void {
+        AmbienceController.getInstance().stopAmbience(this.ambienceChannel);
     }
 }

@@ -33,6 +33,7 @@ export default class TreeInnerScene extends ForestSceneBase {
         sounds: {
             swordPullSFX: { key: "sword-pull", path: "/assets/sounds/sword-pull.ogg" },
             excaliburReceivedSFX: { key: "excalibur-received", path: "/assets/sounds/excalibur-received.ogg" },
+            vineAttackSFX: { key: "vine-attack", path: "/assets/sounds/vine-attack.ogg" }
         },
         images: {}
     };
