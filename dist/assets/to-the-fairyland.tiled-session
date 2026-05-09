@@ -162,14 +162,17 @@
             "scale": 0.5,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 1345,
-                "y": 1165
+                "x": 975,
+                "y": 1121
             }
         },
         "tilemaps/Chapter3/CliffBottom.json#Chapter2_Village_Tiles": {
             "scaleInDock": 1
         },
         "tilemaps/Chapter3/DeeperForest.json": {
+            "expandedObjectLayers": [
+                5
+            ],
             "scale": 0.5772569444444444,
             "selectedLayer": 7,
             "viewCenter": {
@@ -254,8 +257,8 @@
             "scale": 0.75,
             "selectedLayer": 8,
             "viewCenter": {
-                "x": 662,
-                "y": 374
+                "x": 600.6666666666666,
+                "y": 426
             }
         },
         "tilemaps/Chapter4/DesertLand1.json#DesertLand": {
@@ -387,6 +390,8 @@
     "project": "to-the-fairyland.tiled-project",
     "property.type": "int",
     "recentFiles": [
+        "tilemaps/Chapter7/EmeraldPond.json",
+        "tilemaps/Chapter4/DesertLand1.json",
         "tilemaps/Chapter4/DesertLand.json",
         "tilemaps/Chapter5/UndergroundTunnel.json",
         "tilemaps/Chapter2/Cliff.json",
@@ -396,9 +401,7 @@
         "tilemaps/Chapter2/Road3.json",
         "tilemaps/Chapter2/Village.json",
         "tilemaps/Chapter3/CliffBottom.json",
-        "tilemaps/Chapter3/DeeperForest.json",
-        "tilemaps/Chapter7/EmeraldPond.json",
-        "tilemaps/Chapter4/DesertLand1.json"
+        "tilemaps/Chapter3/DeeperForest.json"
     ],
     "resizeMap.removeObjects": false,
     "tileset.embedInMap": true,
