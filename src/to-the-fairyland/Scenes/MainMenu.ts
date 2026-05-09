@@ -432,7 +432,7 @@ export default class MainMenu extends Scene {
                     }
 
                     chapter3.mainQuestStep = Chapter3MainQuestStep.NEED_EXCALIBUR;
-                    this.gameSessionManager.setResumePoint("GreatTreeScene", "TreeInner");
+                    this.gameSessionManager.setResumePoint("TreeInnerScene", "TreeInner");
                 },
                 {
                     cheatsEnabled: this.cheatsEnabled,
