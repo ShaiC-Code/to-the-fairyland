@@ -32,6 +32,7 @@ export default abstract class MappedAdventureChapter3Scene extends MappedAdventu
     }
         
     protected gotoChapter4(): void {
+        this.transitioning = true;
         this.storyManager.unlockChapter4();
         this.sceneManager.changeToScene(
             DesertLandScene,
