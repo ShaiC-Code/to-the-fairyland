@@ -39,7 +39,7 @@ export default class WeatherController implements Updateable {
 
     private weatherTintOverlay!: TintEffectOverlay;
 
-    private readonly weatherAmbienceChannel: AudioChannelType = AudioChannelType.CUSTOM_2;
+    private readonly weatherAmbienceChannel: AudioChannelType = AudioChannelType.CUSTOM_1;
     private readonly weatherAmbienceFadeSeconds = 0.5;
     
     private readonly weatherTintLayerName = "weatherTintLayer";

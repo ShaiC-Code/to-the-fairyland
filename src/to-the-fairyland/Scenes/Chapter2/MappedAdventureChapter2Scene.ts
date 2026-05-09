@@ -196,7 +196,7 @@ export default abstract class MappedAdventureChapter2Scene extends MappedAdventu
     }
     
     protected playCurrentAmbience(): void {
-        const ambienceChannel = AudioChannelType.CUSTOM_1;
+        const ambienceChannel = AudioChannelType.CUSTOM_2;
         if (this.gameSessionManager.getWorldState().timeOfDay === TimeOfDay.DAY) {
             AmbienceController.getInstance().playAmbience(ambienceChannel, this.assets.sounds.forestDayAmbienceSFX.key);
         } else {
