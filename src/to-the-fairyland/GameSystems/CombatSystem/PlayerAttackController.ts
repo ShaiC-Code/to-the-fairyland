@@ -242,7 +242,10 @@ export default class PlayerAttackController {
         this.hitboxStarted = false;
         this.attackTiles = [];
         this.dashTiles = [];
-        ai.controller.setControlMode(PlayerControlMode.GAMEPLAY);
+
+        if (ai.controller.controlMode === PlayerControlMode.LOCKED) {
+            ai.controller.setControlMode(PlayerControlMode.GAMEPLAY);
+        }
     }
 
     private spawnAttackEffect(): void {

@@ -241,7 +241,7 @@
         },
         "tilemaps/Chapter4/DesertLand.json": {
             "scale": 0.75,
-            "selectedLayer": 0,
+            "selectedLayer": 7,
             "viewCenter": {
                 "x": 632.6666666666666,
                 "y": 682
@@ -272,7 +272,7 @@
                 9
             ],
             "scale": 0.5,
-            "selectedLayer": 3,
+            "selectedLayer": 6,
             "viewCenter": {
                 "x": 1197,
                 "y": 365
@@ -280,6 +280,17 @@
         },
         "tilemaps/Chapter4/DesertLandParallax.json#DesertLand": {
             "scaleInDock": 0.5
+        },
+        "tilemaps/Chapter4/DesertPond.json": {
+            "scale": 0.75,
+            "selectedLayer": 6,
+            "viewCenter": {
+                "x": 707.3333333333333,
+                "y": 899.3333333333334
+            }
+        },
+        "tilemaps/Chapter4/DesertPond.json#DesertLand": {
+            "scaleInDock": 0.25
         },
         "tilemaps/Chapter4/GreatTree.json": {
             "expandedObjectLayers": [

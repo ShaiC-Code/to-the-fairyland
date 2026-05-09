@@ -8,7 +8,9 @@ import { TiledLayerData, TiledObject, TiledTilemapData } from "../../../Wolfie2D
 import Color from "../../../Wolfie2D/Utils/Color";
 import PlayerAI from "../../AI/Player/PlayerAI";
 import { dialogue } from "../../GameSystems/InteractionSystem/InteractionDatabase";
+import StoryManager from "../../GameSystems/StorySystem/StoryManager";
 import DesertSceneBase from "./DesertSceneBase";
+import DesertPondScene from "./DesertPondScene";
 
 type CentipedeSpawnMilestone = {
     threshold: number;
@@ -81,8 +83,10 @@ export default class DesertLandParallaxScene extends DesertSceneBase {
     private journeyStartRow = 0;
     private journeyBoundsReady = false;
     private journeyProgress = 0;
+    private journeyComplete = false;
     private readonly triggeredCentipedeSpawnThresholds = new Set<number>();
     private pendingCentipedeSpawns: PendingCentipedeSpawn[] = [];
+    private readonly storyManager = StoryManager.getInstance();
 
     private progressBack!: Rect;
     private progressFill!: Rect;
@@ -91,6 +95,7 @@ export default class DesertLandParallaxScene extends DesertSceneBase {
     public override startScene(): void {
         this.triggeredCentipedeSpawnThresholds.clear();
         this.pendingCentipedeSpawns = [];
+        this.journeyComplete = false;
         this.applyRepeatedJourneyTilemap();
         super.startScene();
         this.collision.visible = false;
@@ -117,6 +122,11 @@ export default class DesertLandParallaxScene extends DesertSceneBase {
         super.updateScene(deltaT);
         this.updateJourneyProgress();
         this.updateJourneyProgressUI();
+        this.tryCompleteJourney();
+        if (this.journeyComplete) {
+            return;
+        }
+
         this.updateCentipedeSpawnMilestones();
         this.updatePendingCentipedeSpawns(deltaT);
     }
@@ -354,6 +364,34 @@ export default class DesertLandParallaxScene extends DesertSceneBase {
         this.progressFill.size.set(progressWidth, this.progressBarFillHeight);
         this.progressLabel.position.set(center.x, center.y - 25);
         this.progressLabel.text = `Final Journey ${Math.round(this.journeyProgress * 100)}%`;
+    }
+
+    private tryCompleteJourney(): void {
+        if (this.journeyComplete || this.journeyProgress < 1 || this.dialogueController.isActive) {
+            return;
+        }
+
+        this.journeyComplete = true;
+        this.transitioning = true;
+
+        if (this.gameSessionManager.getStoryState().chapter4) {
+            this.storyManager.chapter4.markEscapedCentipedes();
+        }
+
+        this.sceneManager.changeToScene(
+            DesertPondScene,
+            {
+                cheatsEnabled: this.cheatsEnabled,
+                spawnName: "RoadStart"
+            },
+            undefined,
+            {
+                showLoadingOverlay: true,
+                useFadeTransition: true,
+                fadeOutMs: 500,
+                fadeInMs: 500
+            }
+        );
     }
 
     private spawnRandomRocks(): void {
