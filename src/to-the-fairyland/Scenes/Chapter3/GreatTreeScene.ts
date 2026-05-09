@@ -46,6 +46,14 @@ export default class GreatTreeScene extends ForestSceneBase {
         this.addLayer(this.vineGateLayerName, this.actorLayerDepth + 2);
     }
 
+    protected override getFairyEscortTargetName(): string {
+        return "TreeOuter";
+    }
+
+    protected override shouldCompleteFairyEscortAtTarget(): boolean {
+        return true;
+    }
+
     protected override spawnMapObjects(tilemapData: TiledTilemapData): void {
         super.spawnMapObjects(tilemapData);
 
