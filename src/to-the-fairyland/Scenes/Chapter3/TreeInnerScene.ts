@@ -59,6 +59,9 @@ export default class TreeInnerScene extends ForestSceneBase {
     private readonly vineLayerName = "VineShooters";
     private readonly vineWaveTitleLayerName = "VineWaveTitleOverlay";
     private readonly vineExitSpeed = 400;
+    private readonly vineHurtDamage = 10;
+    private readonly vineHurtRadius = 22;
+    private readonly vineHurtCooldown = 0.75;
     private readonly vineTrapPairs: ReadonlyArray<readonly [string, string]> = [
         ["1_L", "1_R"],
         ["2_L", "2_R"],
@@ -111,6 +114,7 @@ export default class TreeInnerScene extends ForestSceneBase {
         if (!this.isVineWaveTitlePauseActive()) {
             this.updateExcaliburPull(deltaT);
             this.vineAttackController.update(deltaT);
+            this.updateVinePlayerDamage();
         }
 
         this.vineWaveTitleOverlay.update(deltaT);
@@ -411,6 +415,21 @@ export default class TreeInnerScene extends ForestSceneBase {
 
     private isVineWaveTitlePauseActive(): boolean {
         return this.vineWaveTitleOverlay?.shouldPauseWorld() ?? false;
+    }
+
+    private updateVinePlayerDamage(): void {
+        if (this.player.health <= 0) {
+            return;
+        }
+
+        if (!this.vineAttackController.currentVinesIntersectCircle(this.player.position, this.vineHurtRadius)) {
+            return;
+        }
+
+        this.damagePlayer(this.vineHurtDamage, {
+            cooldownSeconds: this.vineHurtCooldown,
+            source: "vine"
+        });
     }
 
     private findVineTrapAtTile(tile: Vec2 | null): TiledObject | undefined {
