@@ -482,7 +482,8 @@ export default class MainMenu extends Scene {
                 {
                     cheatsEnabled: this.cheatsEnabled,
                     spawnName: "RoadStart"
-                }
+                },
+                () => this.ensurePlayerHasExcalibur()
             );
             break;
 
@@ -520,12 +521,16 @@ export default class MainMenu extends Scene {
         levelId: LevelSelectionId,
         scene: new (...args: any[]) => Scene,
         initializeSession: () => void,
-        sceneInit: Record<string, any>
+        sceneInit: Record<string, any>,
+        afterSessionReady?: () => void
     ): void {
         const checkpointKey = LEVEL_TO_CHECKPOINT_STORY_KEY[levelId];
 
         if (this.gameSessionManager.loadCheckpoint(checkpointKey)) {
             this.gameSessionManager.setActiveCheckpointKey(checkpointKey);
+            afterSessionReady?.();
+            this.gameSessionManager.saveCheckpoint(checkpointKey);
+
             const resumePoint = this.gameSessionManager.getResumePoint();
 
             this.sceneManager.changeToScene(
@@ -544,6 +549,7 @@ export default class MainMenu extends Scene {
 
         initializeSession();
         this.gameSessionManager.setActiveCheckpointKey(checkpointKey);
+        afterSessionReady?.();
         this.gameSessionManager.saveCheckpoint(checkpointKey);
 
         this.sceneManager.changeToScene(
@@ -552,6 +558,13 @@ export default class MainMenu extends Scene {
             undefined,
             levelLoadTransition
         );
+    }
+
+    private ensurePlayerHasExcalibur(): void {
+        const inventory = this.gameSessionManager.getPlayerState().inventory;
+        if (inventory.find(item => item instanceof Excalibur) === null) {
+            inventory.add(new Excalibur());
+        }
     }
 
     private showScreen(screen: "mainMenu" | "levelMenu" | "controlsMenu" | "helpMenu" | "testMenu"): void {

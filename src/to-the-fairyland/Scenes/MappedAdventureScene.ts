@@ -998,7 +998,9 @@ export default abstract class MappedAdventureScene extends Scene {
         this.player.addAI(PlayerAI, {
             startTile: spawnTile,
             tilemap: this.collision,
-            takeDamage: (amount: number) => this.damagePlayer(amount)
+            takeDamage: (amount: number) => this.damagePlayer(amount),
+            canMoveToTile: (currentTile: Vec2, direction: Vec2, nextTile: Vec2) =>
+                this.canPlayerMoveToTile(currentTile, direction, nextTile)
         });
 
         const ai = this.player.ai as PlayerAI;
@@ -1013,6 +1015,10 @@ export default abstract class MappedAdventureScene extends Scene {
         } else if (facingProp === "right") {
             ai.facing = Vec2.RIGHT;
         }
+    }
+
+    protected canPlayerMoveToTile(_currentTile: Vec2, _direction: Vec2, _nextTile: Vec2): boolean {
+        return true;
     }
 
     /**
