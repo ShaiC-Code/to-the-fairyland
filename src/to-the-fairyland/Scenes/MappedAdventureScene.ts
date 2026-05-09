@@ -35,6 +35,10 @@ import OverlayLayer from "../Overlays/OverlayLayer";
 import LowHealthOverlay from "../Overlays/LowHealthOverlay";
 import { resolveCheckpointStoryKey } from "../GameSystems/GameSessionSystem/LevelCheckpointMapping";
 import AmbienceController from "../GameSystems/WorldSystem/AmbienceController";
+import RedFlashOverlay from "../Overlays/RedFlashOverlay";
+import PlayerDeathHitOverlay from "../Overlays/PlayerDeathHitOverlay";
+import GameOverScreenScene from "./GameOverScreenScene";
+import PlayerHealthController, { PlayerDamageOptions } from "../GameSystems/PlayerSystem/PlayerHealthController";
 
 export type AssetRef = Readonly<{
     readonly key: string;
@@ -146,6 +150,10 @@ export default abstract class MappedAdventureScene extends Scene {
     protected inventoryScreen!: InventoryScreen;
     protected worldPaused: boolean = false;
     protected lowHealthOverlay!: LowHealthOverlay;
+    protected playerHealthController!: PlayerHealthController;
+    protected playerHurtFlashOverlay!: RedFlashOverlay;
+    protected playerDeathHitOverlay!: PlayerDeathHitOverlay;
+    private playerDeathSequenceActive = false;
     
     protected cameraController!: CameraController;
     protected dialogueController!: DialogueController;
@@ -163,6 +171,8 @@ export default abstract class MappedAdventureScene extends Scene {
     
     protected readonly hudLayerName = "HUD";
     protected readonly lowHealthOverlayLayerName = "LowHealthOverlay";
+    protected readonly playerHurtFlashLayerName = "PlayerHurtFlashOverlay";
+    protected readonly playerDeathHitLayerName = "PlayerDeathHitOverlay";
     protected readonly lowHealthOverlayThresholdRatio = 0.4;
     protected readonly lowHealthOverlayMaxAlpha = 0.45;
     protected readonly lowHealthOverlayPulseAmount = 0.20;
@@ -268,6 +278,7 @@ export default abstract class MappedAdventureScene extends Scene {
 
     public override startScene(): void {
         this.gameSessionManager.requireCurrentSession();
+        this.playerDeathSequenceActive = false;
 
         this.add.tilemap(this.tilemap.key);
         this.addLayer(this.actorLayerName, this.actorLayerDepth);
@@ -365,6 +376,7 @@ export default abstract class MappedAdventureScene extends Scene {
                 && !this.dialogueController.isActive
                 && !this.transitioning
                 && !this.shouldPauseWorldForScene()
+                && !this.playerDeathSequenceActive
                 && this.canPlayerAttack(),
             swordAttackSFXKey: this.assets.sounds.swordAttackSFX.key
         });
@@ -437,6 +449,38 @@ export default abstract class MappedAdventureScene extends Scene {
             }
         );
 
+        this.playerHurtFlashOverlay = new RedFlashOverlay(
+            this.playerHurtFlashLayerName,
+            this,
+            () => this.viewport.getCenter(),
+            () => this.viewport.getHalfSize(),
+            {
+                useUILayer: true,
+                depth: 10000
+            }
+        );
+
+        this.playerDeathHitOverlay = new PlayerDeathHitOverlay(
+            this.playerDeathHitLayerName,
+            this,
+            () => this.viewport.getCenter(),
+            () => this.viewport.getHalfSize(),
+            {
+                useUILayer: true,
+                depth: 10001,
+                redFlashDelay: 0.25,
+                redFlashDuration: 0.5,
+                blackAfterFlashDuration: 0.5
+            }
+        );
+
+        this.playerHealthController = new PlayerHealthController({
+            player: this.player,
+            playerStateManager: this.playerStateManager,
+            playHurtFeedback: () => this.playerHurtFlashOverlay.play(),
+            onDeath: () => this.startPlayerDeathSequence()
+        });
+
         const worldState = this.gameSessionManager.getWorldState();
 
         this.cameraController = new CameraController(this, this.viewport, this.player, this.ground, this.actorLayerName);
@@ -474,8 +518,9 @@ export default abstract class MappedAdventureScene extends Scene {
         const inventoryOpen = this.inventoryScreen.getIsOpen();
         const dialogueOpen = this.dialogueController.isActive;
         const scenePauseOpen = this.shouldPauseWorldForScene();
-        const menuOpen = pauseOpen || inventoryOpen || dialogueOpen || scenePauseOpen;
-        const shouldPauseWorld = pauseOpen || inventoryOpen || scenePauseOpen;
+        const deathSequenceOpen = this.playerDeathSequenceActive;
+        const menuOpen = pauseOpen || inventoryOpen || dialogueOpen || scenePauseOpen || deathSequenceOpen;
+        const shouldPauseWorld = pauseOpen || inventoryOpen || scenePauseOpen || deathSequenceOpen;
         this.setWorldPaused(shouldPauseWorld);
 
         let menuSafetyFlag = false;
@@ -504,6 +549,9 @@ export default abstract class MappedAdventureScene extends Scene {
         this.pauseControlsScreen.update(deltaT);
         this.inventoryScreen.update(deltaT);
         this.lowHealthOverlay.update(deltaT);
+        this.playerHealthController.update(deltaT);
+        this.playerHurtFlashOverlay.update(deltaT);
+        this.playerDeathHitOverlay.update(deltaT);
         
         this.cameraController.update(deltaT);
         this.dialogueController.update(deltaT);
@@ -618,6 +666,8 @@ export default abstract class MappedAdventureScene extends Scene {
             "pauseOverlay",
             "pauseControlsOverlay",
             "inventoryOverlay",
+            this.playerHurtFlashLayerName,
+            this.playerDeathHitLayerName,
             ...this.getWorldPauseLayerExceptions()
         ]);
 
@@ -679,6 +729,55 @@ export default abstract class MappedAdventureScene extends Scene {
 
     protected canPlayerAttack(): boolean {
         return true;
+    }
+
+    protected damagePlayer(amount: number, options?: PlayerDamageOptions): boolean {
+        return this.playerHealthController.takeDamage(amount, options);
+    }
+
+    protected healPlayer(amount: number): boolean {
+        return this.playerHealthController.heal(amount);
+    }
+
+    protected setPlayerHealth(value: number): boolean {
+        if (this.playerHealthController) {
+            return this.playerHealthController.setHealth(value);
+        }
+
+        this.playerStateManager.setHealth(value);
+
+        if (this.player) {
+            this.player.health = this.playerStateManager.getPlayerState().health;
+        }
+
+        return true;
+    }
+
+    protected startPlayerDeathSequence(): void {
+        if (this.playerDeathSequenceActive) {
+            return;
+        }
+
+        this.playerDeathSequenceActive = true;
+        this.lockPlayerInput();
+        this.setWorldPaused(true);
+        AudioController.getInstance().stopSound(this.assets.sounds.walkingDirtSFX.key);
+        AudioController.getInstance().stopMusic();
+
+        this.playerDeathHitOverlay.play({
+            onComplete: () => {
+                this.sceneManager.changeToScene(
+                    GameOverScreenScene,
+                    undefined,
+                    undefined,
+                    {
+                        useFadeTransition: true,
+                        fadeOutMs: 0,
+                        fadeInMs: 0
+                    }
+                );
+            }
+        });
     }
 
     protected clampPlayerAttackDashTiles(
@@ -875,7 +974,11 @@ export default abstract class MappedAdventureScene extends Scene {
         );
         this.player.setSortTile(spawnTile);
         this.player.setSortOrder(0);
-        this.player.addAI(PlayerAI, { startTile: spawnTile, tilemap: this.collision });
+        this.player.addAI(PlayerAI, {
+            startTile: spawnTile,
+            tilemap: this.collision,
+            takeDamage: (amount: number) => this.damagePlayer(amount)
+        });
 
         const ai = this.player.ai as PlayerAI;
         const facingProp = spawn.properties?.find(prop => prop.name === "facing")?.value;

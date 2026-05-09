@@ -12,6 +12,13 @@ export default class FreshPrettyTooth extends InventoryItem {
     }
 
     public consume(context: InventoryItemConsumeContext): void {
+        const result = context.previewItemAction(ItemUseActions.HOLD_UP_TOOTH);
+
+        if (!result.success) {
+            context.showDialogue(dialogue(result.lines));
+            return;
+        }
+
         context.showDialogue(
             dialogueWithChoice(
                 ["Hold up the fresh pretty tooth?"],

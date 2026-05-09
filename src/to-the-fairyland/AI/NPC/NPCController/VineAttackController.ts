@@ -143,6 +143,16 @@ export default class VineAttackController implements SwordHitTarget {
         }
     }
 
+    public currentVinesIntersectCircle(center: Vec2, radius: number, type: VineAttackType = "normal"): boolean {
+        const radiusSq = Math.max(0, radius) * Math.max(0, radius);
+
+        return this.activeVineAttacks.some(attack =>
+            attack.type === type
+            && attack.progress > 0
+            && this.segmentIntersectsCircle(attack.start, this.getCurrentTip(attack), center, radiusSq)
+        );
+    }
+
     public destroyMatching(shouldDestroy: (attack: VineAttack) => boolean): void {
         const remainingAttacks: VineAttack[] = [];
 
@@ -193,14 +203,36 @@ export default class VineAttackController implements SwordHitTarget {
     }
     
     private currentVineTouchesAnyTile(attack: VineAttack, hitTiles: Set<string>): boolean {
-        const currentTip = new Vec2(
-            attack.start.x + attack.direction.x * attack.progress,
-            attack.start.y + attack.direction.y * attack.progress
-        );
+        const currentTip = this.getCurrentTip(attack);
     
         const vineTiles = this.getTilesCrossedByWorldSegment(attack.start, currentTip);
     
         return vineTiles.some(tile => hitTiles.has(this.tileKey(tile)));
+    }
+
+    private getCurrentTip(attack: VineAttack): Vec2 {
+        return new Vec2(
+            attack.start.x + attack.direction.x * attack.progress,
+            attack.start.y + attack.direction.y * attack.progress
+        );
+    }
+
+    private segmentIntersectsCircle(start: Vec2, end: Vec2, center: Vec2, radiusSq: number): boolean {
+        const segment = start.vecTo(end);
+        const segmentLengthSq = segment.magSq();
+
+        if (segmentLengthSq <= 0) {
+            return start.distanceSqTo(center) <= radiusSq;
+        }
+
+        const toCenter = start.vecTo(center);
+        const closestT = Math.max(0, Math.min(1, toCenter.dot(segment) / segmentLengthSq));
+        const closestPoint = new Vec2(
+            start.x + segment.x * closestT,
+            start.y + segment.y * closestT
+        );
+
+        return closestPoint.distanceSqTo(center) <= radiusSq;
     }
     
     public getTilesCrossedByWorldSegment(start: Vec2, end: Vec2): Vec2[] {
@@ -265,10 +297,7 @@ export default class VineAttackController implements SwordHitTarget {
     }
 
     private blockTilesCrossedByVine(attack: VineAttack): void {
-        const currentTip = new Vec2(
-            attack.start.x + attack.direction.x * attack.progress,
-            attack.start.y + attack.direction.y * attack.progress
-        );
+        const currentTip = this.getCurrentTip(attack);
         const crossedTiles = this.getTilesCrossedByWorldSegment(attack.start, currentTip);
         const alreadyBlockedByAttack = new Set(attack.blockedTiles.map(tile => this.tileKey(tile)));
 

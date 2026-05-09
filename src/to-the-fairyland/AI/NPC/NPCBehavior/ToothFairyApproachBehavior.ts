@@ -10,6 +10,18 @@ import FairyParticleBehavior, {
     FairyParticleSettings
 } from "../../FairyParticleBehavior";
 
+export type ToothFairyAttractionTarget = Vec2 | { position: Vec2 };
+
+export type ToothFairyAttractionOptions = {
+    stopDistance?: number;
+    arriveRadius?: number;
+    speed?: number;
+    minSpeed?: number;
+    thrust?: number;
+    waveStrength?: number;
+    onArrive?: (fairy: AnimatedSprite) => void;
+};
+
 export default class ToothFairyApproachBehavior implements AI {
     private owner!: AnimatedSprite;
     private player!: PlayerActor;
@@ -22,6 +34,14 @@ export default class ToothFairyApproachBehavior implements AI {
     private attracted = false;
     private arrived = false;
     private onArrive?: (fairy: AnimatedSprite) => void;
+    private activeAttractionTarget: Vec2 | null = null;
+    private activeAttractionStopDistance = 60;
+    private activeAttractionArriveRadius = 130;
+    private activeAttractionSpeed = 120;
+    private activeAttractionMinSpeed = 0;
+    private activeAttractionThrust = 100;
+    private activeAttractionWaveStrength = 90;
+    private activeOnArrive?: (fairy: AnimatedSprite) => void;
 
     private drag = 0.85;
 
@@ -142,9 +162,21 @@ export default class ToothFairyApproachBehavior implements AI {
 
     public handleEvent(_event: GameEvent): void {}
 
-    public startAttraction(): void {
+    public startAttraction(
+        target?: ToothFairyAttractionTarget,
+        options: ToothFairyAttractionOptions = {}
+    ): void {
         this.attracted = true;
         this.delayTimer = 0;
+        this.arrived = false;
+        this.activeAttractionTarget = this.resolveAttractionTarget(target);
+        this.activeAttractionStopDistance = options.stopDistance ?? this.stopDistance;
+        this.activeAttractionArriveRadius = options.arriveRadius ?? this.arriveRadius;
+        this.activeAttractionSpeed = options.speed ?? this.wanderSpeed;
+        this.activeAttractionMinSpeed = options.minSpeed ?? 0;
+        this.activeAttractionThrust = options.thrust ?? this.attractionThrust;
+        this.activeAttractionWaveStrength = options.waveStrength ?? this.waveStrength;
+        this.activeOnArrive = options.onArrive ?? this.onArrive;
     }
 
     public hasArrived(): boolean {
@@ -250,26 +282,44 @@ export default class ToothFairyApproachBehavior implements AI {
     }
 
     private getArriveVelocity(): Vec2 {
-        const toPlayer = this.owner.position.vecTo(this.player.position);
-        const distance = toPlayer.mag();
+        return this.getTargetVelocity(
+            this.getActiveAttractionTarget(),
+            this.activeAttractionStopDistance,
+            this.activeAttractionArriveRadius,
+            this.activeAttractionSpeed,
+            this.activeAttractionMinSpeed,
+            this.activeAttractionWaveStrength
+        );
+    }
+
+    private getTargetVelocity(
+        target: Vec2,
+        stopDistance: number,
+        arriveRadius: number,
+        speed: number,
+        minSpeed: number,
+        waveStrength: number
+    ): Vec2 {
+        const toTarget = this.owner.position.vecTo(target);
+        const distance = toTarget.mag();
 
         if (distance <= 0.001) {
             return Vec2.ZERO;
         }
 
-        const direction = toPlayer.scale(1 / distance);
+        const direction = toTarget.scale(1 / distance);
 
-        if (distance <= this.stopDistance) {
+        if (distance <= stopDistance) {
             return Vec2.ZERO;
         }
 
-        const speedRatio = Math.min(1, (distance - this.stopDistance) / this.arriveRadius);
-        const targetSpeed = this.wanderSpeed * speedRatio;
+        const speedRatio = Math.min(1, (distance - stopDistance) / arriveRadius);
+        const targetSpeed = Math.max(minSpeed, speed * speedRatio);
 
         const forwardVelocity = direction.scaled(targetSpeed);
         const perpendicular = new Vec2(-direction.y, direction.x);
         const wave = Math.sin(this.elapsed * this.waveFrequency + this.phase);
-        const waveVelocity = perpendicular.scaled(wave * this.waveStrength * speedRatio);
+        const waveVelocity = perpendicular.scaled(wave * waveStrength * speedRatio);
 
         return forwardVelocity.add(waveVelocity);
     }
@@ -279,12 +329,14 @@ export default class ToothFairyApproachBehavior implements AI {
             return;
         }
 
-        if (this.owner.position.distanceTo(this.player.position) > this.stopDistance) {
+        const target = this.getActiveAttractionTarget();
+
+        if (this.owner.position.distanceTo(target) > this.activeAttractionStopDistance) {
             return;
         }
 
         this.arrived = true;
-        this.onArrive?.(this.owner);
+        this.activeOnArrive?.(this.owner);
     }
 
     private getHoverAcceleration(): Vec2 {
@@ -300,8 +352,10 @@ export default class ToothFairyApproachBehavior implements AI {
     private steerToward(desiredVelocity: Vec2, deltaT: number): void {
         const acceleration = desiredVelocity.clone().sub(this.velocity);
 
-        if (this.attracted) {
-            acceleration.add(this.getAttractionThrust());
+        const thrust = this.getTargetThrust();
+
+        if (thrust) {
+            acceleration.add(thrust);
         }
 
         acceleration.add(this.getHoverAcceleration());
@@ -310,18 +364,31 @@ export default class ToothFairyApproachBehavior implements AI {
         this.velocity.add(acceleration.scaled(deltaT));
     }
 
-    private getAttractionThrust(): Vec2 {
-        const toPlayer = this.owner.position.vecTo(this.player.position);
-        const distance = toPlayer.mag();
+    private getTargetThrust(): Vec2 | null {
+        if (this.attracted) {
+            return this.getThrustToward(
+                this.getActiveAttractionTarget(),
+                this.activeAttractionStopDistance,
+                this.activeAttractionArriveRadius,
+                this.activeAttractionThrust
+            );
+        }
 
-        if (distance <= this.stopDistance || distance <= 0.001) {
+        return null;
+    }
+
+    private getThrustToward(target: Vec2, stopDistance: number, arriveRadius: number, thrust: number): Vec2 {
+        const toTarget = this.owner.position.vecTo(target);
+        const distance = toTarget.mag();
+
+        if (distance <= stopDistance || distance <= 0.001) {
             return Vec2.ZERO;
         }
 
-        const direction = toPlayer.scale(1 / distance);
-        const thrustRatio = Math.min(1, (distance - this.stopDistance) / this.arriveRadius);
+        const direction = toTarget.scale(1 / distance);
+        const thrustRatio = Math.min(1, (distance - stopDistance) / arriveRadius);
 
-        return direction.scaled(this.attractionThrust * thrustRatio);
+        return direction.scaled(thrust * thrustRatio);
     }
 
     private setupParticlePool(): void {
@@ -391,11 +458,28 @@ export default class ToothFairyApproachBehavior implements AI {
     }
 
     private playFacingAnimation(): void {
-        const facingX = this.attracted
-            ? this.owner.position.vecTo(this.player.position).x
+        const target = this.attracted ? this.getActiveAttractionTarget() : null;
+        const facingX = target
+            ? this.owner.position.vecTo(target).x
             : this.velocity.x;
 
         const animation = facingX < 0 ? "IDLE_LEFT" : "IDLE_RIGHT";
         this.owner.animation.playIfNotAlready(animation, true);
+    }
+
+    private getActiveAttractionTarget(): Vec2 {
+        return this.activeAttractionTarget ?? this.player.position;
+    }
+
+    private resolveAttractionTarget(target?: ToothFairyAttractionTarget): Vec2 | null {
+        if (!target) {
+            return null;
+        }
+
+        if (target instanceof Vec2) {
+            return target.clone();
+        }
+
+        return target.position.clone();
     }
 }

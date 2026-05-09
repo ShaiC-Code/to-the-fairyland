@@ -9,6 +9,10 @@ export default class DeeperForestScene extends ForestSceneBase {
         path: "/assets/tilemaps/Chapter3/DeeperForest.json"
     };
 
+    protected override getFairyEscortTargetName(): string {
+        return "RoadEnd";
+    }
+
     protected override handleAutoTransition(obj: TiledObject): void {
         if (obj.name === "PathToCliffBottom") {
             this.changeToForestSection(CliffBottomScene, "RoadEnd");
