@@ -16,6 +16,7 @@ import { AssetBundle, ChapterSceneDefinition } from "../MappedAdventureScene";
 import AudioController from "../../GameSystems/AudioController";
 import Debug from "../../../Wolfie2D/Debug/Debug";
 import Color from "../../../Wolfie2D/Utils/Color";
+import type { PlayerAttackHitbox } from "../../GameSystems/CombatSystem/PlayerAttackController";
 
 export default class TreeInnerScene extends ForestSceneBase {
     protected readonly tilemap = {
@@ -67,6 +68,9 @@ export default class TreeInnerScene extends ForestSceneBase {
     private readonly vineHurtCenterOffset = new Vec2(0, 34);
     private readonly vineHurtCooldown = 0.75;
     private readonly showVineHurtDebug = false;
+    private readonly excaliburAttackTileDebugDuration = 0.5;
+    private debugExcaliburAttackTiles: Vec2[] = [];
+    private debugExcaliburAttackTileTimer = 0;
     private readonly vineTrapPairs: ReadonlyArray<readonly [string, string]> = [
         ["1_L", "1_R"],
         ["2_L", "2_R"],
@@ -111,6 +115,7 @@ export default class TreeInnerScene extends ForestSceneBase {
     public override updateScene(deltaT: number): void {
         super.updateScene(deltaT);
 
+        this.updateExcaliburAttackTileDebug(deltaT);
         this.vineWaveTitleOverlay.update(deltaT);
         this.syncTreeInnerInputLock();
     }
@@ -128,6 +133,7 @@ export default class TreeInnerScene extends ForestSceneBase {
             false,
             new Color(255, 0, 0, 0.9)
         );
+        this.drawExcaliburAttackTileDebug();
     }
 
     protected override updateGameplay(deltaT: number): void {
@@ -145,6 +151,60 @@ export default class TreeInnerScene extends ForestSceneBase {
 
     protected override canPlayerAttack(): boolean {
         return !this.shouldHoldTreeInnerInputLock();
+    }
+
+    protected override handlePlayerAttackHitbox(hitbox: PlayerAttackHitbox): void {
+        this.captureExcaliburAttackTileDebug(hitbox);
+        super.handlePlayerAttackHitbox(hitbox);
+    }
+
+    private updateExcaliburAttackTileDebug(deltaT: number): void {
+        if (this.debugExcaliburAttackTileTimer <= 0) {
+            return;
+        }
+
+        this.debugExcaliburAttackTileTimer = Math.max(
+            0,
+            this.debugExcaliburAttackTileTimer - deltaT
+        );
+
+        if (this.debugExcaliburAttackTileTimer === 0) {
+            this.debugExcaliburAttackTiles = [];
+        }
+    }
+
+    private captureExcaliburAttackTileDebug(hitbox: PlayerAttackHitbox): void {
+        if (!this.showVineHurtDebug) {
+            return;
+        }
+
+        const endTile = hitbox.tiles[hitbox.tiles.length - 1] ?? hitbox.originTile;
+        const start = this.ground.getTileCenter(hitbox.originTile.x, hitbox.originTile.y);
+        const end = this.ground.getTileCenter(endTile.x, endTile.y);
+
+        this.debugExcaliburAttackTiles = this.vineAttackController
+            .getTilesCrossedByWorldSegment(start, end)
+            .map(tile => tile.clone());
+        this.debugExcaliburAttackTileTimer = this.excaliburAttackTileDebugDuration;
+    }
+
+    private drawExcaliburAttackTileDebug(): void {
+        if (this.debugExcaliburAttackTileTimer <= 0 || this.debugExcaliburAttackTiles.length === 0) {
+            return;
+        }
+
+        const tileSize = this.ground.getScaledTileSize();
+        const halfSize = tileSize.scaled(this.getViewScale() / 2);
+        const color = new Color(0, 255, 255, 0.9);
+
+        for (const tile of this.debugExcaliburAttackTiles) {
+            Debug.drawBox(
+                this.player.inRelativeCoordinates(this.ground.getTileCenter(tile.x, tile.y)),
+                halfSize,
+                false,
+                color
+            );
+        }
     }
     
     protected override readonly chapterDefinition: ChapterSceneDefinition = {

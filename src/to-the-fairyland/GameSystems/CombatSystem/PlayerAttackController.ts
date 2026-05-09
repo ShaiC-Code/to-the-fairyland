@@ -48,6 +48,7 @@ export default class PlayerAttackController {
     protected swordAttackSFXKey?: string;
 
     private readonly dashTileCount = 2;
+    private readonly attackTileCount = 3;
     private readonly dashDuration = 0.14;
     private readonly startupDuration = 0.04;
     private readonly recoveryDuration = 0.08;
@@ -74,6 +75,7 @@ export default class PlayerAttackController {
     private activeDirection = Vec2.DOWN;
     private attackOriginTile = Vec2.ZERO;
     private attackTiles: Vec2[] = [];
+    private dashTiles: Vec2[] = [];
     private dashActive = false;
     private dashStartPosition = Vec2.ZERO;
     private dashEndPosition = Vec2.ZERO;
@@ -141,13 +143,23 @@ export default class PlayerAttackController {
         this.hitboxStarted = false;
         this.activeDirection = ai.facing.clone();
         this.attackOriginTile = ai.currentTile.clone();
-        const reachableDashTiles = this.getReachableDashTiles(this.attackOriginTile, this.activeDirection);
+        const reachableDashTiles = this.getReachableTiles(
+            this.attackOriginTile,
+            this.activeDirection,
+            this.getDashTileCount(ai, this.activeDirection)
+        );
 
-        this.attackTiles = this.clampDashTiles(
+        this.dashTiles = this.clampDashTiles(
             reachableDashTiles.map(tile => tile.clone()),
             this.attackOriginTile.clone(),
             this.activeDirection.clone()
         ).map(tile => tile.clone());
+
+        this.attackTiles = this.getReachableTiles(
+            this.attackOriginTile,
+            this.activeDirection,
+            this.getAttackTileCount(ai)
+        );
 
         ai.controller.setControlMode(PlayerControlMode.LOCKED);
         this.beginDash();
@@ -158,7 +170,7 @@ export default class PlayerAttackController {
         const ai = this.getPlayerAI();
 
         this.dashStartPosition = this.player.position.clone();
-        this.dashEndTile = this.attackTiles[this.attackTiles.length - 1]?.clone() ?? this.attackOriginTile.clone();
+        this.dashEndTile = this.dashTiles[this.dashTiles.length - 1]?.clone() ?? this.attackOriginTile.clone();
 
         const dashEndTileCenter = this.ground.getTileCenter(this.dashEndTile.x, this.dashEndTile.y);
         this.dashEndPosition = this.player.getCenterForFeetPosition(
@@ -214,7 +226,7 @@ export default class PlayerAttackController {
         ai.currentMoveDuration = ai.moveDuration;
         ai.moving = false;
 
-        this.onDashComplete?.(this.dashEndTile.clone(), this.getAttackTiles());
+        this.onDashComplete?.(this.dashEndTile.clone(), this.getDashTiles());
     }
 
     private finishAttack(): void {
@@ -229,6 +241,7 @@ export default class PlayerAttackController {
         this.attackElapsed = 0;
         this.hitboxStarted = false;
         this.attackTiles = [];
+        this.dashTiles = [];
         ai.controller.setControlMode(PlayerControlMode.GAMEPLAY);
     }
 
@@ -363,16 +376,29 @@ export default class PlayerAttackController {
         return this.attackTiles.map(tile => tile.clone());
     }
 
-    private getReachableDashTiles(originTile: Vec2, direction: Vec2): Vec2[] {
+    private getDashTiles(): Vec2[] {
+        return this.dashTiles.map(tile => tile.clone());
+    }
+
+    private getDashTileCount(ai: PlayerAI, direction: Vec2): number {
+        const isDiagonal = direction.x !== 0 && direction.y !== 0;
+        const bonusDashTile = ai.moving && ai.moveProgress > 0.5 && !isDiagonal ? 1 : 0;
+
+        return this.dashTileCount + bonusDashTile;
+    }
+
+    private getAttackTileCount(ai: PlayerAI): number {
+        const bonusAttackTile = ai.moving && ai.moveProgress > 0.5 ? 1 : 0;
+
+        return this.attackTileCount + bonusAttackTile;
+    }
+
+    private getReachableTiles(originTile: Vec2, direction: Vec2, maxTiles: number): Vec2[] {
         const ai = this.getPlayerAI();
         const tiles: Vec2[] = [];
         let cursor = originTile.clone();
 
-        const isDiagonal = direction.x !== 0 && direction.y !== 0;
-        const bonusDashTile = ai.moving && ai.moveProgress > 0.5 && !isDiagonal ? 1 : 0;
-        const maxDashTiles = this.dashTileCount + bonusDashTile;
-
-        for (let i = 0; i < maxDashTiles; i++) {
+        for (let i = 0; i < maxTiles; i++) {
             if (!ai.canMoveToTile(cursor, direction)) {
                 break;
             }
