@@ -17,6 +17,7 @@ import AudioController from "../../GameSystems/AudioController";
 import Debug from "../../../Wolfie2D/Debug/Debug";
 import Color from "../../../Wolfie2D/Utils/Color";
 import type { PlayerAttackHitbox } from "../../GameSystems/CombatSystem/PlayerAttackController";
+import AmbienceController from "../../GameSystems/WorldSystem/AmbienceController";
 
 export default class TreeInnerScene extends ForestSceneBase {
     protected readonly tilemap = {
@@ -632,4 +633,8 @@ export default class TreeInnerScene extends ForestSceneBase {
         return `${tile.x},${tile.y}`;
     }
     
+    protected override playCurrentAmbience(): void {
+        AmbienceController.getInstance().stopAmbience(this.ambienceChannel);
+        AmbienceController.getInstance().stopAmbience(this.fairyAmbienceChannel);
+    }
 }

@@ -4,6 +4,7 @@ import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 import Rect from "../../Wolfie2D/Nodes/Graphics/Rect";
 import Scene from "../../Wolfie2D/Scene/Scene";
 import Color from "../../Wolfie2D/Utils/Color";
+import AudioController from "../GameSystems/AudioController";
 import OverlayLayer, { OverlayLayerOptions } from "./OverlayLayer";
 
 export type PlayerDeathHitOverlayOptions = OverlayLayerOptions & {
@@ -80,11 +81,6 @@ export default class PlayerDeathHitOverlay extends OverlayLayer {
             return;
         }
     
-        if (!this.deathSFXPlayed) {
-            this.playDeathSFX();
-            this.deathSFXPlayed = true;
-        }
-    
         const redElapsed = this.elapsed - this.redFlashDelay;
         const redProgress = Math.min(redElapsed / this.redFlashDuration, 1);
     
@@ -96,6 +92,10 @@ export default class PlayerDeathHitOverlay extends OverlayLayer {
             this.blackAfterFlashDuration;
     
             if (this.elapsed >= totalDuration) {
+                if (!this.deathSFXPlayed) {
+                    this.playDeathSFX();
+                    this.deathSFXPlayed = true;
+                }
                 const complete = this.onComplete;
             
                 // Keep the black overlay visible while SceneManager queues the scene change.
@@ -148,10 +148,6 @@ export default class PlayerDeathHitOverlay extends OverlayLayer {
             return;
         }
 
-        this.emitter.fireEvent(GameEventType.PLAY_SFX, {
-            key: this.deathSFXKey,
-            loop: false,
-            holdReference: false
-        });
+        AudioController.getInstance().playSFX(this.deathSFXKey);
     }
 }

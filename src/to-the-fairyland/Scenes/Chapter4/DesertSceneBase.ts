@@ -28,7 +28,8 @@ export default abstract class DesertSceneBase extends MappedAdventureScene {
         sounds: {
             weatherSandStormSFX: { key: "weather-sandstorm", path: "/assets/sounds/weather-sandstorm.ogg" },
             walkingSandSFX: { key: "walking-sand", path: "/assets/sounds/walking-sand.ogg" },
-            centipedesCrawlingSFX: { key: "centipedes-crawling", path: "/assets/sounds/centipedes-crawling.ogg" }
+            centipedesCrawlingSFX: { key: "centipedes-crawling", path: "/assets/sounds/centipedes-crawling.ogg" },
+            centipedesAttackingSFX: { key: "centipedes-attacking", path: "/assets/sounds/centipedes-attacking.ogg" }
         },
         images: {}
     };

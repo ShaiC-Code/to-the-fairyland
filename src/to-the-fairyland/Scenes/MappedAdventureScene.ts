@@ -50,6 +50,7 @@ import RedFlashOverlay from "../Overlays/RedFlashOverlay";
 import PlayerDeathHitOverlay from "../Overlays/PlayerDeathHitOverlay";
 import GameOverScreenScene from "./GameOverScreenScene";
 import PlayerHealthController, { PlayerDamageOptions } from "../GameSystems/PlayerSystem/PlayerHealthController";
+import { AudioChannelType } from "../../Wolfie2D/Sound/AudioManager";
 
 export type AssetRef = Readonly<{
     readonly key: string;
@@ -108,7 +109,10 @@ export default abstract class MappedAdventureScene extends Scene {
             swordCutSFX: { key: "sword-cut", path: "/assets/sounds/sword-cut.ogg" },
             swordAttackSFX: { key: "sword-attack", path: "/assets/sounds/sword-attack.ogg" },
             swordAttackHitSFX: { key: "sword-attack-hit", path: "/assets/sounds/sword-attack-hit.ogg" },
+            playerHealSFX: { key: "player-heal", path: "/assets/sounds/player-heal.ogg" },
             playerHurtSFX: { key: "player-hurt", path: "/assets/sounds/player-hurt.ogg" },
+            playerHurtFatalSFX: { key: "player-hurt-fatal", path: "/assets/sounds/player-hurt-fatal.ogg" },
+            playerDeathSFX: { key: "player-death", path: "/assets/sounds/player-death.ogg" },
             battleTreeMusic: { key: "battle-tree-music", path: "/assets/sounds/battle-tree-music.ogg" }
         },
         images: {
@@ -138,6 +142,7 @@ export default abstract class MappedAdventureScene extends Scene {
     protected readonly actorLayerDepth = 10;
     protected readonly combatEffectsLayerName = "CombatEffects";
     protected readonly entranceLayerName = "Entrances";
+    protected readonly ambienceChannel = AudioChannelType.CUSTOM_2;
 
     protected worldTimeScale = 1;
     protected interactIcon!: AnimatedSprite;
@@ -178,7 +183,6 @@ export default abstract class MappedAdventureScene extends Scene {
     private toothHeldTimer = 0;
     private toothFairyResponded = false;
     private readonly toothHoldDuration = 3;
-
     
     protected readonly hudLayerName = "HUD";
     protected readonly lowHealthOverlayLayerName = "LowHealthOverlay";
@@ -490,11 +494,11 @@ export default abstract class MappedAdventureScene extends Scene {
             player: this.player,
             playerStateManager: this.playerStateManager,
             playHurtFeedback: () => {
-                AudioController.getInstance().playSound(this.assets.sounds.playerHurtSFX.key);
+                AudioController.getInstance().playSFX(this.assets.sounds.playerHurtSFX.key);
                 this.playerHurtFlashOverlay.play();
             },
             onDeath: () => {
-                AudioController.getInstance().playSound(this.assets.sounds.playerHurtSFX.key);
+                AudioController.getInstance().playSFX(this.assets.sounds.playerHurtFatalSFX.key);
                 this.startPlayerDeathSequence();
             }
         });
@@ -777,6 +781,7 @@ export default abstract class MappedAdventureScene extends Scene {
     }
 
     protected healPlayer(amount: number): boolean {
+        AudioController.getInstance().playSFX(this.assets.sounds.playerHealSFX.key);
         return this.playerHealthController.heal(amount);
     }
 
@@ -806,6 +811,7 @@ export default abstract class MappedAdventureScene extends Scene {
         AudioController.getInstance().stopMusic();
 
         this.playerDeathHitOverlay.play({
+            deathSFXKey: this.assets.sounds.playerDeathSFX.key,
             onComplete: () => {
                 this.sceneManager.changeToScene(
                     GameOverScreenScene,

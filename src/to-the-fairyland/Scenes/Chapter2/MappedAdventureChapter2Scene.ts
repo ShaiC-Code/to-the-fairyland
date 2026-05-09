@@ -39,7 +39,6 @@ export default abstract class MappedAdventureChapter2Scene extends MappedAdventu
     };
     
     protected readonly storyManager = StoryManager.getInstance();
-    protected readonly ambienceChannel = AudioChannelType.CUSTOM_2;
 
     protected combinedAssetBundles(): AssetBundle {
         return this.mergeAssetBundles(super.combinedAssetBundles(), MappedAdventureChapter2Scene.assetBundle);
