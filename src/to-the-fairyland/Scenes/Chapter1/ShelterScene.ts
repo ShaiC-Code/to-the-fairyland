@@ -3,7 +3,7 @@ import ForestScene  from "./ForestScene";
 import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 import { AssetBundle } from "../MappedAdventureScene";
 import MappedAdventureChapter1Scene from "./MappedAdventureChapter1Scene";
-import { getBedDialogue, getPotDialogue } from "../../GameSystems/InteractionSystem/InteractionDatabase";
+import { dialogue, getBedDialogue, getPotDialogue } from "../../GameSystems/InteractionSystem/InteractionDatabase";
 import { WeatherType } from "../../GameSystems/WorldSystem/WorldState";
 import AudioController from "../../GameSystems/AudioController";
 
@@ -27,6 +27,13 @@ export default class ShelterScene extends MappedAdventureChapter1Scene {
     // Shelter.json currently uses "Shelter" as its main walkable/render layer.
     protected readonly movementLayerName = "Ground";
 
+    protected playIntroCutscene: boolean = false;
+
+    public override initScene(init: Record<string, any>): void {
+        super.initScene(init);
+        this.playIntroCutscene = init.playIntroCutscene ?? false;
+    }
+
     protected combinedAssetBundles(): AssetBundle {
         return this.mergeAssetBundles(super.combinedAssetBundles(), ShelterScene.assetBundle);
     }
@@ -34,6 +41,9 @@ export default class ShelterScene extends MappedAdventureChapter1Scene {
     public override startScene(): void {
         super.startScene();
         this.weatherController.setWeather(WeatherType.SNOW, 1);
+        if (this.playIntroCutscene) {
+            this.startIntroCutscene();
+        }
     }
 
     protected override configureLayers(): void {
@@ -94,5 +104,24 @@ export default class ShelterScene extends MappedAdventureChapter1Scene {
             );
             AudioController.getInstance().playSFX(this.assets.sounds.woodenDoorSFX.key);
         }
+    }
+
+    private startIntroCutscene(): void {
+        this.dialogueController.setCutsceneMode(true);
+        this.startDialogue(
+            dialogue([
+                "The storm beats against the walls of your shelter",
+                "Nights are often like this in the mountains, but something about this one feels different.",
+                "You try sleeping through the storm, but the growling of your stomach keeps you awake.",
+                "The only food around are barely edible berries, but they do the job.",
+                "There should be some nearby if you remember correctly.",
+                "*Move around with [↑ ← ↓ →] or [W A S D]*",
+                "*Press [Z/J/E] or [Enter] to interact with things in your environment*"
+            ],
+            {
+            onComplete: () => {
+                this.dialogueController.setCutsceneMode(false);
+            }
+        }));
     }
 }

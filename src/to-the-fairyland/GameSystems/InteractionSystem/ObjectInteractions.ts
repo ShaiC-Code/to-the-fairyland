@@ -35,7 +35,8 @@ const STATIC_OBJECT_INTERACTIONS: Readonly<Record<string, InteractionData>> = {
                         "<yellow>[You obtained the World Map]",
                         "Whatever happened here, their final hope now rests with you.",
                         "You consider resting more before what ought to be a long journey."
-                    ]),
+                    ],
+                    { completeAction: DialogueCompleteActions.GOTO_CHAPTER2 }),
                     { choiceAction: DialogueChoiceActions.PICKUP_MAP }
                 ),
                 choiceOption(
@@ -94,7 +95,7 @@ export function getBushBerriesDialogue(step: Chapter1MainQuestStep): DialogueInt
                         "Yes",
                         dialogue([
                             "<yellow>[You received Frozen Berries]",
-                            "*You can Press [C] to open your inventory*"
+                            "*Press [C] to open your inventory*"
                         ]),
                         { choiceAction: DialogueChoiceActions.COLLECT_FROZEN_BERRIES }
                     ),
@@ -110,7 +111,7 @@ export function getBushBerriesDialogue(step: Chapter1MainQuestStep): DialogueInt
         return dialogue(
             [
                 "You've collected enough berries for now.",
-                "*You can Press [C] to open your inventory*"
+                "*Press [C] to open your inventory*"
             ]
         );
 
@@ -202,7 +203,7 @@ export function getPotDialogue(step: Chapter1MainQuestStep): DialogueInteraction
                         "Yes",
                         dialogue([
                             "<yellow>[You obtained Cooked Berries]",
-                            "*You can use items by interacting with them in your inventory*"
+                            "*Use items by interacting with them in your inventory*"
                         ]),
                         { choiceAction: DialogueChoiceActions.COOK_FROZEN_BERRIES }
                     ),
@@ -217,7 +218,7 @@ export function getPotDialogue(step: Chapter1MainQuestStep): DialogueInteraction
     case Chapter1MainQuestStep.NEED_TO_EAT:
         return dialogue([
             "The pot is still warm.",
-            "*You can use items by interacting with them in your inventory*"
+            "*Use items by interacting with them in your inventory*"
         ]);
 
     case Chapter1MainQuestStep.RETURN_TO_BED:

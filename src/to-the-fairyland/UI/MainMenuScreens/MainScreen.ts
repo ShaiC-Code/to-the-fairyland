@@ -27,7 +27,7 @@ export default class MainScreen extends UIScreen {
 
         const mainMenuButtonSize = new Vec2(525, 50);
         const mainMenuButtons = [
-            { key: "newGameBtn", pos: new Vec2(listLeft, listTop), text: "NEW GAME", eventId: "level1" },
+            { key: "newGameBtn", pos: new Vec2(listLeft, listTop), text: "NEW GAME", eventId: "newGame" },
             { key: "resumeBtn", pos: new Vec2(listLeft, listTop + verticalOffset), text: "RESUME", eventId: "currentLevel" },
             { key: "levelMenuBtn", pos: new Vec2(listLeft, listTop + verticalOffset * 2), text: "LEVEL SELECT", eventId: "openLevelMenu" },
             { key: "controlsMenuBtn", pos: new Vec2(listLeft, listTop + verticalOffset * 3), text: "CONTROLS", eventId: "openControlsMenu" },
