@@ -107,19 +107,21 @@ export default class TreeInnerScene extends ForestSceneBase {
     public override updateScene(deltaT: number): void {
         super.updateScene(deltaT);
 
-        if (!this.isVineWaveTitlePauseActive()) {
-            this.checkVineTrapTriggers();
-            this.vineShooterWaveController.update(deltaT);
-        }
-
-        if (!this.isVineWaveTitlePauseActive()) {
-            this.updateExcaliburPull(deltaT);
-            this.vineAttackController.update(deltaT);
-            this.updateVinePlayerDamage();
-        }
-
         this.vineWaveTitleOverlay.update(deltaT);
         this.syncTreeInnerInputLock();
+    }
+
+    protected override updateGameplay(deltaT: number): void {
+        if (this.isVineWaveTitlePauseActive()) {
+            return;
+        }
+
+        super.updateGameplay(deltaT);
+        this.checkVineTrapTriggers();
+        this.vineShooterWaveController.update(deltaT);
+        this.updateExcaliburPull(deltaT);
+        this.vineAttackController.update(deltaT);
+        this.updateVinePlayerDamage();
     }
 
     protected override canPlayerAttack(): boolean {
@@ -155,7 +157,7 @@ export default class TreeInnerScene extends ForestSceneBase {
             getPlayerAI: () => this.player.ai as PlayerAI,
             shouldRun: () => this.storyManager.chapter3.getMainQuestStep() === Chapter3MainQuestStep.VINE_EXIT_CLOSED,
             isDialogueActive: () => this.dialogueController.isActive,
-            waitSeconds: seconds => this.waitSeconds(seconds),
+            waitSeconds: seconds => this.waitSimulationSeconds(seconds),
             showWaveTitle: (text, duration) => this.showVineWaveTitle(text, duration),
             getTilesCrossedByWorldSegment: (start, end) => this.vineAttackController.getTilesCrossedByWorldSegment(start, end),
             startVineAttack: (startObj, endObj, options) => this.vineAttackController.startFromObjects(startObj, endObj, options),
@@ -390,6 +392,12 @@ export default class TreeInnerScene extends ForestSceneBase {
         }
 
         this.vineAttackController.startFromObjects(startObj, endObj, options);
+    }
+
+    private waitSimulationSeconds(seconds: number): Promise<void> {
+        return new Promise(resolve => {
+            new Timer(seconds * 1000, resolve).start();
+        });
     }
 
     private async showVineWaveTitle(text: string, duration: number): Promise<void> {

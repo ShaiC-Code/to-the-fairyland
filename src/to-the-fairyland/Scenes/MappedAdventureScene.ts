@@ -514,14 +514,9 @@ export default abstract class MappedAdventureScene extends Scene {
     public override updateScene(deltaT: number): void {
         const ai = this.player.ai as PlayerAI;
         const controller = ai.controller;
-        const pauseOpen = this.pauseScreen.getIsOpen() || this.pauseControlsScreen.getIsOpen();
-        const inventoryOpen = this.inventoryScreen.getIsOpen();
+        let pauseOpen = this.pauseScreen.getIsOpen() || this.pauseControlsScreen.getIsOpen();
+        let inventoryOpen = this.inventoryScreen.getIsOpen();
         const dialogueOpen = this.dialogueController.isActive;
-        const scenePauseOpen = this.shouldPauseWorldForScene();
-        const deathSequenceOpen = this.playerDeathSequenceActive;
-        const menuOpen = pauseOpen || inventoryOpen || dialogueOpen || scenePauseOpen || deathSequenceOpen;
-        const shouldPauseWorld = pauseOpen || inventoryOpen || scenePauseOpen || deathSequenceOpen;
-        this.setWorldPaused(shouldPauseWorld);
 
         let menuSafetyFlag = false;
         // Handle pause/resume
@@ -545,58 +540,78 @@ export default abstract class MappedAdventureScene extends Scene {
             menuSafetyFlag = true;
         }
 
+        pauseOpen = this.pauseScreen.getIsOpen() || this.pauseControlsScreen.getIsOpen();
+        inventoryOpen = this.inventoryScreen.getIsOpen();
+        const scenePauseOpen = this.shouldPauseWorldForScene();
+        const deathSequenceOpen = this.playerDeathSequenceActive;
+        const menuOpen = pauseOpen || inventoryOpen || dialogueOpen || scenePauseOpen || deathSequenceOpen;
+        const shouldPauseWorld = pauseOpen || inventoryOpen || scenePauseOpen || deathSequenceOpen;
+        this.setWorldPaused(shouldPauseWorld);
+
         this.pauseScreen.update(deltaT);
         this.pauseControlsScreen.update(deltaT);
         this.inventoryScreen.update(deltaT);
         this.lowHealthOverlay.update(deltaT);
-        this.playerHealthController.update(deltaT);
         this.playerHurtFlashOverlay.update(deltaT);
         this.playerDeathHitOverlay.update(deltaT);
         
         this.cameraController.update(deltaT);
         this.dialogueController.update(deltaT);
-        this.updateToothHeldEffect(deltaT);
         this.timeController.update(deltaT);
         this.weatherController.update(deltaT);
-        this.playerAttackController.update(deltaT);
 
         this.updateInteractIcon();
 
         // Run gameplay interactions only while the world is not simulation-paused.
         if(!menuOpen) {
-            if (ai.targetTile) {
-                const entrance = this.findObjectAtTile(this.entrances, ai.targetTile);
-                if (entrance) {
-                    if (!this.transitioning) {
-                        this.transitioning = true;
-                        this.handleAutoTransition(entrance);
-                    }
-                }
+            this.updateGameplayInteractions();
+        }
+    }
+
+    protected override updateSimulation(deltaT: number): void {
+        this.updateGameplay(deltaT);
+    }
+
+    protected updateGameplay(deltaT: number): void {
+        this.playerHealthController.update(deltaT);
+        this.playerAttackController.update(deltaT);
+        this.updateToothHeldEffect(deltaT);
+    }
+
+    private updateGameplayInteractions(): void {
+        const ai = this.player.ai as PlayerAI;
+        const controller = ai.controller;
+
+        if (ai.targetTile) {
+            const entrance = this.findObjectAtTile(this.entrances, ai.targetTile);
+            if (entrance && !this.transitioning) {
+                this.transitioning = true;
+                this.handleAutoTransition(entrance);
             }
-            
-            if (!ai.moving && controller.interacting) {
-                const nextTile = ai.currentTile.clone().add(ai.facing);
-            
-                if (this.tryStartSceneInteractionAtTile(ai.currentTile)) {
-                    return;
-                }
-            
-                if (this.tryStartSceneInteractionAtTile(nextTile)) {
-                    return;
-                }
-            
-                const currentHit = this.findInteractableAtTile(ai.currentTile);
-                if (currentHit) {
-                    console.log("[Interacted with:", currentHit.name, "]");
-                    this.handleInteraction(currentHit);
-                    return;
-                }
-            
-                const nextHit = this.findInteractableAtTile(nextTile);
-                if (nextHit) {
-                    console.log("[Interacted with:", nextHit.name, "]");
-                    this.handleInteraction(nextHit);
-                }
+        }
+        
+        if (!ai.moving && controller.interacting) {
+            const nextTile = ai.currentTile.clone().add(ai.facing);
+        
+            if (this.tryStartSceneInteractionAtTile(ai.currentTile)) {
+                return;
+            }
+        
+            if (this.tryStartSceneInteractionAtTile(nextTile)) {
+                return;
+            }
+        
+            const currentHit = this.findInteractableAtTile(ai.currentTile);
+            if (currentHit) {
+                console.log("[Interacted with:", currentHit.name, "]");
+                this.handleInteraction(currentHit);
+                return;
+            }
+        
+            const nextHit = this.findInteractableAtTile(nextTile);
+            if (nextHit) {
+                console.log("[Interacted with:", nextHit.name, "]");
+                this.handleInteraction(nextHit);
             }
         }
     }
@@ -686,7 +701,7 @@ export default abstract class MappedAdventureScene extends Scene {
     }
 
     protected override isSimulationPaused(): boolean {
-        return this.worldPaused;
+        return this.worldPaused || this.shouldPauseWorldForScene() || this.playerDeathSequenceActive;
     }
 
     public registerScenePauseOverlay(overlay: OverlayLayer): void {
@@ -1126,7 +1141,7 @@ export default abstract class MappedAdventureScene extends Scene {
     }
 
     private updateToothHeldEffect(deltaT: number): void {
-        if (!this.toothHeldActive || this.worldPaused || this.dialogueController.isActive) {
+        if (!this.toothHeldActive || this.dialogueController.isActive) {
             return;
         }
 

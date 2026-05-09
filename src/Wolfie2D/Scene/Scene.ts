@@ -152,6 +152,12 @@ export default class Scene implements Updateable {
     unloadScene(): void {}
 
     /**
+     * Override in subclasses for logic that should advance only with simulation time.
+     * This does not run while simulation is paused.
+     */
+    protected updateSimulation(_deltaT: number): void {}
+
+    /**
      * Override in subclasses to pause simulation systems (timers, physics, AI, tweens, particles, tilemaps).
      * Scene graph updates still run so UI can remain interactive.
      */
@@ -164,6 +170,8 @@ export default class Scene implements Updateable {
         const simulationDeltaT = deltaT * this.getSimulationTimeScale();
 
         if(!this.isSimulationPaused()){
+            this.updateSimulation(simulationDeltaT);
+
             // Do time updates
             TimerManager.getInstance().update(simulationDeltaT);
 

@@ -24,8 +24,8 @@ export default abstract class RoadSceneBase extends LycanChaseSceneBase {
         super.startScene();
     }
 
-    public override updateScene(deltaT: number): void {
-        super.updateScene(deltaT);
+    protected override updateGameplay(deltaT: number): void {
+        super.updateGameplay(deltaT);
         this.updateDelayedLycanSpawn(deltaT);
     }
     
@@ -92,7 +92,7 @@ export default abstract class RoadSceneBase extends LycanChaseSceneBase {
             return;
         }
     
-        if (this.worldPaused || this.dialogueController.isActive) {
+        if (this.dialogueController.isActive) {
             return;
         }
     

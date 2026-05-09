@@ -93,6 +93,10 @@ export default abstract class LycanChaseSceneBase extends MappedAdventureChapter
         }
     }
 
+    protected override shouldPauseWorldForScene(): boolean {
+        return super.shouldPauseWorldForScene() || this.lycanDeathSequencePlaying;
+    }
+
     protected resetLycans(): void {
         this.lycans = [];
     }

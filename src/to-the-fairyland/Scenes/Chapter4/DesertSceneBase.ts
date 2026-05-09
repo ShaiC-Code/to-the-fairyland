@@ -75,10 +75,10 @@ export default abstract class DesertSceneBase extends MappedAdventureScene {
         this.weatherController.setWeather(WeatherType.SANDSTORM, 50);
     }
 
-    public override updateScene(deltaT: number): void {
-        super.updateScene(deltaT);
+    protected override updateGameplay(deltaT: number): void {
+        super.updateGameplay(deltaT);
 
-        if (this.worldPaused || this.dialogueController.isActive) {
+        if (this.dialogueController.isActive) {
             return;
         }
 
