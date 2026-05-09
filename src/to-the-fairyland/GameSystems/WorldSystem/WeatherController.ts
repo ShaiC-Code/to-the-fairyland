@@ -184,7 +184,7 @@ export default class WeatherController implements Updateable {
         case WeatherType.NONE: return null;
         case WeatherType.SNOW: return null;
         case WeatherType.SNOWSTORM: return new Color(255, 255, 255, 0.05);
-        case WeatherType.SANDSTORM: return new Color(194, 154, 82, 0.4);
+        case WeatherType.SANDSTORM: return new Color(210, 135, 60, 0.25);
         default: return null;
         }
     }

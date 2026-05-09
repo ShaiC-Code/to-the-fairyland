@@ -397,6 +397,7 @@ export default class MainMenu extends Scene {
                 CliffBottomScene,
                 () => {
                     this.gameSessionManager.startNewChapter3Game();
+                    this.gameSessionManager.getPlayerState().health = 1;
 
                     const chapter3 = this.gameSessionManager.getStoryState().chapter3;
                     if (!chapter3) {
@@ -470,7 +471,7 @@ export default class MainMenu extends Scene {
         case "level9":
             this.enterLevel(
                 "level9",
-                DesertLandScene,
+                DesertLandScene1,
                 () => this.gameSessionManager.startNewChapter4Game(),
                 {
                     cheatsEnabled: this.cheatsEnabled,
@@ -637,6 +638,12 @@ export function changeToResumePointScene(sceneManager: SceneManager, resumePoint
             return true;
         case "TreeInnerScene":
             sceneManager.changeToScene(TreeInnerScene, initData, undefined, levelLoadTransition);
+            return true;
+        case "DesertLandScene":
+            sceneManager.changeToScene(DesertLandScene, initData, undefined, levelLoadTransition);
+            return true;
+        case "DesertLandScene1":
+            sceneManager.changeToScene(DesertLandScene1, initData, undefined, levelLoadTransition);
             return true;
         case "EmeraldPondScene":
             sceneManager.changeToScene(EmeraldPondScene, initData, undefined, levelLoadTransition);
