@@ -37,7 +37,7 @@ import Excalibur from "../GameSystems/ItemSystem/Items/Excalibur";
 import FreshPrettyTooth from "../GameSystems/ItemSystem/Items/FreshPrettyTooth";
 import AudioController from "../GameSystems/AudioController";
 import DesertLandScene from "./Chapter4/DesertLandScene";
-import DesertLandScene1 from "./Chapter4/DesertLandScene1";
+import DesertLandScene1 from "./Chapter4/DesertLandScene";
 
 type AssetRef = Readonly<{
     readonly key: string;
