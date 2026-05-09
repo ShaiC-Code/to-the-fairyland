@@ -1,5 +1,6 @@
 import {
     GameSessionState,
+    GameSessionResumePoint,
     createInitialChapter1GameSessionState,
     createInitialChapter2GameSessionState,
     createInitialChapter3GameSessionState,
@@ -30,6 +31,14 @@ export default class GameSessionManager {
      */
     private currentSession: GameSessionState | null;
 
+    /**
+     * Tracks which checkpoint keys have been organically captured during the current
+     * play session. Persists across scene transitions (singleton lifetime). Cleared
+     * when a new session starts. Prevents re-entry into the same room from
+     * overwriting a checkpoint that was already correctly written this session.
+     */
+    private readonly checkpointsCapturedThisSession = new Set<CheckpointStoryKey>();
+
     private constructor() {
         this.currentSession = null;
     }
@@ -59,17 +68,22 @@ export default class GameSessionManager {
 
     public startNewChapter1Game(): void {
         this.currentSession = createInitialChapter1GameSessionState();
+        this.checkpointsCapturedThisSession.clear();
     }
     
     public startNewChapter2Game(): void {
         this.currentSession = createInitialChapter2GameSessionState();
+        this.checkpointsCapturedThisSession.clear();
     }
 
     public startNewChapter3Game(): void {
         this.currentSession = createInitialChapter3GameSessionState();
+        this.checkpointsCapturedThisSession.clear();
     }
+
     public startNewChapter4Game(): void {
         this.currentSession = createInitialChapter4GameSessionState();
+        this.checkpointsCapturedThisSession.clear();
     }
     
 
@@ -80,6 +94,7 @@ export default class GameSessionManager {
      */
     public loadSession(session: GameSessionState): void {
         this.currentSession = session;
+        this.checkpointsCapturedThisSession.clear();
     }
 
     public saveCurrentSession(): void {
@@ -90,8 +105,29 @@ export default class GameSessionManager {
         return CookieStorage.loadManualSession() !== null;
     }
 
-    public saveCheckpoint(checkpointKey: CheckpointStoryKey): void {
-        this.persistCheckpointToCookie(checkpointKey);
+    /**
+     * Saves a checkpoint snapshot, baking in an explicit resume point instead of
+     * reading from session.resumePoint. This ensures manual saves (which mutate
+     * session.resumePoint for their own position) never corrupt checkpoint data.
+     * Also marks the key as captured this session so re-entering the room won't
+     * overwrite it.
+     */
+    public saveCheckpointWithResumePoint(
+        checkpointKey: CheckpointStoryKey,
+        resumePoint: GameSessionResumePoint
+    ): void {
+        if (this.currentSession) {
+            CookieStorage.saveCheckpoint(checkpointKey, this.currentSession, resumePoint);
+            this.checkpointsCapturedThisSession.add(checkpointKey);
+        }
+    }
+
+    /**
+     * Returns true if this checkpoint has already been organically captured during
+     * the current play session (persists across scene transitions).
+     */
+    public isCheckpointCapturedThisSession(checkpointKey: CheckpointStoryKey): boolean {
+        return this.checkpointsCapturedThisSession.has(checkpointKey);
     }
 
     public loadCheckpoint(checkpointKey: CheckpointStoryKey): boolean {
@@ -102,6 +138,7 @@ export default class GameSessionManager {
         }
 
         this.currentSession = checkpoint;
+        this.checkpointsCapturedThisSession.clear();
         return true;
     }
 
@@ -138,6 +175,7 @@ export default class GameSessionManager {
      */
     public clearSession(): void {
         this.currentSession = null;
+        this.checkpointsCapturedThisSession.clear();
         CookieStorage.clearSession();
     }
 
@@ -217,15 +255,6 @@ export default class GameSessionManager {
     private persistSessionToCookie(): void {
         if (this.currentSession) {
             CookieStorage.saveManualSession(this.currentSession);
-        }
-    }
-
-    /**
-     * Persists the current session to a checkpoint slot.
-     */
-    private persistCheckpointToCookie(checkpointKey: CheckpointStoryKey): void {
-        if (this.currentSession) {
-            CookieStorage.saveCheckpoint(checkpointKey, this.currentSession);
         }
     }
 }

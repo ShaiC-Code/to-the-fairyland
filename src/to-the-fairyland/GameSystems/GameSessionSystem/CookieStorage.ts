@@ -97,10 +97,20 @@ export class CookieStorage {
 
     /**
      * Saves a checkpoint snapshot for a specific level slot.
+     * If resumePointOverride is provided it is baked into the snapshot instead of
+     * session.resumePoint, so the live session is never mutated by a checkpoint write.
      */
-    public static saveCheckpoint(checkpointKey: CheckpointStoryKey, session: GameSessionState): void {
+    public static saveCheckpoint(
+        checkpointKey: CheckpointStoryKey,
+        session: GameSessionState,
+        resumePointOverride?: GameSessionResumePoint
+    ): void {
         const checkpoints = this.loadStoredCheckpoints();
-        checkpoints[checkpointKey] = this.serializeSession(session);
+        const serialized = this.serializeSession(session);
+        if (resumePointOverride !== undefined) {
+            serialized.resumePoint = resumePointOverride;
+        }
+        checkpoints[checkpointKey] = serialized;
         this.setItem(this.CHECKPOINT_COOKIE_NAME, checkpoints);
     }
 

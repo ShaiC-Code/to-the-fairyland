@@ -51,6 +51,7 @@ export default abstract class MappedAdventureChapter2Scene extends MappedAdventu
     }
     
     protected gotoChapter3(): void {
+        this.transitioning = true;
         this.setPlayerHealth(1);
         this.storyManager.unlockChapter3();
         this.sceneManager.changeToScene(

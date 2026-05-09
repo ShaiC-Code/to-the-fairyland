@@ -22,12 +22,18 @@ import MainScreen from "../UI/MainMenuScreens/MainScreen";
 import TestScreen from "../UI/MainMenuScreens/TestScreen";
 import GameSessionManager from "../GameSystems/GameSessionSystem/GameSessionManager";
 import { GameSessionResumePoint } from "../GameSystems/GameSessionSystem/GameSessionState";
-import { LEVEL_TO_CHECKPOINT_STORY_KEY, LevelSelectionId } from "../GameSystems/GameSessionSystem/LevelCheckpointMapping";
+import {
+    getLevelSelectionIdForCheckpointKey,
+    LEVEL_TO_CHECKPOINT_STORY_KEY,
+    LevelSelectionId,
+    ORDERED_LEVEL_SELECTION_IDS
+} from "../GameSystems/GameSessionSystem/LevelCheckpointMapping";
+import { getMaxUnlockedLevelIndexFromCookie, unlockAllLevels as unlockAllLevelsCookie, unlockThroughLevel } from "../GameSystems/GameSessionSystem/LevelUnlocks";
 import { PlayerInput } from "../AI/Player/PlayerController";
 import { UIScreenActionBindings, UIScreenOptions } from "../UI/UIScreen";
 import RoadScene from "./Chapter2/RoadScene";
 import SleepingBag from "../GameSystems/ItemSystem/Items/SleepingBag";
-import { Chapter2MainQuestStep, Chapter3MainQuestStep } from "../GameSystems/StorySystem/StoryState";
+import { Chapter2MainQuestStep, Chapter3MainQuestStep, Chapter4MainQuestStep } from "../GameSystems/StorySystem/StoryState";
 import { TimeOfDay } from "../GameSystems/WorldSystem/WorldState";
 import CliffScene from "./Chapter2/CliffScene";
 import EmeraldPondScene from "./Chapter7/EmeraldPondScene";
@@ -94,6 +100,7 @@ export default class MainMenu extends Scene {
     private testMenu!: TestScreen;
 
     private cheatsEnabled = false;
+    private unlockedLevels = new Set<LevelSelectionId>();
 
     public override initScene(): void {
         this.assets = MainMenu.assetBundle;
@@ -232,6 +239,7 @@ export default class MainMenu extends Scene {
         this.receiver.subscribe("openHelpMenu");
         this.receiver.subscribe("openTestMenu");
         this.receiver.subscribe("activateCheats");
+        this.receiver.subscribe("unlockAllLevels");
         this.receiver.subscribe("backToMain");
         this.receiver.subscribe("currentLevel");
         this.receiver.subscribe("newGame");
@@ -267,6 +275,8 @@ export default class MainMenu extends Scene {
     public handleEvent(event: GameEvent): void {
         switch (event.type) {
         case "openLevelMenu":
+            this.updateUnlockedLevels();
+            this.levelMenu.setUnlockedLevels(this.unlockedLevels);
             this.showScreen("levelMenu");
             break;
 
@@ -284,6 +294,11 @@ export default class MainMenu extends Scene {
 
         case "activateCheats":
             this.cheatsEnabled = !this.cheatsEnabled;
+            break;
+
+        case "unlockAllLevels":
+            this.unlockAllLevels();
+            this.levelMenu.setUnlockedLevels(this.unlockedLevels);
             break;
 
         case "backToMain":
@@ -327,7 +342,7 @@ export default class MainMenu extends Scene {
         case "level3":
             this.enterLevel(
                 "level3",
-                RoadScene,
+                VillageScene,
                 () => {
                     this.gameSessionManager.startNewChapter2Game();
 
@@ -342,11 +357,11 @@ export default class MainMenu extends Scene {
                     }
 
                     chapter2.mainQuestStep = Chapter2MainQuestStep.LEAVE_VILLAGE;
-                    this.gameSessionManager.setResumePoint("VillageScene", "RoadStart");
+                    this.gameSessionManager.setResumePoint("VillageScene", "RoadEnd");
                 },
                 {
                     cheatsEnabled: this.cheatsEnabled,
-                    spawnName: "RoadStart"
+                    spawnName: "RoadEnd"
                 }
             );
             break;
@@ -354,7 +369,7 @@ export default class MainMenu extends Scene {
         case "level4":
             this.enterLevel(
                 "level4",
-                VillageScene,
+                RoadScene,
                 () => {
                     this.gameSessionManager.startNewChapter2Game();
 
@@ -365,11 +380,11 @@ export default class MainMenu extends Scene {
 
                     chapter2.mainQuestStep = Chapter2MainQuestStep.RETURNED_TO_VILLAGE;
                     this.gameSessionManager.getWorldState().timeOfDay = TimeOfDay.NIGHT;
-                    this.gameSessionManager.setResumePoint("VillageScene", "RoadEnd");
+                    this.gameSessionManager.setResumePoint("RoadScene", "RoadStart");
                 },
                 {
                     cheatsEnabled: this.cheatsEnabled,
-                    spawnName: "RoadEnd"
+                    spawnName: "RoadStart"
                 }
             );
             break;
@@ -491,7 +506,16 @@ export default class MainMenu extends Scene {
             this.enterLevel(
                 "level10",
                 EmeraldPondScene,
-                () => this.gameSessionManager.startNewGame(),
+                () => {
+                    this.gameSessionManager.startNewChapter4Game();
+
+                    const chapter4 = this.gameSessionManager.getStoryState().chapter4;
+                    if (!chapter4) {
+                        throw new Error("Chapter 4 story state was not initialized.");
+                    }
+
+                    chapter4.mainQuestStep = Chapter4MainQuestStep.JUMP_INTO_EMERALD_POND;
+                },
                 {
                     cheatsEnabled: this.cheatsEnabled,
                     spawnName: "Fate"
@@ -527,30 +551,41 @@ export default class MainMenu extends Scene {
         const checkpointKey = LEVEL_TO_CHECKPOINT_STORY_KEY[levelId];
 
         if (this.gameSessionManager.loadCheckpoint(checkpointKey)) {
-            this.gameSessionManager.setActiveCheckpointKey(checkpointKey);
-            afterSessionReady?.();
-            this.gameSessionManager.saveCheckpoint(checkpointKey);
-
             const resumePoint = this.gameSessionManager.getResumePoint();
+            const isOrganicCheckpoint = resumePoint?.playerPos != null;
 
-            this.sceneManager.changeToScene(
-                scene,
-                {
-                    cheatsEnabled: resumePoint?.cheatsEnabled ?? sceneInit.cheatsEnabled ?? false,
-                    spawnName: resumePoint?.spawnName ?? sceneInit.spawnName,
-                    fromResume: true
-                },
-                undefined,
-                levelLoadTransition
-            );
+            if (isOrganicCheckpoint) {
+                this.gameSessionManager.setActiveCheckpointKey(checkpointKey);
+                afterSessionReady?.();
+                this.gameSessionManager.saveCheckpointWithResumePoint(checkpointKey, resumePoint!);
 
-            return;
+                if (changeToResumePointScene(this.sceneManager, resumePoint!)) {
+                    return;
+                }
+
+                this.sceneManager.changeToScene(
+                    scene,
+                    {
+                        cheatsEnabled: resumePoint?.cheatsEnabled ?? sceneInit.cheatsEnabled ?? false,
+                        spawnName: resumePoint?.spawnName ?? sceneInit.spawnName,
+                        fromResume: true
+                    },
+                    undefined,
+                    levelLoadTransition
+                );
+
+                return;
+            }
         }
 
         initializeSession();
         this.gameSessionManager.setActiveCheckpointKey(checkpointKey);
         afterSessionReady?.();
-        this.gameSessionManager.saveCheckpoint(checkpointKey);
+        const placeholderResumePoint = this.gameSessionManager.getResumePoint() ?? { sceneId: sceneInit.spawnName ?? "" };
+        this.gameSessionManager.saveCheckpointWithResumePoint(checkpointKey, {
+            ...placeholderResumePoint,
+            playerPos: undefined
+        });
 
         this.sceneManager.changeToScene(
             scene,
@@ -597,6 +632,55 @@ export default class MainMenu extends Scene {
             demoTextBox.startTypewriter(32);
         } else {
             demoTextBox.stopTypewriter();
+        }
+    }
+
+    private updateUnlockedLevels(): void {
+        this.unlockedLevels.clear();
+
+        const levelIds = ORDERED_LEVEL_SELECTION_IDS;
+        if (levelIds.length === 0) {
+            return;
+        }
+
+        let maxIndex = -1;
+
+        for (let i = 0; i < levelIds.length; i++) {
+            const levelId = levelIds[i];
+            const checkpointKey = LEVEL_TO_CHECKPOINT_STORY_KEY[levelId];
+            if (this.gameSessionManager.hasCheckpoint(checkpointKey)) {
+                maxIndex = Math.max(maxIndex, i);
+            }
+        }
+
+        const activeKey = this.gameSessionManager.getActiveCheckpointKey();
+        if (activeKey) {
+            const activeLevelId = getLevelSelectionIdForCheckpointKey(activeKey);
+            if (activeLevelId) {
+                maxIndex = Math.max(maxIndex, levelIds.indexOf(activeLevelId));
+            }
+        }
+
+        const cookieMaxIndex = getMaxUnlockedLevelIndexFromCookie();
+        maxIndex = Math.max(maxIndex, cookieMaxIndex);
+
+        if (maxIndex < 0) {
+            maxIndex = 0;
+        }
+
+        for (let i = 0; i <= maxIndex; i++) {
+            this.unlockedLevels.add(levelIds[i]);
+        }
+
+        if (maxIndex > cookieMaxIndex) {
+            unlockThroughLevel(levelIds[maxIndex]);
+        }
+    }
+
+    private unlockAllLevels(): void {
+        this.unlockedLevels = unlockAllLevelsCookie();
+        if (this.levelMenu) {
+            this.levelMenu.setUnlockedLevels(this.unlockedLevels);
         }
     }
 }

@@ -15,6 +15,7 @@ import { PlayerControlMode, PlayerInput } from "../AI/Player/PlayerController";
 import { DialogueChoiceAction, DialogueChoiceOption, DialogueInteraction, DialogueCompleteAction, dialogue, getInteractionData } from "../GameSystems/InteractionSystem/InteractionDatabase";
 import PlayerStateManager from "../GameSystems/PlayerSystem/PlayerStateManager";
 import GameSessionManager from "../GameSystems/GameSessionSystem/GameSessionManager";
+import { GameSessionResumePoint } from "../GameSystems/GameSessionSystem/GameSessionState";
 import InventoryItem from "../GameSystems/ItemSystem/InventoryItem";
 import { UIScreenActionBindings } from "../UI/UIScreen";
 import WeatherController from "../GameSystems/WorldSystem/WeatherController";
@@ -33,7 +34,17 @@ import SwordHitDispatcher from "../GameSystems/CombatSystem/SwordHitDispatcher";
 import AudioController from "../GameSystems/AudioController";
 import OverlayLayer from "../Overlays/OverlayLayer";
 import LowHealthOverlay from "../Overlays/LowHealthOverlay";
-import { resolveCheckpointStoryKey } from "../GameSystems/GameSessionSystem/LevelCheckpointMapping";
+import {
+    buildCheckpointStoryKey,
+    type CheckpointStoryKey,
+    getCurrentStoryStep,
+    getStoryStepOrderIndex,
+    isCheckpointStoryKey,
+    LEVEL_TO_CHECKPOINT_STORY_KEY,
+    resolveCheckpointStoryKey
+} from "../GameSystems/GameSessionSystem/LevelCheckpointMapping";
+import { unlockForCheckpointKey } from "../GameSystems/GameSessionSystem/LevelUnlocks";
+import { ActiveChapter } from "../GameSystems/StorySystem/StoryState";
 import AmbienceController from "../GameSystems/WorldSystem/AmbienceController";
 import RedFlashOverlay from "../Overlays/RedFlashOverlay";
 import PlayerDeathHitOverlay from "../Overlays/PlayerDeathHitOverlay";
@@ -178,6 +189,8 @@ export default abstract class MappedAdventureScene extends Scene {
     protected readonly lowHealthOverlayPulseAmount = 0.20;
     protected readonly lowHealthOverlayPulseFrequencySeconds = 1.5;
     protected fromResumeLoad = false;
+
+    private readonly checkpointKeysUnlockedThisScene = new Set<string>();
     
     // lets the scene receive data, ex: {spawnName: "Door1"}
     public override initScene(init: SceneEntranceData = {}): void {
@@ -353,8 +366,7 @@ export default abstract class MappedAdventureScene extends Scene {
             ai.moveStart = restoredPlayerPosition.clone();
             ai.moveEnd = restoredPlayerPosition.clone();
         }
-
-        this.captureLevelStartCheckpointIfApplicable(ai);
+        
         this.playIdleForFacing(ai.facing);
 
         this.playerAttackController = new PlayerAttackController({
@@ -518,6 +530,10 @@ export default abstract class MappedAdventureScene extends Scene {
     }
 
     public override updateScene(deltaT: number): void {
+        const storyStateAtStart = this.gameSessionManager.getStoryState();
+        const chapterAtStart = storyStateAtStart.activeChapter;
+        const stepAtStart = getCurrentStoryStep(storyStateAtStart);
+
         const ai = this.player.ai as PlayerAI;
         const controller = ai.controller;
         let pauseOpen = this.pauseScreen.getIsOpen() || this.pauseControlsScreen.getIsOpen();
@@ -571,6 +587,10 @@ export default abstract class MappedAdventureScene extends Scene {
         // Run gameplay interactions only while the world is not simulation-paused.
         if(!menuOpen) {
             this.updateGameplayInteractions();
+        }
+
+        if (!this.transitioning) {
+            this.captureCheckpointProgressForFrame(ai, chapterAtStart, stepAtStart);
         }
     }
 
@@ -1357,32 +1377,82 @@ export default abstract class MappedAdventureScene extends Scene {
         return new Vec2(clampedX, clampedY);
     }
 
-    private captureLevelStartCheckpointIfApplicable(ai: PlayerAI): void {
-        const storyState = this.gameSessionManager.getStoryState();
-        const checkpointKey = resolveCheckpointStoryKey(storyState);
+    private captureCheckpointProgressForFrame(ai: PlayerAI, chapterAtStart: ActiveChapter, stepAtStart?: string): void {
+        const storyStateNow = this.gameSessionManager.getStoryState();
+        const chapterNow = storyStateNow.activeChapter;
+        const stepNow = getCurrentStoryStep(storyStateNow);
 
-        if (!checkpointKey) {
-            return;
+        if (stepAtStart) {
+            const startKey = buildCheckpointStoryKey(chapterAtStart, stepAtStart);
+            if (isCheckpointStoryKey(startKey)) {
+                this.captureCheckpoint(startKey, ai);
+            }
         }
 
-        const activeCheckpointKey = this.gameSessionManager.getActiveCheckpointKey();
-        if (activeCheckpointKey === checkpointKey) {
+        if (chapterAtStart === chapterNow && stepAtStart && stepNow) {
+            const startIndex = getStoryStepOrderIndex(chapterNow, stepAtStart);
+            const endIndex = getStoryStepOrderIndex(chapterNow, stepNow);
+
+            if (startIndex !== -1 && endIndex !== -1 && endIndex > startIndex) {
+                const crossed = this.getCheckpointKeysCrossedInChapter(chapterNow, startIndex, endIndex);
+                for (const key of crossed) {
+                    this.captureCheckpoint(key, ai);
+                }
+            }
+        }
+
+        const currentCheckpointKey = resolveCheckpointStoryKey(storyStateNow);
+        if (currentCheckpointKey) {
+            this.captureCheckpoint(currentCheckpointKey, ai);
+        }
+    }
+
+    private getCheckpointKeysCrossedInChapter(chapter: ActiveChapter, startIndexExclusive: number, endIndexInclusive: number): CheckpointStoryKey[] {
+        const keys: Array<{ idx: number; key: CheckpointStoryKey }> = [];
+
+        for (const checkpointKey of Object.values(LEVEL_TO_CHECKPOINT_STORY_KEY)) {
+            const splitIndex = checkpointKey.indexOf(":");
+            if (splitIndex === -1) {
+                continue;
+            }
+
+            const keyChapter = checkpointKey.slice(0, splitIndex);
+            if (keyChapter !== chapter) {
+                continue;
+            }
+
+            const step = checkpointKey.slice(splitIndex + 1);
+            const idx = getStoryStepOrderIndex(chapter, step);
+            if (idx > startIndexExclusive && idx <= endIndexInclusive) {
+                keys.push({ idx, key: checkpointKey });
+            }
+        }
+
+        keys.sort((a, b) => a.idx - b.idx);
+        return keys.map(k => k.key);
+    }
+
+    private captureCheckpoint(checkpointKey: CheckpointStoryKey, ai: PlayerAI): void {
+        if (!this.checkpointKeysUnlockedThisScene.has(checkpointKey)) {
+            unlockForCheckpointKey(checkpointKey);
+            this.checkpointKeysUnlockedThisScene.add(checkpointKey);
+        }
+
+        if (this.gameSessionManager.isCheckpointCapturedThisSession(checkpointKey)) {
             return;
         }
 
         this.gameSessionManager.setActiveCheckpointKey(checkpointKey);
 
-        const entryTile = ai.currentTile.clone();
-        this.gameSessionManager.setResumePoint(
-            this.constructor.name,
-            this.spawnName,
-            this.cheatsEnabled,
-            { x: entryTile.x, y: entryTile.y }
-        );
+        const tile = ai.currentTile.clone();
+        const checkpointResumePoint: GameSessionResumePoint = {
+            sceneId: this.constructor.name,
+            spawnName: this.spawnName,
+            cheatsEnabled: this.cheatsEnabled,
+            playerPos: { x: tile.x, y: tile.y }
+        };
 
-        if (!this.fromResumeLoad) {
-            this.gameSessionManager.saveCheckpoint(checkpointKey);
-        }
+        this.gameSessionManager.saveCheckpointWithResumePoint(checkpointKey, checkpointResumePoint);
     }
     
 }
