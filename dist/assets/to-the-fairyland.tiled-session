@@ -240,11 +240,11 @@
             "scaleInEditor": 1
         },
         "tilemaps/Chapter4/DesertLand.json": {
-            "scale": 0.33,
+            "scale": 0.75,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 1522.7272727272725,
-                "y": 1665.1515151515152
+                "x": 632.6666666666666,
+                "y": 682
             }
         },
         "tilemaps/Chapter4/DesertLand.json#DesertLand": {
@@ -257,13 +257,24 @@
             "scale": 0.75,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 556.6666666666666,
-                "y": 663.3333333333334
+                "x": 642,
+                "y": 503.33333333333337
             }
         },
         "tilemaps/Chapter4/DesertLand1.json#DesertLand": {
-            "scaleInDock": 1,
+            "scaleInDock": 0.75,
             "scaleInEditor": 1
+        },
+        "tilemaps/Chapter4/DesertLandParallax.json": {
+            "scale": 0.5,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 1229,
+                "y": 269
+            }
+        },
+        "tilemaps/Chapter4/DesertLandParallax.json#DesertLand": {
+            "scaleInDock": 0.75
         },
         "tilemaps/Chapter4/GreatTree.json": {
             "expandedObjectLayers": [
@@ -303,11 +314,11 @@
             "scaleInEditor": 0.75
         },
         "tilemaps/Chapter5/UndergroundTunnel.json": {
-            "scale": 1.5,
+            "scale": 0.75,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 3840.333333333333,
-                "y": 5120.333333333333
+                "x": 3651.333333333333,
+                "y": 4432.666666666666
             }
         },
         "tilemaps/Chapter5/UndergroundTunnel.json#DesertLand": {
@@ -387,6 +398,8 @@
     "project": "to-the-fairyland.tiled-project",
     "property.type": "int",
     "recentFiles": [
+        "tilemaps/Chapter4/DesertLand1.json",
+        "tilemaps/Chapter4/DesertLand.json",
         "tilemaps/Chapter2/Road1.json",
         "tilemaps/Chapter2/Road2.json",
         "tilemaps/Chapter2/Road3.json",
@@ -396,9 +409,7 @@
         "tilemaps/Chapter3/GreatTree.json",
         "tilemaps/Chapter2/Cliff.json",
         "tilemaps/Chapter2/Road.json",
-        "tilemaps/Chapter7/EmeraldPond.json",
-        "tilemaps/Chapter4/DesertLand1.json",
-        "tilemaps/Chapter4/DesertLand.json"
+        "tilemaps/Chapter7/EmeraldPond.json"
     ],
     "resizeMap.removeObjects": false,
     "tileset.embedInMap": true,

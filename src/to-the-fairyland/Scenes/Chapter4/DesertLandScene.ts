@@ -1,15 +1,16 @@
 import { TiledObject, TiledTilemapData } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData";
-import { dialogue } from "../../GameSystems/InteractionSystem/InteractionDatabase";
+import { choiceOption, dialogue, dialogueWithChoice } from "../../GameSystems/InteractionSystem/InteractionDatabase";
 import TitleOverlay from "../../Overlays/TitleOverlay";
 import { AssetBundle } from "../MappedAdventureScene";
+import DesertLandParallaxScene from "./DesertLandParallaxScene";
 import DesertSceneBase from "./DesertSceneBase";
 
 export default class DesertLandScene extends DesertSceneBase {
     private readonly signScale = 1.25;
 
     protected readonly tilemap = {
-        key: "desertLand1",
-        path: "/assets/tilemaps/Chapter4/DesertLand1.json"
+        key: "desertLand",
+        path: "/assets/tilemaps/Chapter4/DesertLand.json"
     };
 
     protected static readonly assetBundle: AssetBundle = {
@@ -69,11 +70,30 @@ export default class DesertLandScene extends DesertSceneBase {
 
     protected override handleInteraction(obj: TiledObject): void {
         if (obj.name === "Sign") {
-            this.startDialogue(dialogue([
-                "The sign is half-buried in windblown sand.",
-                "<red>Warning: desert centipedes hunt beyond this point.",
-                "Keep moving. If the sand starts to sank, run."
-            ]));
+            this.startDialogue(dialogueWithChoice(
+                [
+                    "The sign is half-buried in windblown sand.",
+                    "<red>Warning: desert centipedes hunt beyond this point.",
+                    "Keep moving. If the sand starts to shift, run.",
+                    "Begin the final journey?"
+                ],
+                {
+                    lineIndex: 3,
+                    options: [
+                        choiceOption(
+                            "Yes",
+                            dialogue(
+                                ["You take a breath and step into the burning road."],
+                                { onComplete: () => this.gotoDesertLandParallax() }
+                            )
+                        ),
+                        choiceOption(
+                            "No",
+                            dialogue(["You step back from the sign. Not yet."])
+                        )
+                    ]
+                }
+            ));
             return;
         }
 
@@ -87,6 +107,23 @@ export default class DesertLandScene extends DesertSceneBase {
         }
 
         this.tryStartInteractionDialogue(obj);
+    }
+
+    private gotoDesertLandParallax(): void {
+        this.sceneManager.changeToScene(
+            DesertLandParallaxScene,
+            {
+                cheatsEnabled: this.cheatsEnabled,
+                spawnName: "RoadStart"
+            },
+            undefined,
+            {
+                showLoadingOverlay: true,
+                useFadeTransition: true,
+                fadeOutMs: 500,
+                fadeInMs: 500
+            }
+        );
     }
 
     private showIntroTitle(): void {

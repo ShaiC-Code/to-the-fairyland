@@ -37,7 +37,7 @@ import Excalibur from "../GameSystems/ItemSystem/Items/Excalibur";
 import FreshPrettyTooth from "../GameSystems/ItemSystem/Items/FreshPrettyTooth";
 import AudioController from "../GameSystems/AudioController";
 import DesertLandScene from "./Chapter4/DesertLandScene";
-import DesertLandScene1 from "./Chapter4/DesertLandScene";
+import DesertLandParallaxScene from "./Chapter4/DesertLandParallaxScene";
 
 type AssetRef = Readonly<{
     readonly key: string;
@@ -477,7 +477,7 @@ export default class MainMenu extends Scene {
         case "level9":
             this.enterLevel(
                 "level9",
-                DesertLandScene1,
+                DesertLandScene,
                 () => this.gameSessionManager.startNewChapter4Game(),
                 {
                     cheatsEnabled: this.cheatsEnabled,
@@ -649,8 +649,8 @@ export function changeToResumePointScene(sceneManager: SceneManager, resumePoint
         case "DesertLandScene":
             sceneManager.changeToScene(DesertLandScene, initData, undefined, levelLoadTransition);
             return true;
-        case "DesertLandScene1":
-            sceneManager.changeToScene(DesertLandScene1, initData, undefined, levelLoadTransition);
+        case "DesertLandParallaxScene":
+            sceneManager.changeToScene(DesertLandParallaxScene, initData, undefined, levelLoadTransition);
             return true;
         case "EmeraldPondScene":
             sceneManager.changeToScene(EmeraldPondScene, initData, undefined, levelLoadTransition);
