@@ -10,7 +10,7 @@ import PlayerAI from "../../AI/Player/PlayerAI";
 import { dialogue } from "../../GameSystems/InteractionSystem/InteractionDatabase";
 import StoryManager from "../../GameSystems/StorySystem/StoryManager";
 import DesertSceneBase from "./DesertSceneBase";
-import DesertPondScene from "./DesertPondScene";
+import DesertPath1Scene from "./DesertPath1Scene";
 import AudioController from "../../GameSystems/AudioController";
 
 type CentipedeSpawnMilestone = {
@@ -380,7 +380,7 @@ export default class DesertLandParallaxScene extends DesertSceneBase {
         }
 
         this.sceneManager.changeToScene(
-            DesertPondScene,
+            DesertPath1Scene,
             {
                 cheatsEnabled: this.cheatsEnabled,
                 spawnName: "RoadStart"

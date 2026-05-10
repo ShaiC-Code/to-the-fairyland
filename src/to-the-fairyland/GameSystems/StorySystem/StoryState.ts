@@ -68,6 +68,7 @@ export interface Chapter3StoryState {
 //======================== Chapter4 =================================
 export enum Chapter4MainQuestStep {
     ESCAPE_DESERT_CENTIPEDES = "ESCAPE_DESERT_CENTIPEDES",
+    CROSS_DESERT_PATH = "CROSS_DESERT_PATH",
     JUMP_INTO_EMERALD_POND = "JUMP_INTO_EMERALD_POND"
 }
 

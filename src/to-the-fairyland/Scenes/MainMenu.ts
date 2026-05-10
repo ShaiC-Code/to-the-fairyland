@@ -44,6 +44,7 @@ import FreshPrettyTooth from "../GameSystems/ItemSystem/Items/FreshPrettyTooth";
 import AudioController from "../GameSystems/AudioController";
 import DesertLandScene from "./Chapter4/DesertLandScene";
 import DesertLandParallaxScene from "./Chapter4/DesertLandParallaxScene";
+import DesertPath1Scene from "./Chapter4/DesertPath1Scene";
 import DesertPondScene from "./Chapter4/DesertPondScene";
 
 type AssetRef = Readonly<{
@@ -254,6 +255,7 @@ export default class MainMenu extends Scene {
         this.receiver.subscribe("level8");
         this.receiver.subscribe("level9");
         this.receiver.subscribe("level10");
+        this.receiver.subscribe("level11");
 
         this.mainMenu.setResumeEnabled(this.gameSessionManager.hasSavedSession());
         this.mainMenu.show();
@@ -506,6 +508,29 @@ export default class MainMenu extends Scene {
         case "level10":
             this.enterLevel(
                 "level10",
+                DesertPath1Scene,
+                () => {
+                    this.gameSessionManager.startNewChapter4Game();
+
+                    const chapter4 = this.gameSessionManager.getStoryState().chapter4;
+                    if (!chapter4) {
+                        throw new Error("Chapter 4 story state was not initialized.");
+                    }
+
+                    chapter4.mainQuestStep = Chapter4MainQuestStep.CROSS_DESERT_PATH;
+                    this.gameSessionManager.setResumePoint("DesertPath1Scene", "RoadStart");
+                },
+                {
+                    cheatsEnabled: this.cheatsEnabled,
+                    spawnName: "RoadStart"
+                },
+                () => this.ensurePlayerHasExcalibur()
+            );
+            break;
+
+        case "level11":
+            this.enterLevel(
+                "level11",
                 EmeraldPondScene,
                 () => {
                     this.gameSessionManager.startNewChapter4Game();
@@ -756,6 +781,9 @@ export function changeToResumePointScene(sceneManager: SceneManager, resumePoint
             return true;
         case "DesertLandParallaxScene":
             sceneManager.changeToScene(DesertLandParallaxScene, initData, undefined, levelLoadTransition);
+            return true;
+        case "DesertPath1Scene":
+            sceneManager.changeToScene(DesertPath1Scene, initData, undefined, levelLoadTransition);
             return true;
         case "DesertPondScene":
             sceneManager.changeToScene(DesertPondScene, initData, undefined, levelLoadTransition);

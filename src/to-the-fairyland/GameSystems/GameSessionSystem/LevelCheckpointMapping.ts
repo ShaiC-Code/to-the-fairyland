@@ -12,7 +12,7 @@ import {
 } from "../StorySystem/StoryState";
 
 export type CheckpointStoryKey = `${ActiveChapter}:${string}`;
-export type LevelSelectionId = `level${1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10}`;
+export type LevelSelectionId = `level${1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11}`;
 
 export function buildCheckpointStoryKey(chapter: ActiveChapter, questStep: string): CheckpointStoryKey {
     return `${chapter}:${questStep}`;
@@ -71,7 +71,8 @@ export const LEVEL_TO_CHECKPOINT_STORY_KEY: Readonly<Record<LevelSelectionId, Ch
     level7: buildCheckpointStoryKey(ActiveChapter.CHAPTER3, Chapter3MainQuestStep.NEED_EXCALIBUR),
     level8: buildCheckpointStoryKey(ActiveChapter.CHAPTER3, Chapter3MainQuestStep.VINE_EXIT_OPEN),
     level9: buildCheckpointStoryKey(ActiveChapter.CHAPTER4, Chapter4MainQuestStep.ESCAPE_DESERT_CENTIPEDES),
-    level10: buildCheckpointStoryKey(ActiveChapter.CHAPTER4, Chapter4MainQuestStep.JUMP_INTO_EMERALD_POND)
+    level10: buildCheckpointStoryKey(ActiveChapter.CHAPTER4, Chapter4MainQuestStep.CROSS_DESERT_PATH),
+    level11: buildCheckpointStoryKey(ActiveChapter.CHAPTER4, Chapter4MainQuestStep.JUMP_INTO_EMERALD_POND)
 };
 
 function getLevelSelectionNumber(levelId: LevelSelectionId): number {

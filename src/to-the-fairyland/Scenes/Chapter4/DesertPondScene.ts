@@ -3,12 +3,20 @@ import AudioController from "../../GameSystems/AudioController";
 import { dialogue } from "../../GameSystems/InteractionSystem/InteractionDatabase";
 import EmeraldPondScene from "../Chapter7/EmeraldPondScene";
 import DesertSceneBase from "./DesertSceneBase";
+import DesertPath1Scene from "./DesertPath1Scene";
 
 export default class DesertPondScene extends DesertSceneBase {
     protected readonly tilemap = {
         key: "desertPond",
         path: "/assets/tilemaps/Chapter4/DesertPond.json"
     };
+
+    private path1TransitionStarted = false;
+
+    public override startScene(): void {
+        this.path1TransitionStarted = false;
+        super.startScene();
+    }
 
     protected override handleInteraction(obj: TiledObject): void {
         if (obj.name === "EmeraldPond") {
@@ -28,6 +36,12 @@ export default class DesertPondScene extends DesertSceneBase {
         this.tryStartInteractionDialogue(obj);
     }
 
+    protected override handleAutoTransition(obj: TiledObject): void {
+        if (obj.name === "PathToPath1") {
+            this.gotoDesertPath1();
+        }
+    }
+
     private gotoEmeraldPond(): void {
         if (this.transitioning) {
             return;
@@ -39,6 +53,29 @@ export default class DesertPondScene extends DesertSceneBase {
             {
                 cheatsEnabled: this.cheatsEnabled,
                 spawnName: "Fate"
+            },
+            undefined,
+            {
+                showLoadingOverlay: true,
+                useFadeTransition: true,
+                fadeOutMs: 500,
+                fadeInMs: 500
+            }
+        );
+    }
+
+    private gotoDesertPath1(): void {
+        if (this.path1TransitionStarted) {
+            return;
+        }
+
+        this.path1TransitionStarted = true;
+        this.transitioning = true;
+        this.sceneManager.changeToScene(
+            DesertPath1Scene,
+            {
+                cheatsEnabled: this.cheatsEnabled,
+                spawnName: "PathToPond"
             },
             undefined,
             {
