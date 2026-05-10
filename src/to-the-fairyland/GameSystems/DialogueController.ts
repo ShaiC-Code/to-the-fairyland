@@ -47,6 +47,7 @@ export default class DialogueController implements Updateable {
     private dialogueChoiceResolved: boolean = false;
     private ignoreNextConfirm: boolean = false;
     private activeStartOptions: DialogueStartOptions = {};
+    private controlModeBeforeDialogue: PlayerControlMode | null = null;
     
     private readonly dialogueLayerName = "dialogueOverlay";
     private readonly cutsceneLayerName = "cutsceneOverlay";
@@ -165,6 +166,11 @@ export default class DialogueController implements Updateable {
 
     public startDialogue(dialogue: DialogueInteraction, speakerName?: string, options: DialogueStartOptions = {}): void {
         const ai = this.player.ai as PlayerAI;
+
+        if (!this.isActive && this.controlModeBeforeDialogue === null) {
+            this.controlModeBeforeDialogue = ai.controller.controlMode;
+        }
+
         ai.controller.setControlMode(PlayerControlMode.DIALOGUE);
 
         this.activeSpeakerName = speakerName;
@@ -242,7 +248,7 @@ export default class DialogueController implements Updateable {
         const ai = this.player.ai as PlayerAI;
         
         if (ai.controller.controlMode === PlayerControlMode.DIALOGUE) {
-            ai.controller.setControlMode(PlayerControlMode.GAMEPLAY);
+            ai.controller.setControlMode(this.controlModeBeforeDialogue ?? PlayerControlMode.GAMEPLAY);
         }
 
         this.activeDialogue = null;
@@ -251,6 +257,7 @@ export default class DialogueController implements Updateable {
         this.dialogueChoiceResolved = false;
         this.ignoreNextConfirm = false;
         this.activeStartOptions = {};
+        this.controlModeBeforeDialogue = null;
         if (!callbackHandledByReadCompletion) {
             this.cutsceneScreen.clearOnCompleteCallback();
             this.dialogueScreen.clearOnCompleteCallback();

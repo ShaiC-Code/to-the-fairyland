@@ -207,6 +207,7 @@ export default abstract class MappedAdventureScene extends Scene {
     protected readonly lowHealthOverlayPulseAmount = 0.20;
     protected readonly lowHealthOverlayPulseFrequencySeconds = 1.5;
     protected fromResumeLoad = false;
+    private lastLoggedStoryStepKey: string | null = null;
 
     private readonly checkpointKeysUnlockedThisScene = new Set<string>();
     
@@ -565,9 +566,13 @@ export default abstract class MappedAdventureScene extends Scene {
                 depth: 10002
             }
         );
+
+        this.logCurrentStoryStep(true);
     }
 
     public override updateScene(deltaT: number): void {
+        this.logCurrentStoryStep();
+
         const storyStateAtStart = this.gameSessionManager.getStoryState();
         const chapterAtStart = storyStateAtStart.activeChapter;
         const stepAtStart = getCurrentStoryStep(storyStateAtStart);
@@ -631,6 +636,22 @@ export default abstract class MappedAdventureScene extends Scene {
         if (!this.transitioning) {
             this.captureCheckpointProgressForFrame(ai, chapterAtStart, stepAtStart);
         }
+    }
+
+    private logCurrentStoryStep(force = false): void {
+        const storyState = this.gameSessionManager.getStoryState();
+        const chapter = storyState.activeChapter;
+        const step = getCurrentStoryStep(storyState) ?? "UNKNOWN";
+        const key = `${chapter}:${step}`;
+
+        if (!force && key === this.lastLoggedStoryStepKey) {
+            return;
+        }
+
+        this.lastLoggedStoryStepKey = key;
+        console.log(
+            `CurrentStep: scene=${this.constructor.name} chapter=${chapter} step=${step}`
+        );
     }
 
     protected override updateSimulation(deltaT: number): void {
