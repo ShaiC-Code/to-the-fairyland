@@ -25,6 +25,7 @@ export default class DesertPondScene extends DesertSceneBase {
     private readonly pondCentipedeBodySegments = 26;
     private readonly pondCentipedeSpeed = 2600;
     private readonly pondCentipedeCleanupPadding = 256;
+    private readonly emeraldPondFadeInMs = 5000;
 
     public override startScene(): void {
         this.path1TransitionStarted = false;
@@ -93,7 +94,7 @@ export default class DesertPondScene extends DesertSceneBase {
 
         this.pondEscapeStarted = true;
         this.pondCentipedesCanDamagePlayer = true;
-        this.setWorldTimeScale(0.04);
+        this.setWorldTimeScale(0.03);
         this.spawnPondCentipede();
 
         this.startDialogue(
@@ -226,7 +227,7 @@ export default class DesertPondScene extends DesertSceneBase {
                 showLoadingOverlay: true,
                 useFadeTransition: true,
                 fadeOutMs: 500,
-                fadeInMs: 500,
+                fadeInMs: this.emeraldPondFadeInMs,
                 pauseDuringFadeOut: false
             }
         );
