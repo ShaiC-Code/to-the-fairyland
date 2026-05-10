@@ -356,6 +356,7 @@ export default class MainMenu extends Scene {
                     if (inventory.find(item => item instanceof SleepingBag) === null) {
                         inventory.add(new SleepingBag());
                     }
+                    this.ensurePlayerHasFreshPrettyTooth();
 
                     chapter2.mainQuestStep = Chapter2MainQuestStep.LEAVE_VILLAGE;
                     this.gameSessionManager.setResumePoint("VillageScene", "RoadEnd");
@@ -379,6 +380,7 @@ export default class MainMenu extends Scene {
                         throw new Error("Chapter 2 story state was not initialized.");
                     }
 
+                    this.ensurePlayerHasFreshPrettyTooth();
                     chapter2.mainQuestStep = Chapter2MainQuestStep.RETURNED_TO_VILLAGE;
                     this.gameSessionManager.getWorldState().timeOfDay = TimeOfDay.NIGHT;
                     this.gameSessionManager.setResumePoint("RoadScene", "RoadStart");
@@ -403,6 +405,7 @@ export default class MainMenu extends Scene {
                         throw new Error("Chapter 2 story state was not initialized.");
                     }
 
+                    this.ensurePlayerHasFreshPrettyTooth();
                     chapter2.mainQuestStep = Chapter2MainQuestStep.CLIFF_JUMP;
                     this.gameSessionManager.setResumePoint("CliffScene", "RoadStart");
                 },
@@ -426,10 +429,7 @@ export default class MainMenu extends Scene {
                         throw new Error("Chapter 3 story state was not initialized.");
                     }
 
-                    const inventory = this.gameSessionManager.getPlayerState().inventory;
-                    if (inventory.find(item => item instanceof FreshPrettyTooth) === null) {
-                        inventory.add(new FreshPrettyTooth());
-                    }
+                    this.ensurePlayerHasFreshPrettyTooth();
 
                     chapter3.mainQuestStep = Chapter3MainQuestStep.FAINTED;
                     this.gameSessionManager.setResumePoint("CliffBottomScene", "RoadStart");
@@ -600,6 +600,13 @@ export default class MainMenu extends Scene {
         const inventory = this.gameSessionManager.getPlayerState().inventory;
         if (inventory.find(item => item instanceof Excalibur) === null) {
             inventory.add(new Excalibur());
+        }
+    }
+
+    private ensurePlayerHasFreshPrettyTooth(): void {
+        const inventory = this.gameSessionManager.getPlayerState().inventory;
+        if (inventory.find(item => item instanceof FreshPrettyTooth) === null) {
+            inventory.add(new FreshPrettyTooth());
         }
     }
 
