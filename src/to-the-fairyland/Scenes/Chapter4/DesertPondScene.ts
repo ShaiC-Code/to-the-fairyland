@@ -1,6 +1,7 @@
 import { TiledObject } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData";
 import AudioController from "../../GameSystems/AudioController";
 import { dialogue } from "../../GameSystems/InteractionSystem/InteractionDatabase";
+import StoryManager from "../../GameSystems/StorySystem/StoryManager";
 import EmeraldPondScene from "../Chapter7/EmeraldPondScene";
 import DesertSceneBase from "./DesertSceneBase";
 import DesertPath1Scene from "./DesertPath1Scene";
@@ -12,6 +13,7 @@ export default class DesertPondScene extends DesertSceneBase {
     };
 
     private path1TransitionStarted = false;
+    private readonly storyManager = StoryManager.getInstance();
 
     public override startScene(): void {
         this.path1TransitionStarted = false;
@@ -48,6 +50,10 @@ export default class DesertPondScene extends DesertSceneBase {
         }
 
         this.transitioning = true;
+        if (this.gameSessionManager.getStoryState().chapter4) {
+            this.storyManager.chapter4.markJumpedIntoEmeraldPond();
+        }
+
         this.sceneManager.changeToScene(
             EmeraldPondScene,
             {

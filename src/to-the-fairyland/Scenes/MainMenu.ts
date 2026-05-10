@@ -184,6 +184,8 @@ export default class MainMenu extends Scene {
         const uiActions: UIScreenActionBindings = {
             navigatePrevious: () => Input.isJustPressed(PlayerInput.MOVE_LEFT) || Input.isJustPressed(PlayerInput.MOVE_UP),
             navigateNext: () => Input.isJustPressed(PlayerInput.MOVE_RIGHT) || Input.isJustPressed(PlayerInput.MOVE_DOWN),
+            navigatePreviousHeld: () => Input.isPressed(PlayerInput.MOVE_LEFT) || Input.isPressed(PlayerInput.MOVE_UP),
+            navigateNextHeld: () => Input.isPressed(PlayerInput.MOVE_RIGHT) || Input.isPressed(PlayerInput.MOVE_DOWN),
             confirm: () => Input.isJustPressed(PlayerInput.INTERACT)
         };
 
@@ -256,6 +258,7 @@ export default class MainMenu extends Scene {
         this.receiver.subscribe("level9");
         this.receiver.subscribe("level10");
         this.receiver.subscribe("level11");
+        this.receiver.subscribe("level12");
 
         this.mainMenu.setResumeEnabled(this.gameSessionManager.hasSavedSession());
         this.mainMenu.show();
@@ -531,6 +534,29 @@ export default class MainMenu extends Scene {
         case "level11":
             this.enterLevel(
                 "level11",
+                DesertPondScene,
+                () => {
+                    this.gameSessionManager.startNewChapter4Game();
+
+                    const chapter4 = this.gameSessionManager.getStoryState().chapter4;
+                    if (!chapter4) {
+                        throw new Error("Chapter 4 story state was not initialized.");
+                    }
+
+                    chapter4.mainQuestStep = Chapter4MainQuestStep.REACH_DESERT_POND;
+                    this.gameSessionManager.setResumePoint("DesertPondScene", "RoadStart");
+                },
+                {
+                    cheatsEnabled: this.cheatsEnabled,
+                    spawnName: "RoadStart"
+                },
+                () => this.ensurePlayerHasExcalibur()
+            );
+            break;
+
+        case "level12":
+            this.enterLevel(
+                "level12",
                 EmeraldPondScene,
                 () => {
                     this.gameSessionManager.startNewChapter4Game();
@@ -541,6 +567,7 @@ export default class MainMenu extends Scene {
                     }
 
                     chapter4.mainQuestStep = Chapter4MainQuestStep.JUMP_INTO_EMERALD_POND;
+                    this.gameSessionManager.setResumePoint("EmeraldPondScene", "Fate");
                 },
                 {
                     cheatsEnabled: this.cheatsEnabled,
