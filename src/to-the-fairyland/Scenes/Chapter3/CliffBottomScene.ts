@@ -8,6 +8,7 @@ import PlayerAI from "../../AI/Player/PlayerAI";
 import { PlayerControlMode } from "../../AI/Player/PlayerController";
 import ToothFairyApproachBehavior from "../../AI/NPC/NPCBehavior/ToothFairyApproachBehavior";
 import HealingParticleEffect from "../../GameSystems/Effects/HealingParticleEffect";
+import { dialogue } from "../../GameSystems/InteractionSystem/InteractionDatabase";
 import FreshPrettyTooth from "../../GameSystems/ItemSystem/Items/FreshPrettyTooth";
 import { Chapter3MainQuestStep } from "../../GameSystems/StorySystem/StoryState";
 
@@ -45,6 +46,7 @@ export default class CliffBottomScene extends ForestSceneBase {
     private toothFairyHealingCompleted = false;
     private healingParticleEffect!: HealingParticleEffect;
     private activeToothFairyHealers = new Map<AnimatedSprite, ToothFairyHealingState>();
+    private cliffFallIntroStarted = false;
 
 
     protected override combinedAssetBundles(): AssetBundle {
@@ -66,6 +68,7 @@ export default class CliffBottomScene extends ForestSceneBase {
 
         if (this.storyManager.chapter3.isPlayerFainted()) {
             this.playerFaint();
+            this.startCliffFallIntroCutsceneIfNeeded();
         }
     }
 
@@ -86,6 +89,7 @@ export default class CliffBottomScene extends ForestSceneBase {
     private readonly toothFairyHealAmount = 5;
     private readonly toothFairyHealIntervalSeconds = 0.35;
     private readonly healingParticleOriginOffsetY = 0;
+    private readonly cliffFallIntroSpawnName = "RoadStart";
 
     protected override spawnMapObjects(tilemapData: TiledTilemapData): void {
         super.spawnMapObjects(tilemapData);
@@ -101,6 +105,38 @@ export default class CliffBottomScene extends ForestSceneBase {
 
     private shouldSpawnToothFairies(): boolean {
         return !this.storyManager.chapter3.hasReachedStep(Chapter3MainQuestStep.NEED_EXCALIBUR);
+    }
+
+    private startCliffFallIntroCutsceneIfNeeded(): void {
+        if (!this.shouldStartCliffFallIntroCutscene()) {
+            return;
+        }
+
+        this.cliffFallIntroStarted = true;
+        this.setWorldTimeScale(0);
+        this.dialogueController.setCutsceneMode(true);
+        this.startDialogue(
+            dialogue(
+                [
+                    "Your body fall through the air.",
+                    "Then the ground finds you.",
+                    "You can only felt pain..."
+                ],
+                {
+                    onComplete: () => {
+                        this.dialogueController.setCutsceneMode(false);
+                        this.setWorldTimeScale(1);
+                    }
+                }
+            )
+        );
+    }
+
+    private shouldStartCliffFallIntroCutscene(): boolean {
+        return !this.cliffFallIntroStarted
+            && !this.fromResumeLoad
+            && this.spawnName === this.cliffFallIntroSpawnName
+            && this.storyManager.chapter3.getMainQuestStep() === Chapter3MainQuestStep.FAINTED;
     }
 
     protected override getToothFairyPlayerArrivalHandler(): (fairy: AnimatedSprite) => void {
@@ -197,6 +233,8 @@ export default class CliffBottomScene extends ForestSceneBase {
         this.activeToothFairyHealers.clear();
         this.removeFreshPrettyTooth();
         this.healByToothFairy();
+        this.storyManager.chapter3.markNeedExcalibur();
+        this.gameSessionManager.saveCurrentSession();
         this.startFairyEscortToMarker(this.fairyEscortTargetName);
     }
 

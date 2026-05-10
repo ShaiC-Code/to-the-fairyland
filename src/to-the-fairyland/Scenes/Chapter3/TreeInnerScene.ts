@@ -81,6 +81,7 @@ export default class TreeInnerScene extends ForestSceneBase {
     private vineExitCollisionTemplate!: OrthogonalTilemap;
     private readonly vineExitCollisionLayerName = "VineExitCollisions";
     private vineExitCloseCutsceneActive = false;
+    private vineExitClosePending = false;
     
     protected override combinedAssetBundles(): AssetBundle {
         return this.mergeAssetBundles(super.combinedAssetBundles(), TreeInnerScene.assetBundle);
@@ -219,6 +220,7 @@ export default class TreeInnerScene extends ForestSceneBase {
     
     protected override spawnMapObjects(tilemapData: TiledTilemapData): void {
         super.spawnMapObjects(tilemapData);
+        this.syncExcaliburStoryState();
 
         this.vineAttackController = new VineAttackController({
             scene: this,
@@ -327,7 +329,26 @@ export default class TreeInnerScene extends ForestSceneBase {
     }
 
     private hasExcaliburBeenPulled(): boolean {
-        return this.storyManager.chapter3.hasReachedStep(Chapter3MainQuestStep.EXCALIBUR_PULLED);
+        return this.hasExcalibur()
+            || this.storyManager.chapter3.hasReachedStep(Chapter3MainQuestStep.EXCALIBUR_PULLED);
+    }
+
+    private syncExcaliburStoryState(): void {
+        if (!this.hasExcalibur()) {
+            return;
+        }
+
+        const step = this.storyManager.chapter3.getMainQuestStep();
+        const shouldRepairStory =
+            step === Chapter3MainQuestStep.HEALED_BY_TOOTH_FAIRY
+            || step === Chapter3MainQuestStep.NEED_EXCALIBUR;
+
+        this.storyManager.chapter3.markNeedExcalibur();
+        this.storyManager.chapter3.markExcaliburPulled();
+
+        if (shouldRepairStory) {
+            this.gameSessionManager.saveCurrentSession();
+        }
     }
 
     private closeVineExit(): void {
@@ -366,6 +387,11 @@ export default class TreeInnerScene extends ForestSceneBase {
     
     protected override handleAutoTransition(obj: TiledObject): void {
         if (obj.name === "PathToGreatTree") {
+            if (this.storyManager.chapter3.canTriggerVineExitClose()) {
+                this.startVineExitCloseSequenceWhenReady();
+                return;
+            }
+
             this.changeToForestSection(GreatTreeScene, "TreeOuter");
         }
     }
@@ -430,6 +456,7 @@ export default class TreeInnerScene extends ForestSceneBase {
     
         this.giveExcalibur();
         this.storyManager.chapter3.markExcaliburPulled();
+        this.gameSessionManager.saveCurrentSession();
         this.unlockPlayerInput();
     
         this.startDialogue(dialogue([
@@ -460,6 +487,10 @@ export default class TreeInnerScene extends ForestSceneBase {
         if (addedItem !== null) {
             this.playExcaliburReceivedSFX();
         }
+    }
+
+    private hasExcalibur(): boolean {
+        return this.playerStateManager.getPlayerState().inventory.find(item => item instanceof Excalibur) !== null;
     }
 
     protected playExcaliburReceivedSFX(): void {
@@ -502,6 +533,7 @@ export default class TreeInnerScene extends ForestSceneBase {
     private shouldHoldTreeInnerInputLock(): boolean {
         return this.pullingExcalibur
             || this.vineExitCloseCutsceneActive
+            || this.vineExitClosePending
             || this.isVineWaveTitlePauseActive();
     }
 
@@ -583,25 +615,44 @@ export default class TreeInnerScene extends ForestSceneBase {
         }
 
         this.triggeredVineTraps.add(trapKey);
+        this.startVineExitCloseSequenceWhenReady();
+    }
 
+    private startVineExitCloseSequenceWhenReady(): void {
+        if (!this.storyManager.chapter3.canTriggerVineExitClose()) {
+            return;
+        }
+
+        this.transitioning = false;
+
+        if (this.vineExitCloseCutsceneActive || this.vineExitClosePending) {
+            return;
+        }
+
+        this.vineExitClosePending = true;
+
+        const ai = this.player.ai as PlayerAI;
+    
         if (ai.moving) {
             const previousOnMoveComplete = ai.onMoveComplete;
             ai.onMoveComplete = () => {
                 previousOnMoveComplete?.();
                 this.lockPlayerInput();
-                new Timer(0, () => this.activateVineTrap()).start();
+                new Timer(0, () => void this.activateVineTrap()).start();
             };
             return;
         }
 
-        this.activateVineTrap();
+        void this.activateVineTrap();
     }
 
     private async activateVineTrap(): Promise<void> {
         if (this.vineExitCloseCutsceneActive) {
+            this.vineExitClosePending = false;
             return;
         }
     
+        this.vineExitClosePending = false;
         this.vineExitCloseCutsceneActive = true;
         this.lockPlayerInput();
     
