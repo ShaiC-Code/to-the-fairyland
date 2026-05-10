@@ -13,6 +13,7 @@ import AmbienceController from "../../GameSystems/WorldSystem/AmbienceController
 type NpcRuntime = {
     name: string;
     actor: NPCActor;
+    tile: Vec2;
 };
 
 export default class VillageScene extends LycanChaseSceneBase {
@@ -38,6 +39,7 @@ export default class VillageScene extends LycanChaseSceneBase {
     };
     
     private npcs: NpcRuntime[] = [];
+    private readonly npcBlockedTiles = new Set<string>();
 
     private readonly lycanDetectionRadius = 400;
  
@@ -88,7 +90,7 @@ export default class VillageScene extends LycanChaseSceneBase {
     }
 
     protected override spawnMapObjects(tilemapData: TiledTilemapData): void {
-        this.npcs = [];
+        this.clearNPCs();
         this.resetLycans();
     
         if (this.storyManager.chapter2.hasReturnedToVillage()) {
@@ -126,8 +128,22 @@ export default class VillageScene extends LycanChaseSceneBase {
 
         this.npcs.push({
             name: obj.name,
-            actor: npc
+            actor: npc,
+            tile: tile.clone()
         });
+        this.npcBlockedTiles.add(this.tileKey(tile));
+    }
+
+    private clearNPCs(): void {
+        for (const npc of [...this.npcs]) {
+            this.removeNPC(npc);
+        }
+    }
+
+    private removeNPC(npc: NpcRuntime): void {
+        this.npcBlockedTiles.delete(this.tileKey(npc.tile));
+        npc.actor.destroy();
+        this.npcs = this.npcs.filter(existing => existing !== npc);
     }
 
     private spawnCheckVillageLycans(tilemapData: TiledTilemapData): void {
@@ -194,11 +210,31 @@ export default class VillageScene extends LycanChaseSceneBase {
         return true;
     }
 
+    protected override canPlayerMoveToTile(currentTile: Vec2, direction: Vec2, nextTile: Vec2): boolean {
+        if (this.isNpcTileBlocked(nextTile)) {
+            return false;
+        }
+
+        if (direction.x !== 0 && direction.y !== 0) {
+            const horizontalTile = currentTile.clone().add(new Vec2(direction.x, 0));
+            const verticalTile = currentTile.clone().add(new Vec2(0, direction.y));
+
+            return !this.isNpcTileBlocked(horizontalTile) && !this.isNpcTileBlocked(verticalTile);
+        }
+
+        return true;
+    }
+
     private findNpcAtTile(tile: Vec2): NpcRuntime | undefined {
-        return this.npcs.find(npc => {
-            const npcTile = npc.actor.getSortTile();
-            return npcTile !== null && npcTile.x === tile.x && npcTile.y === tile.y;
-        });
+        return this.npcs.find(npc => npc.tile.x === tile.x && npc.tile.y === tile.y);
+    }
+
+    private isNpcTileBlocked(tile: Vec2): boolean {
+        return this.npcBlockedTiles.has(this.tileKey(tile));
+    }
+
+    private tileKey(tile: Vec2): string {
+        return `${tile.x},${tile.y}`;
     }
 
     protected override handleInteraction(obj: TiledObject): void {
