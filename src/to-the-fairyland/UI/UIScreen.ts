@@ -19,6 +19,8 @@ import AudioController from "../GameSystems/AudioController";
 export type UIScreenActionBindings = {
     navigatePrevious: () => boolean;
     navigateNext: () => boolean;
+    navigatePreviousHeld?: () => boolean;
+    navigateNextHeld?: () => boolean;
     confirm: () => boolean;
 };
 
@@ -55,9 +57,11 @@ export default class UIScreen implements Updateable {
     private readonly navigationButtonEnterCallbacks: Array<Function | null> = [];
     private readonly navigationButtonLeaveCallbacks: Array<Function | null> = [];
     private readonly navigationOriginalCallbacksByKey: Map<string, { onEnter: Function | undefined; onLeave: Function | undefined }> = new Map();
-    private uiActions: UIScreenActionBindings = {
+    protected uiActions: Required<UIScreenActionBindings> = {
         navigatePrevious: () => false,
         navigateNext: () => false,
+        navigatePreviousHeld: () => false,
+        navigateNextHeld: () => false,
         confirm: () => false
     };
 

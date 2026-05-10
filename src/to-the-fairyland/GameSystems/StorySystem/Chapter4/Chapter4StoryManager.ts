@@ -36,6 +36,14 @@ export default class Chapter4StoryManager {
     public markCrossedDesertPath(): void {
         const state = this.getState();
         if (state.mainQuestStep === Chapter4MainQuestStep.CROSS_DESERT_PATH) {
+            state.mainQuestStep = Chapter4MainQuestStep.REACH_DESERT_POND;
+            this.syncWorldState();
+        }
+    }
+
+    public markJumpedIntoEmeraldPond(): void {
+        const state = this.getState();
+        if (state.mainQuestStep !== Chapter4MainQuestStep.JUMP_INTO_EMERALD_POND) {
             state.mainQuestStep = Chapter4MainQuestStep.JUMP_INTO_EMERALD_POND;
             this.syncWorldState();
         }
