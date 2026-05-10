@@ -9,7 +9,7 @@ import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 import PlayerAI from "../../AI/Player/PlayerAI";
 import OrthogonalTilemap from "../../../Wolfie2D/Nodes/Tilemaps/OrthogonalTilemap";
 import { Chapter3MainQuestStep } from "../../GameSystems/StorySystem/StoryState";
-import VineAttackController, { VineAttackOptions } from "../../AI/NPC/NPCController/VineAttackController";
+import VineAttackController, { type VineSwordCutCapsule, VineAttackOptions } from "../../AI/NPC/NPCController/VineAttackController";
 import VineShooterWaveController, { VINE_INDICATOR_LAYER_NAME } from "../../AI/NPC/NPCController/VineShooterWaveController";
 import TitleOverlay from "../../Overlays/TitleOverlay";
 import { AssetBundle, ChapterSceneDefinition } from "../MappedAdventureScene";
@@ -69,9 +69,9 @@ export default class TreeInnerScene extends ForestSceneBase {
     private readonly vineHurtCenterOffset = new Vec2(0, 34);
     private readonly vineHurtCooldown = 0.75;
     private readonly showVineHurtDebug = false;
-    private readonly excaliburAttackTileDebugDuration = 0.5;
-    private debugExcaliburAttackTiles: Vec2[] = [];
-    private debugExcaliburAttackTileTimer = 0;
+    private readonly excaliburAttackCapsuleDebugDuration = 0.5;
+    private debugExcaliburAttackCapsule: VineSwordCutCapsule | null = null;
+    private debugExcaliburAttackCapsuleTimer = 0;
     private readonly vineTrapPairs: ReadonlyArray<readonly [string, string]> = [
         ["1_L", "1_R"],
         ["2_L", "2_R"],
@@ -117,7 +117,7 @@ export default class TreeInnerScene extends ForestSceneBase {
     public override updateScene(deltaT: number): void {
         super.updateScene(deltaT);
 
-        this.updateExcaliburAttackTileDebug(deltaT);
+        this.updateExcaliburAttackCapsuleDebug(deltaT);
         this.vineWaveTitleOverlay.update(deltaT);
         this.syncTreeInnerInputLock();
     }
@@ -135,7 +135,7 @@ export default class TreeInnerScene extends ForestSceneBase {
             false,
             new Color(255, 0, 0, 0.9)
         );
-        this.drawExcaliburAttackTileDebug();
+        this.drawExcaliburAttackCapsuleDebug();
     }
 
     protected override updateGameplay(deltaT: number): void {
@@ -156,53 +156,57 @@ export default class TreeInnerScene extends ForestSceneBase {
     }
 
     protected override handlePlayerAttackHitbox(hitbox: PlayerAttackHitbox): void {
-        this.captureExcaliburAttackTileDebug(hitbox);
+        this.captureExcaliburAttackCapsuleDebug(hitbox);
         super.handlePlayerAttackHitbox(hitbox);
     }
 
-    private updateExcaliburAttackTileDebug(deltaT: number): void {
-        if (this.debugExcaliburAttackTileTimer <= 0) {
+    private updateExcaliburAttackCapsuleDebug(deltaT: number): void {
+        if (this.debugExcaliburAttackCapsuleTimer <= 0) {
             return;
         }
 
-        this.debugExcaliburAttackTileTimer = Math.max(
+        this.debugExcaliburAttackCapsuleTimer = Math.max(
             0,
-            this.debugExcaliburAttackTileTimer - deltaT
+            this.debugExcaliburAttackCapsuleTimer - deltaT
         );
 
-        if (this.debugExcaliburAttackTileTimer === 0) {
-            this.debugExcaliburAttackTiles = [];
+        if (this.debugExcaliburAttackCapsuleTimer === 0) {
+            this.debugExcaliburAttackCapsule = null;
         }
     }
 
-    private captureExcaliburAttackTileDebug(hitbox: PlayerAttackHitbox): void {
+    private captureExcaliburAttackCapsuleDebug(hitbox: PlayerAttackHitbox): void {
         if (!this.showVineHurtDebug) {
             return;
         }
 
-        const endTile = hitbox.tiles[hitbox.tiles.length - 1] ?? hitbox.originTile;
-        const start = this.ground.getTileCenter(hitbox.originTile.x, hitbox.originTile.y);
-        const end = this.ground.getTileCenter(endTile.x, endTile.y);
-
-        this.debugExcaliburAttackTiles = this.vineAttackController
-            .getTilesCrossedByWorldSegment(start, end)
-            .map(tile => tile.clone());
-        this.debugExcaliburAttackTileTimer = this.excaliburAttackTileDebugDuration;
+        this.debugExcaliburAttackCapsule = this.vineAttackController.getSwordCutCapsule(hitbox);
+        this.debugExcaliburAttackCapsuleTimer = this.excaliburAttackCapsuleDebugDuration;
     }
 
-    private drawExcaliburAttackTileDebug(): void {
-        if (this.debugExcaliburAttackTileTimer <= 0 || this.debugExcaliburAttackTiles.length === 0) {
+    private drawExcaliburAttackCapsuleDebug(): void {
+        if (this.debugExcaliburAttackCapsuleTimer <= 0 || !this.debugExcaliburAttackCapsule) {
             return;
         }
 
-        const tileSize = this.ground.getScaledTileSize();
-        const halfSize = tileSize.scaled(this.getViewScale() / 2);
+        const capsule = this.debugExcaliburAttackCapsule;
+        const viewScale = this.getViewScale();
         const color = new Color(0, 255, 255, 0.9);
+        const radius = capsule.radius * viewScale;
+        const distance = capsule.start.distanceTo(capsule.end);
+        const sampleCount = Math.max(1, Math.ceil(distance / Math.max(capsule.radius, 1)));
 
-        for (const tile of this.debugExcaliburAttackTiles) {
-            Debug.drawBox(
-                this.player.inRelativeCoordinates(this.ground.getTileCenter(tile.x, tile.y)),
-                halfSize,
+        Debug.drawRay(
+            this.player.inRelativeCoordinates(capsule.start),
+            this.player.inRelativeCoordinates(capsule.end),
+            color
+        );
+
+        for (let i = 0; i <= sampleCount; i++) {
+            const t = i / sampleCount;
+            Debug.drawCircle(
+                this.player.inRelativeCoordinates(Vec2.lerp(capsule.start, capsule.end, t)),
+                radius,
                 false,
                 color
             );
@@ -238,7 +242,6 @@ export default class TreeInnerScene extends ForestSceneBase {
             ground: this.ground,
             getPlayerAI: () => this.player.ai as PlayerAI,
             shouldRun: () => this.storyManager.chapter3.getMainQuestStep() === Chapter3MainQuestStep.VINE_EXIT_CLOSED,
-            isDialogueActive: () => this.dialogueController.isActive,
             waitSeconds: seconds => this.waitSimulationSeconds(seconds),
             showWaveTitle: (text, duration) => this.showVineWaveTitle(text, duration),
             getTilesCrossedByWorldSegment: (start, end) => this.vineAttackController.getTilesCrossedByWorldSegment(start, end),

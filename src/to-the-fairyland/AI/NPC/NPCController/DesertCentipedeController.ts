@@ -1,6 +1,8 @@
 import Vec2 from "../../../../Wolfie2D/DataTypes/Vec2";
+import Debug from "../../../../Wolfie2D/Debug/Debug";
 import Scene from "../../../../Wolfie2D/Scene/Scene";
 import Sprite from "../../../../Wolfie2D/Nodes/Sprites/Sprite";
+import Color from "../../../../Wolfie2D/Utils/Color";
 import AudioController from "../../../GameSystems/AudioController";
 
 type DesertCentipedeSegmentRole = "head" | "body" | "tail";
@@ -52,6 +54,7 @@ export type DesertCentipedeOptions = {
     catchUpTurnSpeedMultiplier?: number;
     rotationOffset?: number;
     scale?: number;
+    segmentHurtRadius?: number;
 };
 
 export default class DesertCentipedeController {
@@ -77,6 +80,7 @@ export default class DesertCentipedeController {
     private readonly catchUpTurnSpeedMultiplier: number;
     private readonly rotationOffset: number;
     private readonly scale: number;
+    private readonly segmentHurtRadius: number;
     private readonly segmentSortTile = Vec2.ZERO;
 
     private readonly segments: DesertCentipedeSegment[] = [];
@@ -113,6 +117,7 @@ export default class DesertCentipedeController {
         this.catchUpTurnSpeedMultiplier = Math.max(1, options.catchUpTurnSpeedMultiplier ?? 2);
         this.rotationOffset = options.rotationOffset ?? 0;
         this.scale = options.scale ?? 1;
+        this.segmentHurtRadius = (options.segmentHurtRadius ?? 24) * this.scale;
     
         const bodySegments = Math.max(1, Math.floor(options.bodySegments));
         const initialDirection = this.getDirectionFromFacing(options.facing);
@@ -133,6 +138,30 @@ export default class DesertCentipedeController {
         this.moveHeadToward(targetPosition, deltaT);
         this.followChain();
         this.updateRotations(deltaT);
+    }
+
+    public overlapsCircle(center: Vec2, radius: number): boolean {
+        const combinedRadius = this.segmentHurtRadius + radius;
+        const combinedRadiusSq = combinedRadius * combinedRadius;
+
+        return this.segments.some(segment =>
+            segment.sprite.position.distanceSqTo(center) <= combinedRadiusSq
+        );
+    }
+
+    public renderHurtDebug(
+        toRelativeCoordinates: (worldPosition: Vec2) => Vec2,
+        viewScale: number,
+        color = new Color(255, 185, 0, 0.9)
+    ): void {
+        for (const segment of this.segments) {
+            Debug.drawCircle(
+                toRelativeCoordinates(segment.sprite.position),
+                this.segmentHurtRadius * viewScale,
+                false,
+                color
+            );
+        }
     }
 
     private createSegment(

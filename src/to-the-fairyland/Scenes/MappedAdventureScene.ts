@@ -195,6 +195,8 @@ export default abstract class MappedAdventureScene extends Scene {
     private toothFairyResponded = false;
     private readonly toothHoldDuration = 3;
     private readonly loftyBreadHealAmount = 20;
+    private readonly itemChoiceWorldTimeScale = 0.1;
+    private itemChoicePreviousWorldTimeScale: number | null = null;
     
     protected readonly hudLayerName = "HUD";
     protected readonly lowHealthOverlayLayerName = "LowHealthOverlay";
@@ -1193,8 +1195,28 @@ export default abstract class MappedAdventureScene extends Scene {
         item.consume({
             showDialogue: interaction => this.startDialogue(interaction),
             previewItemAction: action => this.previewItemAction(action),
-            runItemAction: action => this.runItemAction(action)
+            runItemAction: action => this.runItemAction(action),
+            beginWorldSlowdown: () => this.beginItemChoiceWorldSlowdown(),
+            endWorldSlowdown: () => this.endItemChoiceWorldSlowdown()
         });
+    }
+
+    private beginItemChoiceWorldSlowdown(): void {
+        if (this.itemChoicePreviousWorldTimeScale === null) {
+            this.itemChoicePreviousWorldTimeScale = this.worldTimeScale;
+        }
+
+        this.setWorldTimeScale(Math.min(this.worldTimeScale, this.itemChoiceWorldTimeScale));
+    }
+
+    private endItemChoiceWorldSlowdown(): void {
+        if (this.itemChoicePreviousWorldTimeScale === null) {
+            return;
+        }
+
+        const previousWorldTimeScale = this.itemChoicePreviousWorldTimeScale;
+        this.itemChoicePreviousWorldTimeScale = null;
+        this.setWorldTimeScale(previousWorldTimeScale);
     }
 
     private grantLoftyBreadAfterLeavingVillage(): void {

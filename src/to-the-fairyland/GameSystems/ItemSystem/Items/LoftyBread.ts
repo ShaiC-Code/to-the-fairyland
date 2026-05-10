@@ -19,6 +19,8 @@ export default class LoftyBread extends InventoryItem {
             return;
         }
 
+        context.beginWorldSlowdown?.();
+
         context.showDialogue(
             dialogueWithChoice(
                 ["Eat some lofty bread?"],
@@ -30,13 +32,21 @@ export default class LoftyBread extends InventoryItem {
                             dialogue(
                                 result.lines,
                                 {
-                                    onComplete: () => context.runItemAction(ItemUseActions.EAT_LOFTY_BREAD)
+                                    onComplete: () => {
+                                        context.endWorldSlowdown?.();
+                                        context.runItemAction(ItemUseActions.EAT_LOFTY_BREAD);
+                                    }
                                 }
                             )
                         ),
                         choiceOption(
                             "No",
-                            dialogue(["You put the lofty bread away."])
+                            dialogue(
+                                ["You put the lofty bread away."],
+                                {
+                                    onComplete: () => context.endWorldSlowdown?.()
+                                }
+                            )
                         )
                     ]
                 }
