@@ -140,6 +140,39 @@ export default class DesertCentipedeController {
         this.updateRotations(deltaT);
     }
 
+    public updateStraight(deltaT: number, direction: Vec2, moveSpeed: number): void {
+        if (this.segments.length === 0 || direction.magSq() <= 0.0001) {
+            return;
+        }
+
+        this.cacheLastFramePositions();
+        this.currentCatchUpTurnSpeedMultiplier = 1;
+        this.moveHeadInDirection(
+            this.segments[0],
+            direction.clone().normalize(),
+            deltaT,
+            moveSpeed
+        );
+        this.followChain();
+        this.updateRotations(deltaT);
+    }
+
+    public getHeadPosition(): Vec2 {
+        return this.segments[0]?.sprite.position.clone() ?? Vec2.ZERO;
+    }
+
+    public getTailPosition(): Vec2 {
+        return this.segments[this.segments.length - 1]?.sprite.position.clone() ?? Vec2.ZERO;
+    }
+
+    public destroy(): void {
+        for (const segment of this.segments) {
+            segment.sprite.destroy();
+        }
+
+        this.segments.length = 0;
+    }
+
     public overlapsCircle(center: Vec2, radius: number): boolean {
         const combinedRadius = this.segmentHurtRadius + radius;
         const combinedRadiusSq = combinedRadius * combinedRadius;

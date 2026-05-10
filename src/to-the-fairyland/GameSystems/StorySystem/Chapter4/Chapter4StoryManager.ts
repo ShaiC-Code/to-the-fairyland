@@ -28,6 +28,14 @@ export default class Chapter4StoryManager {
     public markEscapedCentipedes(): void {
         const state = this.getState();
         if (state.mainQuestStep === Chapter4MainQuestStep.ESCAPE_DESERT_CENTIPEDES) {
+            state.mainQuestStep = Chapter4MainQuestStep.CROSS_DESERT_PATH;
+            this.syncWorldState();
+        }
+    }
+
+    public markCrossedDesertPath(): void {
+        const state = this.getState();
+        if (state.mainQuestStep === Chapter4MainQuestStep.CROSS_DESERT_PATH) {
             state.mainQuestStep = Chapter4MainQuestStep.JUMP_INTO_EMERALD_POND;
             this.syncWorldState();
         }
