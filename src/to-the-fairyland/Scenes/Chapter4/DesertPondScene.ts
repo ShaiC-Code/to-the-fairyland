@@ -16,6 +16,7 @@ export default class DesertPondScene extends DesertSceneBase {
 
     private path1TransitionStarted = false;
     private pondEscapeStarted = false;
+    private pondCentipedesCanDamagePlayer = false;
     private pondCentipedes: DesertCentipedeController[] = [];
     private pondCentipedeBottomSpawnTiles: Vec2[] = [];
     private pondCentipedeCleanupY = 0;
@@ -28,6 +29,7 @@ export default class DesertPondScene extends DesertSceneBase {
     public override startScene(): void {
         this.path1TransitionStarted = false;
         this.pondEscapeStarted = false;
+        this.pondCentipedesCanDamagePlayer = false;
         this.pondCentipedes = [];
         this.pondCentipedeBottomSpawnTiles = [];
         this.pondCentipedeCleanupY = 0;
@@ -35,6 +37,7 @@ export default class DesertPondScene extends DesertSceneBase {
     }
 
     public override unloadScene(): void {
+        this.pondCentipedesCanDamagePlayer = false;
         this.destroyPondCentipede();
         this.setWorldTimeScale(1);
         super.unloadScene();
@@ -89,13 +92,13 @@ export default class DesertPondScene extends DesertSceneBase {
         }
 
         this.pondEscapeStarted = true;
-        this.setWorldTimeScale(0.1);
+        this.pondCentipedesCanDamagePlayer = true;
+        this.setWorldTimeScale(0.04);
         this.spawnPondCentipede();
 
         this.startDialogue(
             dialogue(
                 [
-                    "The emerald water blazes like a wound in the world.",
                     "Behind you, the sand splits open.",
                     "A wall of centipedes rises from below.",
                     "There is no time left.",
@@ -109,6 +112,7 @@ export default class DesertPondScene extends DesertSceneBase {
     }
 
     private async finishPondEscape(): Promise<void> {
+        this.pondCentipedesCanDamagePlayer = false;
         this.setWorldTimeScale(1);
 
         if (this.transitioning || this.player.health <= 0) {
@@ -158,7 +162,11 @@ export default class DesertPondScene extends DesertSceneBase {
         for (const centipede of this.pondCentipedes) {
             centipede.updateStraight(deltaT, Vec2.UP, this.pondCentipedeSpeed);
 
-            if (!playerHit && centipede.overlapsCircle(this.getCentipedePlayerHurtCenter(), this.centipedePlayerHurtRadius)) {
+            if (
+                this.pondCentipedesCanDamagePlayer
+                && !playerHit
+                && centipede.overlapsCircle(this.getCentipedePlayerHurtCenter(), this.centipedePlayerHurtRadius)
+            ) {
                 playerHit = true;
                 this.setWorldTimeScale(1);
                 this.damagePlayer(
@@ -218,7 +226,8 @@ export default class DesertPondScene extends DesertSceneBase {
                 showLoadingOverlay: true,
                 useFadeTransition: true,
                 fadeOutMs: 500,
-                fadeInMs: 500
+                fadeInMs: 500,
+                pauseDuringFadeOut: false
             }
         );
     }
@@ -241,7 +250,8 @@ export default class DesertPondScene extends DesertSceneBase {
                 showLoadingOverlay: true,
                 useFadeTransition: true,
                 fadeOutMs: 500,
-                fadeInMs: 500
+                fadeInMs: 500,
+                pauseDuringFadeOut: false
             }
         );
     }

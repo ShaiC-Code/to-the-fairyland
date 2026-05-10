@@ -227,6 +227,10 @@ export default class DialogueController implements Updateable {
                     this.textDisplay.hideChoices();
                     option.onSelect?.();
                     this.handleDialogueChoiceAction(option);
+                    if (option.showInteractionAfterSelect === false) {
+                        this.endDialogue();
+                        return;
+                    }
                     this.startDialogue(option.interaction, this.activeSpeakerName, this.activeStartOptions);
                 }
             }))

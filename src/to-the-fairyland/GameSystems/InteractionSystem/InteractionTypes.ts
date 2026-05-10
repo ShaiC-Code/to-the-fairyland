@@ -36,6 +36,7 @@ export interface DialogueChoiceOption {
     label: string;
     interaction: DialogueInteraction;
     choiceAction?: DialogueChoiceAction;
+    showInteractionAfterSelect?: boolean;
     onSelect?: () => void;
 }
 

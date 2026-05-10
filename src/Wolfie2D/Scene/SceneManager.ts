@@ -13,6 +13,7 @@ type SceneTransitionOptions = {
 	useFadeTransition?: boolean;
 	fadeOutMs?: number;
 	fadeInMs?: number;
+	pauseDuringFadeOut?: boolean;
 };
 
 /**
@@ -41,6 +42,7 @@ export default class SceneManager {
 	protected pendingSceneInit: Record<string, any> | undefined;
 	protected pendingSceneTransition: SceneTransitionOptions | null;
 	protected pendingSceneSwapAtMs: number | null;
+	protected pendingScenePauseDuringFadeOut: boolean;
 	private readonly defaultLoadingOverlayDelayMs = 100;
 	private readonly defaultLoadingOverlayMinVisibleMs = 0;
 	private readonly defaultFadeOutMs = 200;
@@ -64,6 +66,7 @@ export default class SceneManager {
 		this.pendingSceneOptions = undefined;
 		this.pendingSceneTransition = null;
 		this.pendingSceneSwapAtMs = null;
+		this.pendingScenePauseDuringFadeOut = true;
 
 		this.receiver = new Receiver();
 		this.receiver.subscribe(GameEventType.CHANGE_SCENE);
@@ -82,6 +85,7 @@ export default class SceneManager {
 		this.pendingSceneInit = init;
 		this.pendingSceneTransition = transition ?? null;
 		this.pendingSceneSwapAtMs = null;
+		this.pendingScenePauseDuringFadeOut = true;
 	}
 
 	protected doSceneChange(){
@@ -98,6 +102,7 @@ export default class SceneManager {
 			this.resourceManager.transitionFadeEnabled = transition?.useFadeTransition === true;
 			this.resourceManager.transitionFadeOutMs = transition?.fadeOutMs ?? this.defaultFadeOutMs;
 			this.resourceManager.transitionFadeInMs = transition?.fadeInMs ?? this.defaultFadeInMs;
+			this.pendingScenePauseDuringFadeOut = transition?.pauseDuringFadeOut ?? true;
 
 			// Trigger transition visuals immediately so fast scene loads don't briefly expose the next scene.
 			if(this.resourceManager.onLoadProgress){
@@ -113,6 +118,7 @@ export default class SceneManager {
 		}
 
 		this.pendingSceneSwapAtMs = null;
+		this.pendingScenePauseDuringFadeOut = true;
 
 		console.log("Performing scene change");
 		
@@ -185,6 +191,9 @@ export default class SceneManager {
 		if(this.pendingSceneConstr !== null){
 			this.doSceneChange();
 			if (this.pendingSceneConstr !== null) {
+				if (!this.pendingScenePauseDuringFadeOut && this.pendingSceneSwapAtMs !== null && this.currentScene && this.currentScene.isRunning()) {
+					this.currentScene.update(deltaT);
+				}
 				return;
 			}
 		}

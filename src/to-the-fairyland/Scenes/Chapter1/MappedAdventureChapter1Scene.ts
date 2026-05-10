@@ -1,6 +1,6 @@
 import MappedAdventureScene, { AssetBundle, ChapterSceneDefinition } from "../MappedAdventureScene";
 import StoryManager from "../../GameSystems/StorySystem/StoryManager";
-import { DialogueChoiceActions, DialogueCompleteActions } from "../../GameSystems/InteractionSystem/InteractionDatabase";
+import { dialogue, DialogueChoiceActions, DialogueCompleteActions } from "../../GameSystems/InteractionSystem/InteractionDatabase";
 import FrozenBerries from "../../GameSystems/ItemSystem/Items/FrozenBerries";
 import CookedBerries from "../../GameSystems/ItemSystem/Items/CookedBerries";
 import WorldMap from "../../GameSystems/ItemSystem/Items/WorldMap";
@@ -35,7 +35,8 @@ export default abstract class MappedAdventureChapter1Scene extends MappedAdventu
         dialogueChoiceActionHandlers: {
             [DialogueChoiceActions.COLLECT_FROZEN_BERRIES]: () => this.giveFrozenBerries(),
             [DialogueChoiceActions.COOK_FROZEN_BERRIES]: () => this.giveCookedBerries(),
-            [DialogueChoiceActions.PICKUP_MAP]: () => this.pickupMap()
+            [DialogueChoiceActions.PICKUP_MAP]: () => this.pickupMap(),
+            [DialogueChoiceActions.SLEEP]: () => this.sleepInBedWithFade()
         }
     };
     
@@ -75,10 +76,19 @@ export default abstract class MappedAdventureChapter1Scene extends MappedAdventu
     }
 
     private sleepInBedWithFade(): void {
-        void this.playFullScreenFadeTransition(() => {
+        void this.playSleepInBedSequence();
+    }
+
+    private async playSleepInBedSequence(): Promise<void> {
+        await this.playFullScreenFadeTransition(() => {
             this.storyManager.chapter1.markReturnToBed();
             this.timeController.setTimeOfDay(this.gameSessionManager.getWorldState().timeOfDay);
         });
+
+        this.startDialogue(dialogue([
+            "You had terrible dreams.",
+            "<red>You dreamt you were being mauled by wolves."
+        ]));
     }
 
     protected onMapPickedUp(): void {}
