@@ -23,3 +23,4 @@ jobs:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_TO_THE_FAIRYLAND }}
           projectId: to-the-fairyland
+          expires: 7d

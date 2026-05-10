@@ -134,7 +134,7 @@ export default class ForestScene extends MappedAdventureChapter1Scene {
             this.howlEvent = new Timer(0, NullFunc);
         }
 
-        const delay = (Math.random() * 20000) + 10000;
+        const delay = (Math.random() * 10000) + 5000;
         this.howlEvent.start(delay);
     }
 
