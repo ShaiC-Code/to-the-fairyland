@@ -15,6 +15,12 @@ export type WeatherParticleSettings = Readonly<{
     wobbleAmplitudeMax: number;
     wobbleFrequencyMin: number;
     wobbleFrequencyMax: number;
+    rotationWobbleAmplitudeMinDegrees?: number;
+    rotationWobbleAmplitudeMaxDegrees?: number;
+    rotationWobbleFrequencyMin?: number;
+    rotationWobbleFrequencyMax?: number;
+    rotationDriftSpeedMinDegrees?: number;
+    rotationDriftSpeedMaxDegrees?: number;
 }>;
 
 export default class WeatherParticleBehavior implements AI {
@@ -27,6 +33,11 @@ export default class WeatherParticleBehavior implements AI {
     private wobbleAmplitude!: number;
     private wobbleFrequency!: number;
     private phaseOffset!: number;
+    private rotationBase = 0;
+    private rotationWobbleAmplitude = 0;
+    private rotationWobbleFrequency = 0;
+    private rotationPhaseOffset = 0;
+    private rotationDriftSpeed = 0;
     private elapsed = 0;
 
     public initializeAI(owner: Sprite, options: Record<string, any>): void {
@@ -56,6 +67,7 @@ export default class WeatherParticleBehavior implements AI {
 
         this.owner.position.x += vx * deltaT;
         this.owner.position.y += vy * deltaT;
+        this.owner.rotation = this.getRotation();
 
         const center = this.viewport.getCenter();
         const halfSize = this.viewport.getHalfSize();
@@ -178,7 +190,31 @@ export default class WeatherParticleBehavior implements AI {
         this.wobbleAmplitude = this.randomBetween(this.settings.wobbleAmplitudeMin, this.settings.wobbleAmplitudeMax);
         this.wobbleFrequency = this.randomBetween(this.settings.wobbleFrequencyMin, this.settings.wobbleFrequencyMax);
         this.phaseOffset = Math.random() * Math.PI * 2;
+        this.randomizeRotation();
         this.elapsed = 0
+    }
+
+    private randomizeRotation(): void {
+        const amplitudeDegrees = this.randomBetween(
+            this.settings.rotationWobbleAmplitudeMinDegrees ?? 0,
+            this.settings.rotationWobbleAmplitudeMaxDegrees ?? 0
+        );
+        const driftSpeedDegrees = this.randomBetween(
+            this.settings.rotationDriftSpeedMinDegrees ?? 0,
+            this.settings.rotationDriftSpeedMaxDegrees ?? 0
+        );
+
+        this.rotationWobbleAmplitude = this.degreesToRadians(amplitudeDegrees);
+        this.rotationWobbleFrequency = this.randomBetween(
+            this.settings.rotationWobbleFrequencyMin ?? 0,
+            this.settings.rotationWobbleFrequencyMax ?? 0
+        );
+        this.rotationDriftSpeed = this.degreesToRadians(driftSpeedDegrees);
+        this.rotationPhaseOffset = Math.random() * Math.PI * 2;
+
+        const shouldRotate = this.rotationWobbleAmplitude !== 0 || this.rotationDriftSpeed !== 0;
+        this.rotationBase = shouldRotate ? Math.random() * Math.PI * 2 : 0;
+        this.owner.rotation = this.rotationBase;
     }
 
     private randomBetween(min: number, max: number): number {
@@ -188,5 +224,17 @@ export default class WeatherParticleBehavior implements AI {
     private getHorizontalVelocity(): number {
         return this.windSpeed
             + this.wobbleAmplitude * Math.sin(this.wobbleFrequency * this.elapsed + this.phaseOffset);
+    }
+
+    private getRotation(): number {
+        return this.rotationBase
+            + this.rotationDriftSpeed * this.elapsed
+            + this.rotationWobbleAmplitude * Math.sin(
+                this.rotationWobbleFrequency * this.elapsed + this.rotationPhaseOffset
+            );
+    }
+
+    private degreesToRadians(degrees: number): number {
+        return degrees * Math.PI / 180;
     }
 }

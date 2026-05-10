@@ -7,7 +7,8 @@ export enum WeatherType {
     NONE,
     SNOW,
     SNOWSTORM,
-    SANDSTORM
+    SANDSTORM,
+    LEAVES
 }
 
 /**
