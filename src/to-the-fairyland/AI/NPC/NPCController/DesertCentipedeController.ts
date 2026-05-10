@@ -1,6 +1,7 @@
 import Vec2 from "../../../../Wolfie2D/DataTypes/Vec2";
 import Scene from "../../../../Wolfie2D/Scene/Scene";
 import Sprite from "../../../../Wolfie2D/Nodes/Sprites/Sprite";
+import AudioController from "../../../GameSystems/AudioController";
 
 type DesertCentipedeSegmentRole = "head" | "body" | "tail";
 
@@ -8,6 +9,10 @@ type DesertCentipedeSpriteKeys = {
     head: string;
     body: string;
     tail: string;
+};
+
+type DesertCentipedeSFXKeys = {
+    attack: string;
 };
 
 type DesertCentipedeSegment = {
@@ -26,6 +31,7 @@ export type DesertCentipedeOptions = {
     facing?: string;
     bodySegments: number;
     spriteKeys: DesertCentipedeSpriteKeys;
+    sfxKeys: DesertCentipedeSFXKeys;
     segmentSpacing?: number;
     headToBodySegmentSpacing?: number;
     bodyToBodySegmentSpacing?: number;
@@ -52,6 +58,7 @@ export default class DesertCentipedeController {
     private readonly scene: Scene;
     private readonly layerName: string;
     private readonly spriteKeys: DesertCentipedeSpriteKeys;
+    private readonly sfxKeys: DesertCentipedeSFXKeys;
     private readonly headToBodySegmentSpacing: number;
     private readonly bodyToBodySegmentSpacing: number;
     private readonly bodyToTailSegmentSpacing: number;
@@ -81,6 +88,7 @@ export default class DesertCentipedeController {
         this.scene = options.scene;
         this.layerName = options.layerName;
         this.spriteKeys = options.spriteKeys;
+        this.sfxKeys = options.sfxKeys;
         this.headToBodySegmentSpacing = options.headToBodySegmentSpacing ?? options.segmentSpacing ?? 48;
         this.bodyToBodySegmentSpacing = options.bodyToBodySegmentSpacing ?? options.segmentSpacing ?? 48;
         this.bodyToTailSegmentSpacing = options.bodyToTailSegmentSpacing ?? options.segmentSpacing ?? 48;
@@ -275,6 +283,7 @@ export default class DesertCentipedeController {
     }
 
     private startCharge(): void {
+        AudioController.getInstance().playSFX(this.sfxKeys.attack);
         if (this.chargeGuidanceDuration > 0) {
             this.moveMode = "guidedCharge";
             this.moveModeTimer = this.chargeGuidanceDuration;
