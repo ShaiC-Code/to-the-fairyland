@@ -24,6 +24,7 @@ export default class TreeInnerScene extends ForestSceneBase {
         key: "treeInner",
         path: "/assets/tilemaps/Chapter3/TreeInner.json"
     };
+    protected override readonly useChapter3LeafWeather = false;
 
     protected static readonly assetBundle: AssetBundle = {
         tilemaps: {},

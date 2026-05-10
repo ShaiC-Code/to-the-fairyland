@@ -322,6 +322,7 @@ export default abstract class ForestSceneBase extends MappedAdventureChapter3Sce
 
         this.toothFairies = [];
         this.storyManager.chapter3.markNeedExcalibur();
+        this.gameSessionManager.saveCurrentSession();
     }
 
     private findMapObjectByName(name: string): TiledObject | null {

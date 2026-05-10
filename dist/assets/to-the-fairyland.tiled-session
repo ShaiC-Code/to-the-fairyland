@@ -292,7 +292,7 @@
                 9
             ],
             "scale": 0.5,
-            "selectedLayer": 2,
+            "selectedLayer": 5,
             "viewCenter": {
                 "x": 984,
                 "y": 815
@@ -308,14 +308,14 @@
                 9
             ],
             "scale": 0.5,
-            "selectedLayer": 7,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 632,
-                "y": 997
+                "x": 654,
+                "y": 715
             }
         },
         "tilemaps/Chapter4/DesertPond.json#DesertLand": {
-            "scaleInDock": 0.75
+            "scaleInDock": 0.25
         },
         "tilemaps/Chapter4/GreatTree.json": {
             "expandedObjectLayers": [

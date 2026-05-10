@@ -233,7 +233,6 @@ export default class CliffBottomScene extends ForestSceneBase {
         this.activeToothFairyHealers.clear();
         this.removeFreshPrettyTooth();
         this.healByToothFairy();
-        this.storyManager.chapter3.markNeedExcalibur();
         this.gameSessionManager.saveCurrentSession();
         this.startFairyEscortToMarker(this.fairyEscortTargetName);
     }

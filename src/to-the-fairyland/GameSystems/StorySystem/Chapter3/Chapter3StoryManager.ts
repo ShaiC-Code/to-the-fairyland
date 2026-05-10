@@ -73,7 +73,10 @@ export default class Chapter3StoryManager {
     public markExcaliburPulled(): void {
         const state = this.getState();
 
-        if (state.mainQuestStep === Chapter3MainQuestStep.NEED_EXCALIBUR) {
+        if (
+            state.mainQuestStep === Chapter3MainQuestStep.HEALED_BY_TOOTH_FAIRY
+            || state.mainQuestStep === Chapter3MainQuestStep.NEED_EXCALIBUR
+        ) {
             state.mainQuestStep = Chapter3MainQuestStep.EXCALIBUR_PULLED;
             this.syncWorldState();
         }

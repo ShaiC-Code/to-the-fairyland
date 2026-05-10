@@ -1,5 +1,6 @@
 import Scene from "../../../Wolfie2D/Scene/Scene";
 import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
+import Input from "../../../Wolfie2D/Input/Input";
 import UIElement from "../../../Wolfie2D/Nodes/UIElement";
 import UIScreen, { UIScreenOptions } from "../UIScreen";
 import { LevelSelectionId } from "../../GameSystems/GameSessionSystem/LevelCheckpointMapping";
@@ -168,6 +169,8 @@ export default class LevelSelectionScreen extends UIScreen {
     }
 
     private updateWindowedNavigation(deltaT: number): void {
+        this.updateScrollWindow();
+
         const pressedDirection = this.getPressedNavigationDirection();
         const heldDirection = this.getHeldNavigationDirection();
 
@@ -184,6 +187,27 @@ export default class LevelSelectionScreen extends UIScreen {
         if (this.uiActions.confirm()) {
             this.confirmNavigationButton();
         }
+    }
+
+    private updateScrollWindow(): void {
+        if (!Input.didJustScroll()) {
+            return;
+        }
+
+        const scrollDirection = Input.getScrollDirection();
+        const maxStartIndex = Math.max(0, this.menuButtonKeys.length - this.visibleWindowSize);
+        const nextStartIndex = Math.max(
+            0,
+            Math.min(this.visibleWindowStartIndex + scrollDirection, maxStartIndex)
+        );
+
+        if (nextStartIndex === this.visibleWindowStartIndex) {
+            return;
+        }
+
+        this.visibleWindowStartIndex = nextStartIndex;
+        this.layoutVisibleWindow();
+        this.suppressMouseHoverForNavigationButtons();
     }
 
     private updateHeldNavigationRepeat(direction: -1 | 1, deltaT: number): void {

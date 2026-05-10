@@ -8,9 +8,15 @@ import {
 } from "./GameSessionState";
 import type { CheckpointStoryKey } from "./LevelCheckpointMapping";
 import { PlayerState } from "../PlayerSystem/PlayerState";
-import { StoryState } from "../StorySystem/StoryState";
+import {
+    ActiveChapter,
+    CHAPTER3_MAIN_QUEST_ORDER,
+    Chapter3MainQuestStep,
+    StoryState
+} from "../StorySystem/StoryState";
 import { WorldState } from "../WorldSystem/WorldState";
 import { CookieStorage } from "./CookieStorage";
+import Excalibur from "../ItemSystem/Items/Excalibur";
 
 /**
  * Owns the live game session for the current run.
@@ -83,6 +89,7 @@ export default class GameSessionManager {
 
     public startNewChapter4Game(): void {
         this.currentSession = createInitialChapter4GameSessionState();
+        this.repairPermanentStoryInventory(this.currentSession);
         this.checkpointsCapturedThisSession.clear();
     }
     
@@ -94,10 +101,14 @@ export default class GameSessionManager {
      */
     public loadSession(session: GameSessionState): void {
         this.currentSession = session;
+        this.repairPermanentStoryInventory(this.currentSession);
         this.checkpointsCapturedThisSession.clear();
     }
 
     public saveCurrentSession(): void {
+        if (this.currentSession) {
+            this.repairPermanentStoryInventory(this.currentSession);
+        }
         this.persistSessionToCookie();
     }
 
@@ -117,6 +128,7 @@ export default class GameSessionManager {
         resumePoint: GameSessionResumePoint
     ): void {
         if (this.currentSession) {
+            this.repairPermanentStoryInventory(this.currentSession);
             CookieStorage.saveCheckpoint(checkpointKey, this.currentSession, resumePoint);
             this.checkpointsCapturedThisSession.add(checkpointKey);
         }
@@ -137,6 +149,7 @@ export default class GameSessionManager {
             return false;
         }
 
+        this.repairPermanentStoryInventory(checkpoint);
         this.currentSession = checkpoint;
         this.checkpointsCapturedThisSession.clear();
         return true;
@@ -236,6 +249,7 @@ export default class GameSessionManager {
         try {
             const saved = CookieStorage.loadManualSession();
             if (saved && typeof saved === "object") {
+                this.repairPermanentStoryInventory(saved);
                 this.currentSession = saved;
                 return true;
             }
@@ -254,7 +268,39 @@ export default class GameSessionManager {
      */
     private persistSessionToCookie(): void {
         if (this.currentSession) {
+            this.repairPermanentStoryInventory(this.currentSession);
             CookieStorage.saveManualSession(this.currentSession);
         }
+    }
+
+    private repairPermanentStoryInventory(session: GameSessionState): void {
+        if (!this.storyRequiresExcalibur(session.story)) {
+            return;
+        }
+
+        const inventory = session.player.inventory;
+        if (inventory.find(item => item instanceof Excalibur) !== null) {
+            return;
+        }
+
+        inventory.add(new Excalibur());
+    }
+
+    private storyRequiresExcalibur(story: StoryState): boolean {
+        if (story.activeChapter === ActiveChapter.CHAPTER4) {
+            return true;
+        }
+
+        const chapter3Step = story.chapter3?.mainQuestStep;
+        if (!chapter3Step) {
+            return false;
+        }
+
+        const currentIndex = CHAPTER3_MAIN_QUEST_ORDER.indexOf(chapter3Step);
+        const pulledIndex = CHAPTER3_MAIN_QUEST_ORDER.indexOf(Chapter3MainQuestStep.EXCALIBUR_PULLED);
+
+        return currentIndex !== -1
+            && pulledIndex !== -1
+            && currentIndex >= pulledIndex;
     }
 }

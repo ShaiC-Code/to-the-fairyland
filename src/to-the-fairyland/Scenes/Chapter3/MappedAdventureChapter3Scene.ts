@@ -3,7 +3,7 @@ import StoryManager from "../../GameSystems/StorySystem/StoryManager";
 import { DialogueCompleteActions, DialogueChoiceActions } from "../../GameSystems/InteractionSystem/InteractionDatabase";
 import DesertLandScene from "../Chapter4/DesertLandScene";
 import AmbienceController from "../../GameSystems/WorldSystem/AmbienceController";
-import { TimeOfDay } from "../../GameSystems/WorldSystem/WorldState";
+import { TimeOfDay, WeatherType } from "../../GameSystems/WorldSystem/WorldState";
 
 export default abstract class MappedAdventureChapter3Scene extends MappedAdventureScene {
     protected static readonly assetBundle: AssetBundle = {
@@ -11,7 +11,10 @@ export default abstract class MappedAdventureChapter3Scene extends MappedAdventu
         spritesheets: {},
         sprites: {
             bushBerriesSprite: { key: "bushBerries", path: "/assets/sprites/BushBerries.png" },
-            forestTreeSprite: { key: "forestTree1", path: "/assets/sprites/ForestTree1.png" }
+            forestTreeSprite: { key: "forestTree1", path: "/assets/sprites/ForestTree1.png" },
+            leafParticle1Sprite: { key: "leafParticle1", path: "/assets/sprites/particles/Leaf1.png" },
+            leafParticle2Sprite: { key: "leafParticle2", path: "/assets/sprites/particles/Leaf2.png" },
+            leafParticle3Sprite: { key: "leafParticle3", path: "/assets/sprites/particles/Leaf3.png" }
         },
         sounds: {
             forestDayAmbienceSFX: { key: "ambience-forest-day", path: "/assets/sounds/ambience-forest-day.ogg" },
@@ -26,9 +29,18 @@ export default abstract class MappedAdventureChapter3Scene extends MappedAdventu
     };
     
     protected readonly storyManager = StoryManager.getInstance();
+    protected readonly useChapter3LeafWeather: boolean = true;
 
     protected combinedAssetBundles(): AssetBundle {
         return this.mergeAssetBundles(super.combinedAssetBundles(), MappedAdventureChapter3Scene.assetBundle);
+    }
+
+    public override startScene(): void {
+        super.startScene();
+
+        if (this.useChapter3LeafWeather) {
+            this.weatherController.setWeather(WeatherType.LEAVES, 50);
+        }
     }
 
     public override unloadScene(): void {
