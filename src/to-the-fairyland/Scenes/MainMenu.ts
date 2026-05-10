@@ -70,6 +70,12 @@ const levelLoadTransition = {
     fadeInMs: 500
 };
 
+const emeraldPondFadeInMs = 5000;
+const emeraldPondLevelLoadTransition = {
+    ...levelLoadTransition,
+    fadeInMs: emeraldPondFadeInMs
+};
+
 export default class MainMenu extends Scene {
     protected static readonly assetBundle: AssetBundle = {
         tilemaps: {},
@@ -572,7 +578,9 @@ export default class MainMenu extends Scene {
                 {
                     cheatsEnabled: this.cheatsEnabled,
                     spawnName: "Fate"
-                }
+                },
+                undefined,
+                emeraldPondLevelLoadTransition
             );
             break;
         }
@@ -599,7 +607,8 @@ export default class MainMenu extends Scene {
         scene: new (...args: any[]) => Scene,
         initializeSession: () => void,
         sceneInit: Record<string, any>,
-        afterSessionReady?: () => void
+        afterSessionReady?: () => void,
+        transition = levelLoadTransition
     ): void {
         const checkpointKey = LEVEL_TO_CHECKPOINT_STORY_KEY[levelId];
 
@@ -612,7 +621,7 @@ export default class MainMenu extends Scene {
                 afterSessionReady?.();
                 this.gameSessionManager.saveCheckpointWithResumePoint(checkpointKey, resumePoint!);
 
-                if (changeToResumePointScene(this.sceneManager, resumePoint!)) {
+                if (changeToResumePointScene(this.sceneManager, resumePoint!, transition)) {
                     return;
                 }
 
@@ -624,7 +633,7 @@ export default class MainMenu extends Scene {
                         fromResume: true
                     },
                     undefined,
-                    levelLoadTransition
+                    transition
                 );
 
                 return;
@@ -644,7 +653,7 @@ export default class MainMenu extends Scene {
             scene,
             sceneInit,
             undefined,
-            levelLoadTransition
+            transition
         );
     }
 
@@ -759,7 +768,11 @@ export function changeToNewGameStartScene(sceneManager: SceneManager): void {
     );
 }
 
-export function changeToResumePointScene(sceneManager: SceneManager, resumePoint: GameSessionResumePoint): boolean {
+export function changeToResumePointScene(
+    sceneManager: SceneManager,
+    resumePoint: GameSessionResumePoint,
+    transition = levelLoadTransition
+): boolean {
     const initData = {
         cheatsEnabled: resumePoint.cheatsEnabled ?? false,
         spawnName: resumePoint.spawnName,
@@ -768,55 +781,55 @@ export function changeToResumePointScene(sceneManager: SceneManager, resumePoint
 
     switch (resumePoint.sceneId) {
         case "ShelterScene":
-            sceneManager.changeToScene(ShelterScene, { ...initData, facing: Vec2.DOWN }, undefined, levelLoadTransition);
+            sceneManager.changeToScene(ShelterScene, { ...initData, facing: Vec2.DOWN }, undefined, transition);
             return true;
         case "ForestScene":
-            sceneManager.changeToScene(ForestScene, initData, undefined, levelLoadTransition);
+            sceneManager.changeToScene(ForestScene, initData, undefined, transition);
             return true;
         case "VillageScene":
-            sceneManager.changeToScene(VillageScene, initData, undefined, levelLoadTransition);
+            sceneManager.changeToScene(VillageScene, initData, undefined, transition);
             return true;
         case "RoadScene":
-            sceneManager.changeToScene(RoadScene, initData, undefined, levelLoadTransition);
+            sceneManager.changeToScene(RoadScene, initData, undefined, transition);
             return true;
         case "Road1Scene":
-            sceneManager.changeToScene(Road1Scene, initData, undefined, levelLoadTransition);
+            sceneManager.changeToScene(Road1Scene, initData, undefined, transition);
             return true;
         case "Road2Scene":
-            sceneManager.changeToScene(Road2Scene, initData, undefined, levelLoadTransition);
+            sceneManager.changeToScene(Road2Scene, initData, undefined, transition);
             return true;
         case "Road3Scene":
-            sceneManager.changeToScene(Road3Scene, initData, undefined, levelLoadTransition);
+            sceneManager.changeToScene(Road3Scene, initData, undefined, transition);
             return true;
         case "CliffScene":
-            sceneManager.changeToScene(CliffScene, initData, undefined, levelLoadTransition);
+            sceneManager.changeToScene(CliffScene, initData, undefined, transition);
             return true;
         case "CliffBottomScene":
-            sceneManager.changeToScene(CliffBottomScene, initData, undefined, levelLoadTransition);
+            sceneManager.changeToScene(CliffBottomScene, initData, undefined, transition);
             return true;
         case "DeeperForestScene":
-            sceneManager.changeToScene(DeeperForestScene, initData, undefined, levelLoadTransition);
+            sceneManager.changeToScene(DeeperForestScene, initData, undefined, transition);
             return true;
         case "GreatTreeScene":
-            sceneManager.changeToScene(GreatTreeScene, initData, undefined, levelLoadTransition);
+            sceneManager.changeToScene(GreatTreeScene, initData, undefined, transition);
             return true;
         case "TreeInnerScene":
-            sceneManager.changeToScene(TreeInnerScene, initData, undefined, levelLoadTransition);
+            sceneManager.changeToScene(TreeInnerScene, initData, undefined, transition);
             return true;
         case "DesertLandScene":
-            sceneManager.changeToScene(DesertLandScene, initData, undefined, levelLoadTransition);
+            sceneManager.changeToScene(DesertLandScene, initData, undefined, transition);
             return true;
         case "DesertLandParallaxScene":
-            sceneManager.changeToScene(DesertLandParallaxScene, initData, undefined, levelLoadTransition);
+            sceneManager.changeToScene(DesertLandParallaxScene, initData, undefined, transition);
             return true;
         case "DesertPath1Scene":
-            sceneManager.changeToScene(DesertPath1Scene, initData, undefined, levelLoadTransition);
+            sceneManager.changeToScene(DesertPath1Scene, initData, undefined, transition);
             return true;
         case "DesertPondScene":
-            sceneManager.changeToScene(DesertPondScene, initData, undefined, levelLoadTransition);
+            sceneManager.changeToScene(DesertPondScene, initData, undefined, transition);
             return true;
         case "EmeraldPondScene":
-            sceneManager.changeToScene(EmeraldPondScene, initData, undefined, levelLoadTransition);
+            sceneManager.changeToScene(EmeraldPondScene, initData, undefined, transition);
             return true;
         default:
             return false;

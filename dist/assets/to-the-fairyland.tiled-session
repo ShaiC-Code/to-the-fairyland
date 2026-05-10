@@ -307,11 +307,11 @@
                 2,
                 9
             ],
-            "scale": 0.5,
-            "selectedLayer": 2,
+            "scale": 0.75,
+            "selectedLayer": 5,
             "viewCenter": {
-                "x": 654,
-                "y": 715
+                "x": 725.3333333333333,
+                "y": 935.3333333333334
             }
         },
         "tilemaps/Chapter4/DesertPond.json#DesertLand": {

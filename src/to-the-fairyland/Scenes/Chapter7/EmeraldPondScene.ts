@@ -11,6 +11,9 @@ import DolphinPathBehavior from "../../AI/NPC/NPCBehavior/DolphinPathBehavior";
 import MainMenu from "../MainMenu";
 import AmbienceController from "../../GameSystems/WorldSystem/AmbienceController";
 import { AudioChannelType } from "../../../Wolfie2D/Sound/AudioManager";
+import StoryManager from "../../GameSystems/StorySystem/StoryManager";
+import TitleOverlay from "../../Overlays/TitleOverlay";
+import { dialogue } from "../../GameSystems/InteractionSystem/InteractionDatabase";
 
 export default class EmeraldPondScene extends MappedAdventureScene {
     protected readonly tilemap = {
@@ -42,7 +45,8 @@ export default class EmeraldPondScene extends MappedAdventureScene {
             },
             bubble1: { key: "bubble1", path: "/assets/sprites/particles/Bubble1.png" },
             bubble2: { key: "bubble2", path: "/assets/sprites/particles/Bubble2.png" },
-            bubble3: { key: "bubble3", path: "/assets/sprites/particles/Bubble3.png" }
+            bubble3: { key: "bubble3", path: "/assets/sprites/particles/Bubble3.png" },
+            fairyParticle2: { key: "fairyParticle2", path: "/assets/sprites/particles/FairyParticle2.png" }
 
         },
         sounds: {
@@ -74,8 +78,25 @@ export default class EmeraldPondScene extends MappedAdventureScene {
     private readonly dolphinPathLayerName = "DolphinPath";
     private readonly dolphinSpawnName = "Dolphin";
     private readonly dolphinMoveDuration = 0.2;
+    private readonly storyManager = StoryManager.getInstance();
+    private readonly fishRevealDelaySeconds = 7;
+    private readonly fishRevealQuietSeconds = 2;
+    private readonly fishRevealTitleDurationSeconds = 2.5;
+    private readonly fishRevealDolphinDelaySeconds = 1;
+    private readonly fishRevealTitleLayerName = "FishRevealTitleOverlay";
+    private readonly endingTitleLayerName = "EndingTitleOverlay";
+    private readonly endingTitleDurationSeconds = 3;
+    private readonly rescueCompleteFadeOutMs = 2000;
+    private readonly dolphinParticleLayerName = "DolphinFairyParticles";
+    private readonly dolphinCinematicZoomLevel = 0.88;
+    private readonly dolphinCinematicZoomDurationSeconds = 5;
 
-    private dolphin!: AnimatedSprite;
+    private dolphin: AnimatedSprite | null = null;
+    private fishRevealTitleOverlay!: TitleOverlay;
+    private endingTitleOverlay!: TitleOverlay;
+    private fishRevealTimer = 0;
+    private fishRevealSequenceStarted = false;
+    private sceneActive = false;
 
     private bubbles: Sprite[] = [];
     private bubbleSpawnTimer = 0;
@@ -116,14 +137,13 @@ export default class EmeraldPondScene extends MappedAdventureScene {
         return this.mergeAssetBundles(super.combinedAssetBundles(), EmeraldPondScene.assetBundle);
     }
 
-    public override unloadScene(): void {
-        super.unloadScene();
-        AmbienceController.getInstance().stopAllAmbience();
-    }
-
     // =============== Start Scene =======================
     public override startScene(): void {
         this.spawnName = "Fate";
+        this.sceneActive = true;
+        this.fishRevealTimer = 0;
+        this.fishRevealSequenceStarted = false;
+        this.dolphin = null;
         super.startScene();
 
         this.player.position.y += 25;
@@ -131,17 +151,54 @@ export default class EmeraldPondScene extends MappedAdventureScene {
         this.lockPlayerInput();
         this.setupPondDepthBackground();
         this.setupBubblePool();
-        this.setupDolphin();
+        if (this.shouldShowDolphin()) {
+            this.setupDolphinIfNeeded();
+        }
         AmbienceController.getInstance().playAmbience(this.ambienceChannel, this.assets.sounds.underwaterAmbienceSFX.key);
+    }
+
+    protected override configureLayers(): void {
+        super.configureLayers();
+        this.addLayer(this.dolphinParticleLayerName, this.actorLayerDepth + 0.5);
+        this.fishRevealTitleOverlay = new TitleOverlay(
+            this.fishRevealTitleLayerName,
+            this,
+            () => this.viewport.getCenter(),
+            () => this.viewport.getHalfSize(),
+            {
+                fontSize: 54,
+                pauseScene: true
+            }
+        );
+        this.endingTitleOverlay = new TitleOverlay(
+            this.endingTitleLayerName,
+            this,
+            () => this.viewport.getCenter(),
+            () => this.viewport.getHalfSize(),
+            {
+                fontSize: 72,
+                pauseScene: true,
+                pauseDuringTransition: true
+            }
+        );
+    }
+
+    public override unloadScene(): void {
+        this.sceneActive = false;
+        this.cameraController.zoomTo(1, 0);
+        super.unloadScene();
+        AmbienceController.getInstance().stopAllAmbience();
+    }
+
+    public override updateScene(deltaT: number): void {
+        super.updateScene(deltaT);
+        this.fishRevealTitleOverlay.update(deltaT);
+        this.endingTitleOverlay.update(deltaT);
     }
 
     // =============== Update Scene =======================
     protected override updateGameplay(deltaT: number): void {
         super.updateGameplay(deltaT);
-
-        if (this.dialogueController.isActive) {
-            return;
-        }
 
         this.currentDepth += this.sinkSpeed * deltaT;
         this.pondDepthBackground.position.y = this.pondDepthStartY - this.currentDepth;
@@ -150,6 +207,87 @@ export default class EmeraldPondScene extends MappedAdventureScene {
             this.player.animation.playIfNotAlready("DrownFlow", true);
         }
         this.updateBubbleSpawning(deltaT);
+
+        if (!this.dialogueController.isActive) {
+            this.updateFishRevealSequence(deltaT);
+        }
+    }
+
+    private updateFishRevealSequence(deltaT: number): void {
+        if (
+            this.gameSessionManager.getStoryState().chapter4 === undefined
+            || this.fishRevealSequenceStarted
+            || this.dolphin
+            || this.shouldShowDolphin()
+        ) {
+            return;
+        }
+
+        this.fishRevealTimer += deltaT;
+        if (this.fishRevealTimer < this.fishRevealDelaySeconds) {
+            return;
+        }
+
+        this.startFishRevealSequence();
+    }
+
+    private startFishRevealSequence(): void {
+        if (this.fishRevealSequenceStarted) {
+            return;
+        }
+
+        this.fishRevealSequenceStarted = true;
+        this.startDialogue(
+            dialogue(
+                [
+                    "Is this it?",
+                    "Will I die like this?",
+                    "No one will even know where I sank."
+                ],
+                { onComplete: () => void this.finishFishRevealSequence() }
+            ),
+            undefined,
+            { layoutMode: "topRightQuarter" }
+        );
+    }
+
+    private async finishFishRevealSequence(): Promise<void> {
+        await this.waitSeconds(this.fishRevealQuietSeconds);
+        if (!this.sceneActive || this.transitioning) {
+            return;
+        }
+
+        await this.fishRevealTitleOverlay.showTitle(
+            "Something is coming closer!",
+            this.fishRevealTitleDurationSeconds,
+            "red"
+        );
+
+        if (!this.sceneActive || this.transitioning) {
+            return;
+        }
+
+        await this.waitSeconds(this.fishRevealDolphinDelaySeconds);
+        if (!this.sceneActive || this.transitioning) {
+            return;
+        }
+
+        this.storyManager.chapter4.markFishAppeared();
+        this.gameSessionManager.saveCurrentSession();
+        this.setupDolphinIfNeeded();
+    }
+
+    private shouldShowDolphin(): boolean {
+        return this.gameSessionManager.getStoryState().chapter4 !== undefined
+            && this.storyManager.chapter4.canShowEmeraldPondFish();
+    }
+
+    private setupDolphinIfNeeded(): void {
+        if (this.dolphin) {
+            return;
+        }
+
+        this.setupDolphin();
     }
 
     private setupDolphin(): void {
@@ -195,8 +333,25 @@ export default class EmeraldPondScene extends MappedAdventureScene {
             pathWaypoints: dolphinPathWaypoints,
             moveDuration: this.dolphinMoveDuration,
             player: this.player,
-            onRescueComplete: () => this.transitionToMainMenu()
+            particleSpriteKey: this.assets.sprites.fairyParticle2.key,
+            particleLayerName: this.dolphinParticleLayerName,
+            onPlayerGrabbed: () => this.holdCameraForDolphinRescue(),
+            onRescueComplete: () => void this.transitionToMainMenu()
         });
+        this.startDolphinCinematicCamera();
+    }
+
+    private startDolphinCinematicCamera(): void {
+        this.cameraController.holdAtCurrentViewCenter();
+        this.cameraController.expandBoundsToFullMap();
+        this.cameraController.zoomTo(
+            this.dolphinCinematicZoomLevel,
+            this.dolphinCinematicZoomDurationSeconds
+        );
+    }
+
+    private holdCameraForDolphinRescue(): void {
+        this.cameraController.holdAtCurrentViewCenter();
     }
 
     private getActionFromObject(obj: TiledObject): string | undefined {
@@ -355,12 +510,35 @@ export default class EmeraldPondScene extends MappedAdventureScene {
         return min + Math.random() * (max - min);
     }
     
-    private transitionToMainMenu(): void {
+    private async transitionToMainMenu(): Promise<void> {
         if (this.transitioning) {
             return;
         }
     
         this.transitioning = true;
+
+        await new Promise<void>(resolve => {
+            void this.endingTitleOverlay.showTitle(
+                "TO THE FAIRYLAND",
+                undefined,
+                "white",
+                {
+                    fadeInSeconds: 1,
+                    fadeOutSeconds: 0,
+                    onFullyVisible: resolve
+                }
+            );
+        });
+
+        if (!this.sceneActive) {
+            return;
+        }
+
+        await this.waitSeconds(this.endingTitleDurationSeconds);
+
+        if (!this.sceneActive) {
+            return;
+        }
     
         this.sceneManager.changeToScene(
             MainMenu,
@@ -369,7 +547,7 @@ export default class EmeraldPondScene extends MappedAdventureScene {
             {
                 showLoadingOverlay: true,
                 useFadeTransition: true,
-                fadeOutMs: 1000,
+                fadeOutMs: this.rescueCompleteFadeOutMs,
                 fadeInMs: 500
             }
         );

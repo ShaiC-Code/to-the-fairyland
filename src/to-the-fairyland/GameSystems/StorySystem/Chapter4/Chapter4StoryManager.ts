@@ -43,8 +43,20 @@ export default class Chapter4StoryManager {
 
     public markJumpedIntoEmeraldPond(): void {
         const state = this.getState();
-        if (state.mainQuestStep !== Chapter4MainQuestStep.JUMP_INTO_EMERALD_POND) {
+        if (!this.hasReachedStep(Chapter4MainQuestStep.JUMP_INTO_EMERALD_POND)) {
             state.mainQuestStep = Chapter4MainQuestStep.JUMP_INTO_EMERALD_POND;
+            this.syncWorldState();
+        }
+    }
+
+    public canShowEmeraldPondFish(): boolean {
+        return this.hasReachedStep(Chapter4MainQuestStep.FISH_APPEARS);
+    }
+
+    public markFishAppeared(): void {
+        const state = this.getState();
+        if (state.mainQuestStep === Chapter4MainQuestStep.JUMP_INTO_EMERALD_POND) {
+            state.mainQuestStep = Chapter4MainQuestStep.FISH_APPEARS;
             this.syncWorldState();
         }
     }
