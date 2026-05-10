@@ -1,6 +1,8 @@
 import { TiledObject, TiledTilemapData } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData";
 import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
+import Debug from "../../../Wolfie2D/Debug/Debug";
 import { AudioChannelType } from "../../../Wolfie2D/Sound/AudioManager";
+import Color from "../../../Wolfie2D/Utils/Color";
 import DesertCentipedeController from "../../AI/NPC/NPCController/DesertCentipedeController";
 import AudioController from "../../GameSystems/AudioController";
 import { WeatherType } from "../../GameSystems/WorldSystem/WorldState";
@@ -75,6 +77,12 @@ export default abstract class DesertSceneBase extends MappedAdventureScene {
     protected readonly centipedeSpacingVariation = 0.08;
     protected readonly centipedeScaleVariation = 0.08;
     protected readonly centipedeCatchUpVariation = 0.16;
+    protected readonly centipedeHurtDamage = 15;
+    protected readonly centipedeHurtCooldown = 0.75;
+    protected readonly centipedeSegmentHurtRadius = 24;
+    protected readonly centipedePlayerHurtRadius = 22;
+    protected readonly centipedePlayerHurtCenterOffset = new Vec2(0, 34);
+    protected readonly showCentipedeHurtDebug = false;
 
     private readonly centipedes: DesertCentipedeController[] = [];
 
@@ -98,12 +106,46 @@ export default abstract class DesertSceneBase extends MappedAdventureScene {
     protected override updateGameplay(deltaT: number): void {
         super.updateGameplay(deltaT);
 
-        if (this.dialogueController.isActive) {
-            return;
-        }
+        const playerHurtCenter = this.getCentipedePlayerHurtCenter();
+        let playerDamaged = false;
 
         for (const centipede of this.centipedes) {
             centipede.update(deltaT, this.player.position);
+
+            if (
+                !playerDamaged
+                && centipede.overlapsCircle(playerHurtCenter, this.centipedePlayerHurtRadius)
+            ) {
+                playerDamaged = this.damagePlayer(this.centipedeHurtDamage, {
+                    cooldownSeconds: this.centipedeHurtCooldown,
+                    source: "desertCentipede"
+                });
+            }
+        }
+    }
+
+    public override render(): void {
+        super.render();
+
+        if (!this.showCentipedeHurtDebug || !this.player) {
+            return;
+        }
+
+        const viewScale = this.getViewScale();
+        const playerHurtCenter = this.getCentipedePlayerHurtCenter();
+
+        Debug.drawCircle(
+            this.player.inRelativeCoordinates(playerHurtCenter),
+            this.centipedePlayerHurtRadius * viewScale,
+            false,
+            new Color(255, 0, 0, 0.9)
+        );
+
+        for (const centipede of this.centipedes) {
+            centipede.renderHurtDebug(
+                position => this.player.inRelativeCoordinates(position),
+                viewScale
+            );
         }
     }
 
@@ -183,11 +225,16 @@ export default abstract class DesertSceneBase extends MappedAdventureScene {
             catchUpMaxSpeedMultiplier: this.centipedeCatchUpMaxSpeedMultiplier * catchUpSpeedMultiplier,
             catchUpTurnSpeedMultiplier: this.centipedeCatchUpTurnSpeedMultiplier * catchUpTurnMultiplier,
             rotationOffset: this.degreesToRadians(this.centipedeRotationOffsetDegrees),
-            scale: this.centipedeScale * scaleMultiplier
+            scale: this.centipedeScale * scaleMultiplier,
+            segmentHurtRadius: this.centipedeSegmentHurtRadius
         }));
 
         this.cameraController.shake(500, 50);
         AudioController.getInstance().playSound(this.assets.sounds.centipedesUnburrowingSFX.key);
+    }
+
+    private getCentipedePlayerHurtCenter(): Vec2 {
+        return this.player.position.clone().add(this.centipedePlayerHurtCenterOffset);
     }
 
     private degreesToRadians(degrees: number): number {

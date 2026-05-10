@@ -168,7 +168,7 @@ export default class DialogueController implements Updateable {
         const ai = this.player.ai as PlayerAI;
 
         if (!this.isActive && this.controlModeBeforeDialogue === null) {
-            this.controlModeBeforeDialogue = ai.controller.controlMode;
+            this.controlModeBeforeDialogue = this.getControlModeToRestoreAfterDialogue(ai.controller.controlMode);
         }
 
         ai.controller.setControlMode(PlayerControlMode.DIALOGUE);
@@ -279,6 +279,14 @@ export default class DialogueController implements Updateable {
         } else {
             this.textDisplay = this.dialogueScreen;
         }
+    }
+
+    private getControlModeToRestoreAfterDialogue(mode: PlayerControlMode): PlayerControlMode {
+        if (mode === PlayerControlMode.LOCKED) {
+            return PlayerControlMode.GAMEPLAY;
+        }
+
+        return mode;
     }
 
     private playDialogueSpeakingSFX(): void {

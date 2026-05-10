@@ -40,7 +40,6 @@ type VineShooterWaveControllerOptions = {
     ground: OrthogonalTilemap;
     getPlayerAI: () => PlayerAI;
     shouldRun: () => boolean;
-    isDialogueActive: () => boolean;
     waitSeconds: (seconds: number) => Promise<void>;
     getTilesCrossedByWorldSegment: (start: Vec2, end: Vec2) => Vec2[];
     startVineAttack: (startObj: TiledObject, endObj: TiledObject, options: VineAttackOptions) => void;
@@ -60,7 +59,6 @@ export default class VineShooterWaveController {
     private readonly ground: OrthogonalTilemap;
     private readonly getPlayerAI: () => PlayerAI;
     private readonly shouldRun: () => boolean;
-    private readonly isDialogueActive: () => boolean;
     private readonly waitSeconds: (seconds: number) => Promise<void>;
     private readonly showWaveTitle?: (text: string, duration: number) => Promise<void>;
     private readonly getTilesCrossedByWorldSegment: (start: Vec2, end: Vec2) => Vec2[];
@@ -119,7 +117,6 @@ export default class VineShooterWaveController {
         this.ground = options.ground;
         this.getPlayerAI = options.getPlayerAI;
         this.shouldRun = options.shouldRun;
-        this.isDialogueActive = options.isDialogueActive;
         this.waitSeconds = options.waitSeconds;
         this.showWaveTitle = options.showWaveTitle;
         this.getTilesCrossedByWorldSegment = options.getTilesCrossedByWorldSegment;
@@ -150,10 +147,6 @@ export default class VineShooterWaveController {
             return;
         }
 
-        if (this.isDialogueActive()) {
-            return;
-        }
-
         if (this.vineWaveActive) {
             return;
         }
@@ -178,7 +171,7 @@ export default class VineShooterWaveController {
             if (phase.title && this.showWaveTitle) {
                 await this.showWaveTitle(phase.title, phase.titleDuration ?? 1);
     
-                if (!this.shouldRun() || this.isDialogueActive()) {
+                if (!this.shouldRun()) {
                     this.vineWaveActive = false;
                     return;
                 }
@@ -253,10 +246,6 @@ export default class VineShooterWaveController {
         this.clearVineAttackIndicators(indicatorGroup);
 
         if (!this.shouldRun()) {
-            return;
-        }
-
-        if (this.isDialogueActive()) {
             return;
         }
 

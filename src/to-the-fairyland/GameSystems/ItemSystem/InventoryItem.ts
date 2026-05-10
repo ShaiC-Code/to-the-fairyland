@@ -7,6 +7,8 @@ export interface InventoryItemConsumeContext {
     showDialogue: (interaction: DialogueInteraction) => void;
     previewItemAction: (action: ItemUseAction) => ItemUseResult;
     runItemAction: (action: ItemUseAction) => ItemUseResult;
+    beginWorldSlowdown?: () => void;
+    endWorldSlowdown?: () => void;
 }
 
 /**

@@ -30,6 +30,12 @@ export type VineAttackOptions = {
     spriteKey?: string;
 };
 
+export type VineSwordCutCapsule = {
+    start: Vec2;
+    end: Vec2;
+    radius: number;
+};
+
 type VineAttackControllerOptions = {
     scene: Scene;
     ground: OrthogonalTilemap;
@@ -41,6 +47,7 @@ type VineAttackControllerOptions = {
     partRotationOffset?: number;
     dynamicCollisionTileId?: number;
     swordAttackHitSFXKey?: string;
+    swordCutRadius?: number;
 };
 
 export default class VineAttackController implements SwordHitTarget {
@@ -57,6 +64,7 @@ export default class VineAttackController implements SwordHitTarget {
     private readonly partRotationOffset: number;
     private readonly dynamicCollisionTileId: number;
     private readonly swordAttackHitSFXKey?: string;
+    private readonly swordCutRadius: number;
 
     public constructor(options: VineAttackControllerOptions) {
         this.scene = options.scene;
@@ -69,6 +77,7 @@ export default class VineAttackController implements SwordHitTarget {
         this.partRotationOffset = options.partRotationOffset ?? 0;
         this.dynamicCollisionTileId = options.dynamicCollisionTileId ?? 1;
         this.swordAttackHitSFXKey = options.swordAttackHitSFXKey;
+        this.swordCutRadius = options.swordCutRadius ?? 28;
     }
 
     public startFromObjects(startObj: TiledObject, endObj: TiledObject, options: VineAttackOptions = {}): void {
@@ -173,12 +182,12 @@ export default class VineAttackController implements SwordHitTarget {
     }
     
     public handleSwordHit(hitbox: PlayerAttackHitbox): void {
-        const playerHitTiles = this.getPlayerAttackPathTileSet(hitbox);
+        const swordCutCapsule = this.getSwordCutCapsule(hitbox);
 
         const vinesHit = this.activeVineAttacks.filter(attack =>
             attack.type === "normal" &&
             attack.progress > 0 &&
-            this.currentVineTouchesAnyTile(attack, playerHitTiles)
+            this.currentVineIntersectsSwordCapsule(attack, swordCutCapsule)
         );
 
         if (vinesHit.length > 0) {
@@ -189,25 +198,31 @@ export default class VineAttackController implements SwordHitTarget {
     
         this.destroyMatching(attack => vinesHit.includes(attack));
     }
-    
-    private getPlayerAttackPathTileSet(hitbox: PlayerAttackHitbox): Set<string> {
+
+    public getSwordCutCapsule(hitbox: PlayerAttackHitbox): VineSwordCutCapsule {
         const endTile = hitbox.tiles[hitbox.tiles.length - 1] ?? hitbox.originTile;
-    
+
         const start = this.ground.getTileCenter(hitbox.originTile.x, hitbox.originTile.y);
         const end = this.ground.getTileCenter(endTile.x, endTile.y);
-    
-        return new Set(
-            this.getTilesCrossedByWorldSegment(start, end)
-                .map(tile => this.tileKey(tile))
-        );
+
+        return {
+            start,
+            end,
+            radius: this.swordCutRadius
+        };
     }
     
-    private currentVineTouchesAnyTile(attack: VineAttack, hitTiles: Set<string>): boolean {
+    private currentVineIntersectsSwordCapsule(attack: VineAttack, capsule: VineSwordCutCapsule): boolean {
         const currentTip = this.getCurrentTip(attack);
-    
-        const vineTiles = this.getTilesCrossedByWorldSegment(attack.start, currentTip);
-    
-        return vineTiles.some(tile => hitTiles.has(this.tileKey(tile)));
+        const radius = Math.max(0, capsule.radius);
+        const radiusSq = radius * radius;
+
+        return this.segmentDistanceSq(
+            capsule.start,
+            capsule.end,
+            attack.start,
+            currentTip
+        ) <= radiusSq;
     }
 
     private getCurrentTip(attack: VineAttack): Vec2 {
@@ -233,6 +248,64 @@ export default class VineAttackController implements SwordHitTarget {
         );
 
         return closestPoint.distanceSqTo(center) <= radiusSq;
+    }
+
+    private segmentDistanceSq(a: Vec2, b: Vec2, c: Vec2, d: Vec2): number {
+        if (this.segmentsIntersect(a, b, c, d)) {
+            return 0;
+        }
+
+        return Math.min(
+            this.pointToSegmentDistanceSq(a, c, d),
+            this.pointToSegmentDistanceSq(b, c, d),
+            this.pointToSegmentDistanceSq(c, a, b),
+            this.pointToSegmentDistanceSq(d, a, b)
+        );
+    }
+
+    private pointToSegmentDistanceSq(point: Vec2, start: Vec2, end: Vec2): number {
+        const segment = start.vecTo(end);
+        const segmentLengthSq = segment.magSq();
+
+        if (segmentLengthSq <= 0) {
+            return point.distanceSqTo(start);
+        }
+
+        const fromStart = start.vecTo(point);
+        const t = Math.max(0, Math.min(1, fromStart.dot(segment) / segmentLengthSq));
+        const closestPoint = new Vec2(
+            start.x + segment.x * t,
+            start.y + segment.y * t
+        );
+
+        return point.distanceSqTo(closestPoint);
+    }
+
+    private segmentsIntersect(a: Vec2, b: Vec2, c: Vec2, d: Vec2): boolean {
+        const epsilon = 0.0001;
+        const o1 = this.cross(a, b, c);
+        const o2 = this.cross(a, b, d);
+        const o3 = this.cross(c, d, a);
+        const o4 = this.cross(c, d, b);
+
+        if (Math.abs(o1) <= epsilon && this.pointOnSegment(c, a, b, epsilon)) return true;
+        if (Math.abs(o2) <= epsilon && this.pointOnSegment(d, a, b, epsilon)) return true;
+        if (Math.abs(o3) <= epsilon && this.pointOnSegment(a, c, d, epsilon)) return true;
+        if (Math.abs(o4) <= epsilon && this.pointOnSegment(b, c, d, epsilon)) return true;
+
+        return ((o1 > epsilon && o2 < -epsilon) || (o1 < -epsilon && o2 > epsilon))
+            && ((o3 > epsilon && o4 < -epsilon) || (o3 < -epsilon && o4 > epsilon));
+    }
+
+    private cross(a: Vec2, b: Vec2, c: Vec2): number {
+        return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
+    }
+
+    private pointOnSegment(point: Vec2, start: Vec2, end: Vec2, epsilon: number): boolean {
+        return point.x >= Math.min(start.x, end.x) - epsilon
+            && point.x <= Math.max(start.x, end.x) + epsilon
+            && point.y >= Math.min(start.y, end.y) - epsilon
+            && point.y <= Math.max(start.y, end.y) + epsilon;
     }
     
     public getTilesCrossedByWorldSegment(start: Vec2, end: Vec2): Vec2[] {
