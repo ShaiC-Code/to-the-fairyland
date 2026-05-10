@@ -1,5 +1,6 @@
 import { TiledObject, TiledTilemapData } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData";
 import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
+import { AudioChannelType } from "../../../Wolfie2D/Sound/AudioManager";
 import DesertCentipedeController from "../../AI/NPC/NPCController/DesertCentipedeController";
 import AudioController from "../../GameSystems/AudioController";
 import { WeatherType } from "../../GameSystems/WorldSystem/WorldState";
@@ -30,8 +31,10 @@ export default abstract class DesertSceneBase extends MappedAdventureScene {
         sounds: {
             weatherSandStormSFX: { key: "weather-sandstorm", path: "/assets/sounds/weather-sandstorm.ogg" },
             walkingSandSFX: { key: "walking-sand", path: "/assets/sounds/walking-sand.ogg" },
-            centipedesCrawlingSFX: { key: "centipedes-crawling", path: "/assets/sounds/centipedes-crawling.ogg" },
-            centipedesAttackingSFX: { key: "centipedes-attacking", path: "/assets/sounds/centipedes-attacking.ogg" }
+            centipedesTunnelingSFX: { key: "centipedes-tunneling", path: "/assets/sounds/centipedes-tunneling.ogg" },
+            centipedesUnburrowingSFX: { key: "centipedes-unburrowing", path: "/assets/sounds/centipedes-unburrowing.ogg" },
+            centipedesAttackingSFX: { key: "centipedes-attacking", path: "/assets/sounds/centipedes-attacking.ogg" },
+            pondSplashSFX: { key: "pond-splash", path: "/assets/sounds/pond-splash.ogg" }
         },
         images: {}
     };
@@ -75,12 +78,15 @@ export default abstract class DesertSceneBase extends MappedAdventureScene {
 
     private readonly centipedes: DesertCentipedeController[] = [];
 
+    protected readonly centipedeAmbienceChannel = AudioChannelType.CUSTOM_3;
+
     protected override combinedAssetBundles(): AssetBundle {
         return this.mergeAssetBundles(super.combinedAssetBundles(), DesertSceneBase.desertAssetBundle);
     }
 
     public override unloadScene(): void {
         super.unloadScene();
+        AudioController.getInstance().stopSound(this.assets.sounds.centipedesTunnelingSFX.key);
         AudioController.getInstance().stopSound(this.assets.sounds.walkingSandSFX.key);
     }
 
@@ -157,6 +163,9 @@ export default abstract class DesertSceneBase extends MappedAdventureScene {
                 body: this.assets.sprites.desertCentipedeBody.key,
                 tail: this.assets.sprites.desertCentipedeTail.key
             },
+            sfxKeys: {
+                attack: this.assets.sounds.centipedesAttackingSFX.key,
+            },
             headToBodySegmentSpacing: this.centipedeHeadToBodySegmentSpacing * spacingMultiplier,
             bodyToBodySegmentSpacing: this.centipedeBodyToBodySegmentSpacing * spacingMultiplier,
             bodyToTailSegmentSpacing: this.centipedeBodyToTailSegmentSpacing * spacingMultiplier,
@@ -176,6 +185,9 @@ export default abstract class DesertSceneBase extends MappedAdventureScene {
             rotationOffset: this.degreesToRadians(this.centipedeRotationOffsetDegrees),
             scale: this.centipedeScale * scaleMultiplier
         }));
+
+        this.cameraController.shake(500, 50);
+        AudioController.getInstance().playSound(this.assets.sounds.centipedesUnburrowingSFX.key);
     }
 
     private degreesToRadians(degrees: number): number {

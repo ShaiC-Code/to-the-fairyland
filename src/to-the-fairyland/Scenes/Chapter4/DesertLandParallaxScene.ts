@@ -11,6 +11,7 @@ import { dialogue } from "../../GameSystems/InteractionSystem/InteractionDatabas
 import StoryManager from "../../GameSystems/StorySystem/StoryManager";
 import DesertSceneBase from "./DesertSceneBase";
 import DesertPondScene from "./DesertPondScene";
+import AudioController from "../../GameSystems/AudioController";
 
 type CentipedeSpawnMilestone = {
     threshold: number;
@@ -549,6 +550,7 @@ export default class DesertLandParallaxScene extends DesertSceneBase {
             scriptedSpawn.dialogueLines,
             { onComplete: () => this.releaseCentipedeSpawns(queuedSpawns) }
         ));
+        AudioController.getInstance().playSound(this.assets.sounds.centipedesTunnelingSFX.key, true, true);
     }
 
     private queueCentipedeSpawn(

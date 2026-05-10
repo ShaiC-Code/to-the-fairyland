@@ -1,4 +1,5 @@
 import { TiledObject } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData";
+import AudioController from "../../GameSystems/AudioController";
 import { dialogue } from "../../GameSystems/InteractionSystem/InteractionDatabase";
 import EmeraldPondScene from "../Chapter7/EmeraldPondScene";
 import DesertSceneBase from "./DesertSceneBase";
@@ -16,7 +17,10 @@ export default class DesertPondScene extends DesertSceneBase {
                     "The emerald water shines like a doorway.",
                     "You step into the pond."
                 ],
-                { onComplete: () => this.gotoEmeraldPond() }
+                { onComplete: () => {
+                    AudioController.getInstance().playSFX(this.assets.sounds.pondSplashSFX.key);
+                    this.gotoEmeraldPond();
+                }}
             ));
             return;
         }
