@@ -8,7 +8,7 @@ import { Chapter2VillageItem } from "../../GameSystems/StorySystem/StoryState";
 import SleepingBag from "../../GameSystems/ItemSystem/Items/SleepingBag";
 import ObsidianBoots from "../../GameSystems/ItemSystem/Items/ObsidianBoots";
 import { ItemUseAction, ItemUseActions, ItemUseResult } from "../../GameSystems/ItemSystem/ItemUseActions";
-import { TimeOfDay } from "../../GameSystems/WorldSystem/WorldState";
+import { TimeOfDay, WeatherType } from "../../GameSystems/WorldSystem/WorldState";
 import CliffBottomScene from "../Chapter3/CliffBottomScene";
 import AmbienceController from "../../GameSystems/WorldSystem/AmbienceController";
 import { AudioChannelType } from "../../../Wolfie2D/Sound/AudioManager";
@@ -17,7 +17,11 @@ export default abstract class MappedAdventureChapter2Scene extends MappedAdventu
     protected static readonly assetBundle: AssetBundle = {
         tilemaps: {},
         spritesheets: {},
-        sprites: {},
+        sprites: {
+            leafParticle1Sprite: { key: "leafParticle1", path: "/assets/sprites/particles/Leaf1.png" },
+            leafParticle2Sprite: { key: "leafParticle2", path: "/assets/sprites/particles/Leaf2.png" },
+            leafParticle3Sprite: { key: "leafParticle3", path: "/assets/sprites/particles/Leaf3.png" }
+        },
         sounds: {
             somethingBigSFX: { key: "something-big", path: "/assets/sounds/something-big.ogg" },
             forestDayAmbienceSFX: { key: "ambience-forest-day", path: "/assets/sounds/ambience-forest-day.ogg" },
@@ -42,6 +46,11 @@ export default abstract class MappedAdventureChapter2Scene extends MappedAdventu
 
     protected combinedAssetBundles(): AssetBundle {
         return this.mergeAssetBundles(super.combinedAssetBundles(), MappedAdventureChapter2Scene.assetBundle);
+    }
+
+    public override startScene(): void {
+        super.startScene();
+        this.weatherController.setWeather(WeatherType.LEAVES, 50);
     }
 
     public override unloadScene(): void {
