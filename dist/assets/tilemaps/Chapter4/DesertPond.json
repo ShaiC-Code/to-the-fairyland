@@ -187,7 +187,19 @@
          "draworder":"topdown",
          "id":5,
          "name":"EnemySpawns",
-         "objects":[],
+         "objects":[
+                {
+                 "height":64,
+                 "id":14,
+                 "name":"CentipedeBottom",
+                 "opacity":1,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":448,
+                 "x":448,
+                 "y":1728
+                }],
          "opacity":1,
          "type":"objectgroup",
          "visible":true,
@@ -248,7 +260,7 @@
          "y":0
         }],
  "nextlayerid":11,
- "nextobjectid":14,
+ "nextobjectid":15,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.12.1",
