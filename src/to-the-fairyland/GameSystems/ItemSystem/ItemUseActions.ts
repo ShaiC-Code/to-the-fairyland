@@ -1,6 +1,7 @@
 export const ItemUseActions = {
     SLEEP_WITH_SLEEPING_BAG: "sleepWithSleepingBag",
-    HOLD_UP_TOOTH: "holdUpTooth"
+    HOLD_UP_TOOTH: "holdUpTooth",
+    EAT_LOFTY_BREAD: "eatLoftyBread"
 } as const;
 
 export type ItemUseAction =

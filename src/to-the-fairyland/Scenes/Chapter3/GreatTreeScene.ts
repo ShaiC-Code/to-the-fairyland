@@ -6,7 +6,6 @@ import { AssetBundle } from "../MappedAdventureScene";
 import VineAttackController from "../../AI/NPC/NPCController/VineAttackController";
 import { choiceOption, dialogue, dialogueWithChoice } from "../../GameSystems/InteractionSystem/InteractionDatabase";
 import Excalibur from "../../GameSystems/ItemSystem/Items/Excalibur";
-import MainMenu from "../MainMenu";
 import AudioController from "../../GameSystems/AudioController";
 
 export default class GreatTreeScene extends ForestSceneBase {
@@ -96,17 +95,7 @@ export default class GreatTreeScene extends ForestSceneBase {
             this.changeToForestSection(TreeInnerScene, "TreeInner");
         }
         else if (obj.name === "PathToCrowland") {
-            this.sceneManager.changeToScene(
-                MainMenu,
-                {},
-                undefined,
-                {
-                    showLoadingOverlay: true,
-                    useFadeTransition: true,
-                    fadeOutMs: 500,
-                    fadeInMs: 500
-                }
-            );
+            this.gotoChapter4();
         }
     }
 

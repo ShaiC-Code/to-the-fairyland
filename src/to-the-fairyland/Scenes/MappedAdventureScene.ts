@@ -30,6 +30,7 @@ import { WeatherType } from "../GameSystems/WorldSystem/WorldState";
 import PauseControlsScreen from "../UI/PauseControlsScreen";
 import AnimatedSprite from "../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
 import Excalibur from "../GameSystems/ItemSystem/Items/Excalibur";
+import LoftyBread from "../GameSystems/ItemSystem/Items/LoftyBread";
 import PlayerAttackController, { PlayerAttackHitbox } from "../GameSystems/CombatSystem/PlayerAttackController";
 import SwordHitDispatcher from "../GameSystems/CombatSystem/SwordHitDispatcher";
 import AudioController from "../GameSystems/AudioController";
@@ -45,7 +46,7 @@ import {
     resolveCheckpointStoryKey
 } from "../GameSystems/GameSessionSystem/LevelCheckpointMapping";
 import { unlockForCheckpointKey } from "../GameSystems/GameSessionSystem/LevelUnlocks";
-import { ActiveChapter } from "../GameSystems/StorySystem/StoryState";
+import { ActiveChapter, Chapter2MainQuestStep } from "../GameSystems/StorySystem/StoryState";
 import AmbienceController from "../GameSystems/WorldSystem/AmbienceController";
 import RedFlashOverlay from "../Overlays/RedFlashOverlay";
 import PlayerDeathHitOverlay from "../Overlays/PlayerDeathHitOverlay";
@@ -193,6 +194,7 @@ export default abstract class MappedAdventureScene extends Scene {
     private toothHeldTimer = 0;
     private toothFairyResponded = false;
     private readonly toothHoldDuration = 3;
+    private readonly loftyBreadHealAmount = 20;
     
     protected readonly hudLayerName = "HUD";
     protected readonly lowHealthOverlayLayerName = "LowHealthOverlay";
@@ -349,6 +351,7 @@ export default abstract class MappedAdventureScene extends Scene {
         this.player.sceneAssets = this.assets;
 
         const playerState = this.playerStateManager.getPlayerState();
+        this.grantLoftyBreadAfterLeavingVillage();
         this.player.maxHealth = playerState.maxHealth;
         this.player.health = playerState.health;
 
@@ -1194,8 +1197,64 @@ export default abstract class MappedAdventureScene extends Scene {
         });
     }
 
+    private grantLoftyBreadAfterLeavingVillage(): void {
+        if (!this.shouldGrantLoftyBreadAfterLeavingVillage()) {
+            return;
+        }
+
+        const inventory = this.playerStateManager.getPlayerState().inventory;
+        const alreadyHasLoftyBread = inventory.find(item => item instanceof LoftyBread) !== null;
+
+        if (alreadyHasLoftyBread) {
+            return;
+        }
+
+        inventory.add(new LoftyBread());
+    }
+
+    private shouldGrantLoftyBreadAfterLeavingVillage(): boolean {
+        const storyState = this.gameSessionManager.getStoryState();
+
+        if (storyState.activeChapter === ActiveChapter.CHAPTER1) {
+            return false;
+        }
+
+        if (storyState.activeChapter !== ActiveChapter.CHAPTER2) {
+            return true;
+        }
+
+        const chapter2Step = storyState.chapter2?.mainQuestStep;
+
+        if (!chapter2Step) {
+            return false;
+        }
+
+        const currentStepIndex = getStoryStepOrderIndex(ActiveChapter.CHAPTER2, chapter2Step);
+        const leaveVillageIndex = getStoryStepOrderIndex(ActiveChapter.CHAPTER2, Chapter2MainQuestStep.LEAVE_VILLAGE);
+
+        return currentStepIndex !== -1
+            && leaveVillageIndex !== -1
+            && currentStepIndex >= leaveVillageIndex;
+    }
+
     // use to determine the result before running actual action. So we can display different dialogues base on different world state 
     protected previewItemAction(action: ItemUseAction): ItemUseResult {
+        if (action === ItemUseActions.EAT_LOFTY_BREAD) {
+            const ai = this.player.ai as PlayerAI;
+
+            if (ai.controller.controlMode === PlayerControlMode.FAINTED) {
+                return {
+                    success: false,
+                    lines: ["Blood is choking you. You can't eat."]
+                };
+            }
+
+            return {
+                success: true,
+                lines: ["You eat some lofty bread."]
+            };
+        }
+
         if (action === ItemUseActions.HOLD_UP_TOOTH) {
             return {
                 success: true,
@@ -1210,6 +1269,12 @@ export default abstract class MappedAdventureScene extends Scene {
     }
     
     protected runItemAction(action: ItemUseAction): ItemUseResult {
+        if (action === ItemUseActions.EAT_LOFTY_BREAD) {
+            this.healPlayer(this.loftyBreadHealAmount);
+
+            return this.previewItemAction(action);
+        }
+
         if (action === ItemUseActions.HOLD_UP_TOOTH) {
             this.startToothHeldEffect();
 
