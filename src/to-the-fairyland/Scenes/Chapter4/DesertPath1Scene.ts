@@ -59,6 +59,7 @@ export default class DesertPath1Scene extends DesertSceneBase {
         this.resetPathCentipedeState();
         super.startScene();
         this.pathWaveTimer = this.pathInitialWaveDelaySeconds;
+        AudioController.getInstance().playSound(this.assets.sounds.centipedesTunnelingSFX.key, true, true);
     }
 
     public override unloadScene(): void {
@@ -192,7 +193,6 @@ export default class DesertPath1Scene extends DesertSceneBase {
             indicators: waveColumns.map(column => this.createPathColumnIndicator(column))
         };
         this.nextWaveUsesOddColumns = !this.nextWaveUsesOddColumns;
-        AudioController.getInstance().playSFX(this.assets.sounds.centipedesTunnelingSFX.key);
     }
 
     private releasePendingPathWave(): void {

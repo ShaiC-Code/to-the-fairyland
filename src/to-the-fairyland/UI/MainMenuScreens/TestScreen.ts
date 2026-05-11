@@ -6,9 +6,29 @@ import GameSessionManager from "../../GameSystems/GameSessionSystem/GameSessionM
 import { CookieStorage } from "../../GameSystems/GameSessionSystem/CookieStorage";
 
 export default class TestScreen extends UIScreen {
+    private static readonly CHEATS_ENABLED_SETTING_KEY = "cheatsEnabledSetting";
+    private static readonly CHEATS_BTN_ENABLE_TEXT = "Enable Cheats";
+    private static readonly CHEATS_BTN_DISABLE_TEXT = "Disable Cheats";
+
     constructor(layerName: string, scene: Scene, getViewportCenter: () => Vec2, getViewportHalfSize: () => Vec2, options?: UIScreenOptions) {
         super(layerName, scene, getViewportCenter, getViewportHalfSize, options);
         this.initializeUI();
+    }
+
+    public setCheatsEnabled(enabled: boolean): void {
+        const btn = this.getUIElement("activateCheatsBtn") as Button | undefined;
+        if (!btn) {
+            return;
+        }
+
+        btn.setText(enabled ? TestScreen.CHEATS_BTN_DISABLE_TEXT : TestScreen.CHEATS_BTN_ENABLE_TEXT);
+    }
+
+    public syncCheatsEnabledFromCookie(): void {
+        const stored = CookieStorage.getItem(TestScreen.CHEATS_ENABLED_SETTING_KEY);
+        if (typeof stored === "boolean") {
+            this.setCheatsEnabled(stored);
+        }
     }
 
     protected override initializeUI(): void {
@@ -46,23 +66,16 @@ export default class TestScreen extends UIScreen {
             {"halign": "left", "valign": "center"}
         );
 
-        const cheatsBtnEnableText = "Enable Cheats";
-        const cheatsBtnDisableText = "Disable Cheats";
         this.addButton(
             "activateCheatsBtn",
             new Vec2(screenCenter.x + 180, listTop + 300),
             new Vec2(380, 40),
-            cheatsBtnEnableText,
+            TestScreen.CHEATS_BTN_ENABLE_TEXT,
             {
-                onClickEventId: "activateCheats",
-                onClick: () => {
-                    const btn = this.getUIElement("activateCheatsBtn") as Button | undefined;
-                    if (!btn) return;
-                    const isActivating = btn.text === cheatsBtnEnableText;
-                    btn.setText(isActivating ? cheatsBtnDisableText : cheatsBtnEnableText);
-                }
+                onClickEventId: "activateCheats"
             }
         );
+        this.syncCheatsEnabledFromCookie();
 
         this.addButton(
             "unlockAllLevelsBtn",

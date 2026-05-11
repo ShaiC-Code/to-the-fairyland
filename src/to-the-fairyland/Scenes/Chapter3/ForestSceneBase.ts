@@ -311,6 +311,8 @@ export default abstract class ForestSceneBase extends MappedAdventureChapter3Sce
         for (const fairy of this.toothFairies) {
             fairy.alpha = 1;
         }
+
+        AmbienceController.getInstance().stopAmbience(this.fairyAmbienceChannel, 5);
     }
 
     private finishFairyEscortFadeOut(): void {
@@ -365,7 +367,7 @@ export default abstract class ForestSceneBase extends MappedAdventureChapter3Sce
     protected override playCurrentAmbience(): void {
         super.playCurrentAmbience();
         if (this.toothFairies.length > 0) {
-            AmbienceController.getInstance().playAmbience(this.fairyAmbienceChannel, this.assets.sounds.fairiesFlutteringSFX.key);
+            AmbienceController.getInstance().playAmbience(this.fairyAmbienceChannel, this.assets.sounds.fairiesFlutteringSFX.key, true, true, 10);
         }
     }
     

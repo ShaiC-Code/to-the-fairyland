@@ -838,6 +838,7 @@ export default abstract class MappedAdventureScene extends Scene {
     }
 
     protected damagePlayer(amount: number, options?: PlayerDamageOptions): boolean {
+        if (this.cheatsEnabled) return false;
         return this.playerHealthController.takeDamage(amount, options);
     }
 
@@ -1545,7 +1546,7 @@ export default abstract class MappedAdventureScene extends Scene {
         );
 
         this.gameSessionManager.saveCurrentSession();
-        AudioController.getInstance().playSFX(this.assets.sounds.itemReceivedSFX.key); // TEMP AUDIO
+        AudioController.getInstance().playSFX(this.assets.sounds.itemReceivedSFX.key);
     }
 
     protected restoreSavedPlayerTile(savedPos: { x: number; y: number }): Vec2 {
