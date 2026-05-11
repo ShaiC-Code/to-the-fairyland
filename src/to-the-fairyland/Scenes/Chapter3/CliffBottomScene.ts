@@ -11,6 +11,7 @@ import HealingParticleEffect from "../../GameSystems/Effects/HealingParticleEffe
 import { dialogue } from "../../GameSystems/InteractionSystem/InteractionDatabase";
 import FreshPrettyTooth from "../../GameSystems/ItemSystem/Items/FreshPrettyTooth";
 import { Chapter3MainQuestStep } from "../../GameSystems/StorySystem/StoryState";
+import AudioController from "../../GameSystems/AudioController";
 
 type ToothFairyHealingState = {
     healTimer: number;
@@ -115,6 +116,7 @@ export default class CliffBottomScene extends ForestSceneBase {
         this.cliffFallIntroStarted = true;
         this.setWorldTimeScale(0);
         this.dialogueController.setCutsceneMode(true);
+        AudioController.getInstance().playSFX(this.assets.sounds.playerHurtFatalSFX.key);
         this.startDialogue(
             dialogue(
                 [

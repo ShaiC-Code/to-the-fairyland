@@ -244,7 +244,9 @@ export default class EmeraldPondScene extends MappedAdventureScene {
                     "Will I die like this?",
                     "No one will even know where I sank."
                 ],
-                { onComplete: () => void this.finishFishRevealSequence() }
+                { onComplete: () => { 
+                    this.lockPlayerInput(); this.finishFishRevealSequence();
+                }}
             ),
             undefined,
             { layoutMode: "topRightQuarter" }
@@ -258,7 +260,7 @@ export default class EmeraldPondScene extends MappedAdventureScene {
         }
 
         await this.fishRevealTitleOverlay.showTitle(
-            "Something is coming closer!",
+            "Something is approaching!",
             this.fishRevealTitleDurationSeconds,
             "red"
         );

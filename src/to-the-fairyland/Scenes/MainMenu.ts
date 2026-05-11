@@ -46,6 +46,7 @@ import DesertLandScene from "./Chapter4/DesertLandScene";
 import DesertLandParallaxScene from "./Chapter4/DesertLandParallaxScene";
 import DesertPath1Scene from "./Chapter4/DesertPath1Scene";
 import DesertPondScene from "./Chapter4/DesertPondScene";
+import { CookieStorage } from "../GameSystems/GameSessionSystem/CookieStorage";
 
 type AssetRef = Readonly<{
     readonly key: string;
@@ -75,6 +76,8 @@ const emeraldPondLevelLoadTransition = {
     ...levelLoadTransition,
     fadeInMs: emeraldPondFadeInMs
 };
+
+const CHEATS_ENABLED_SETTING_KEY = "cheatsEnabledSetting";
 
 export default class MainMenu extends Scene {
     protected static readonly assetBundle: AssetBundle = {
@@ -187,6 +190,11 @@ export default class MainMenu extends Scene {
     }
 
     public startScene(): void {
+        const storedCheats = CookieStorage.getItem(CHEATS_ENABLED_SETTING_KEY);
+        if (typeof storedCheats === "boolean") {
+            this.cheatsEnabled = storedCheats;
+        }
+
         const uiActions: UIScreenActionBindings = {
             navigatePrevious: () => Input.isJustPressed(PlayerInput.MOVE_LEFT) || Input.isJustPressed(PlayerInput.MOVE_UP),
             navigateNext: () => Input.isJustPressed(PlayerInput.MOVE_RIGHT) || Input.isJustPressed(PlayerInput.MOVE_DOWN),
@@ -243,6 +251,8 @@ export default class MainMenu extends Scene {
             () => this.viewport.getHalfSize(),
             uiOptions
         );
+
+        this.testMenu.setCheatsEnabled(this.cheatsEnabled);
 
         this.receiver.subscribe("openLevelMenu");
         this.receiver.subscribe("openControlsMenu");
@@ -301,11 +311,14 @@ export default class MainMenu extends Scene {
             break;
 
         case "openTestMenu":
+            this.testMenu.setCheatsEnabled(this.cheatsEnabled);
             this.showScreen("testMenu");
             break;
 
         case "activateCheats":
             this.cheatsEnabled = !this.cheatsEnabled;
+            CookieStorage.setItem(CHEATS_ENABLED_SETTING_KEY, this.cheatsEnabled);
+            this.testMenu.setCheatsEnabled(this.cheatsEnabled);
             break;
 
         case "unlockAllLevels":
@@ -596,7 +609,12 @@ export default class MainMenu extends Scene {
             return;
         }
 
-        if (!changeToResumePointScene(this.sceneManager, resumePoint)) {
+        const effectiveResumePoint: GameSessionResumePoint = {
+            ...resumePoint,
+            cheatsEnabled: this.cheatsEnabled
+        };
+
+        if (!changeToResumePointScene(this.sceneManager, effectiveResumePoint)) {
             this.gameSessionManager.startNewGame();
             changeToNewGameStartScene(this.sceneManager);
         }
@@ -621,14 +639,19 @@ export default class MainMenu extends Scene {
                 afterSessionReady?.();
                 this.gameSessionManager.saveCheckpointWithResumePoint(checkpointKey, resumePoint!);
 
-                if (changeToResumePointScene(this.sceneManager, resumePoint!, transition)) {
+                const effectiveResumePoint: GameSessionResumePoint = {
+                    ...resumePoint!,
+                    cheatsEnabled: this.cheatsEnabled
+                };
+
+                if (changeToResumePointScene(this.sceneManager, effectiveResumePoint, transition)) {
                     return;
                 }
 
                 this.sceneManager.changeToScene(
                     scene,
                     {
-                        cheatsEnabled: resumePoint?.cheatsEnabled ?? sceneInit.cheatsEnabled ?? false,
+                        cheatsEnabled: this.cheatsEnabled,
                         spawnName: resumePoint?.spawnName ?? sceneInit.spawnName,
                         fromResume: true
                     },
@@ -646,6 +669,7 @@ export default class MainMenu extends Scene {
         const placeholderResumePoint = this.gameSessionManager.getResumePoint() ?? { sceneId: sceneInit.spawnName ?? "" };
         this.gameSessionManager.saveCheckpointWithResumePoint(checkpointKey, {
             ...placeholderResumePoint,
+            cheatsEnabled: this.cheatsEnabled,
             playerPos: undefined
         });
 
@@ -773,8 +797,13 @@ export function changeToResumePointScene(
     resumePoint: GameSessionResumePoint,
     transition = levelLoadTransition
 ): boolean {
+    const storedCheats = CookieStorage.getItem(CHEATS_ENABLED_SETTING_KEY);
+    const effectiveCheatsEnabled = typeof storedCheats === "boolean"
+        ? storedCheats
+        : (resumePoint.cheatsEnabled ?? false);
+
     const initData = {
-        cheatsEnabled: resumePoint.cheatsEnabled ?? false,
+        cheatsEnabled: effectiveCheatsEnabled,
         spawnName: resumePoint.spawnName,
         fromResume: true
     };

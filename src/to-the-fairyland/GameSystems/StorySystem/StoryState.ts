@@ -115,7 +115,7 @@ export function createInitialChapter2State(): Chapter2StoryState {
 }
 export function createChapter2CompletedState(): Chapter2StoryState {
     return {
-        mainQuestStep: Chapter2MainQuestStep.ESCAPE_LYCANS,
+        mainQuestStep: Chapter2MainQuestStep.CLIFF_JUMP,
         villageItems: {
             [Chapter2VillageItem.FRESH_PRETTY_TOOTH]: true,
             [Chapter2VillageItem.FLOWER_RING]: true,
@@ -125,16 +125,21 @@ export function createChapter2CompletedState(): Chapter2StoryState {
         }
     };
 }
-export function createInitialChapter4State(): Chapter4StoryState {
-    return {
-        mainQuestStep: Chapter4MainQuestStep.ESCAPE_DESERT_CENTIPEDES
-    };
-}
-
 
 export function createInitialChapter3State(): Chapter3StoryState {
     return {
         mainQuestStep: Chapter3MainQuestStep.FAINTED
+    };
+}
+export function createChapter3CompletedState(): Chapter3StoryState {
+    return {
+        mainQuestStep: Chapter3MainQuestStep.VINE_EXIT_OPEN
+    };
+}
+
+export function createInitialChapter4State(): Chapter4StoryState {
+    return {
+        mainQuestStep: Chapter4MainQuestStep.ESCAPE_DESERT_CENTIPEDES
     };
 }
 

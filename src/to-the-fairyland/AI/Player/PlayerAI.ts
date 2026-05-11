@@ -33,7 +33,6 @@ export default class PlayerAI extends StateMachineAI implements AI {
     public moveProgress = 0; //Percentage moved
     public moveDuration = 0.12; //Player speed, time to finish moving 1 tile
     public currentMoveDuration = this.moveDuration; //for diagonal normalization where speed changes
-    private takeDamage: ((amount: number) => void) | null = null;
     private canMoveToTileRule: ((currentTile: Vec2, direction: Vec2, nextTile: Vec2) => boolean) | null = null;
     
     public initializeAI(owner: PlayerActor, opts: Record<string, any>): void {
@@ -52,7 +51,6 @@ export default class PlayerAI extends StateMachineAI implements AI {
         this.moveEnd = owner.position.clone();
         this.moveProgress = 0;
         this.currentMoveDuration = this.moveDuration;
-        this.takeDamage = opts.takeDamage ?? null;
         this.canMoveToTileRule = opts.canMoveToTile ?? null;
 
         // Add the players states to it's StateMachine
@@ -86,14 +84,6 @@ export default class PlayerAI extends StateMachineAI implements AI {
             default: {
                 super.handleEvent(event);
                 break;
-            }
-        }
-    }
-
-    protected handleLaserFiredEvent(actorId: number, to: Vec2, from: Vec2): void {
-        if (this.owner.id !== actorId && this.owner.collisionShape !== undefined ) {
-            if (this.owner.collisionShape.getBoundingRect().intersectSegment(to, from.clone().sub(to)) !== null) {
-                this.takeDamage?.(1);
             }
         }
     }

@@ -97,6 +97,7 @@ export default class DesertPondScene extends DesertSceneBase {
         this.setWorldTimeScale(0.03);
         this.spawnPondCentipede();
 
+        this.cheatsEnabled = false;
         this.startDialogue(
             dialogue(
                 [
