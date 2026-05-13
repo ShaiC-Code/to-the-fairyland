@@ -61,6 +61,14 @@ export default class Chapter4StoryManager {
         }
     }
 
+    public markEnteredUndergroundCave(): void {
+        const state = this.getState();
+        if (!this.hasReachedStep(Chapter4MainQuestStep.UNDERGROUND_CAVE)) {
+            state.mainQuestStep = Chapter4MainQuestStep.UNDERGROUND_CAVE;
+            this.syncWorldState();
+        }
+    }
+
     private getState(): Chapter4StoryState {
         const state = this.getStoryState().chapter4;
 

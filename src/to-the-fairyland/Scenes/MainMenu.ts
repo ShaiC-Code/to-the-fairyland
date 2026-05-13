@@ -37,6 +37,7 @@ import { Chapter2MainQuestStep, Chapter3MainQuestStep, Chapter4MainQuestStep } f
 import { TimeOfDay } from "../GameSystems/WorldSystem/WorldState";
 import CliffScene from "./Chapter2/CliffScene";
 import EmeraldPondScene from "./Chapter7/EmeraldPondScene";
+import UndergroundCaveScene from "./Chapter7/UndergroundCaveScene";
 import CliffBottomScene from "./Chapter3/CliffBottomScene";
 import TreeInnerScene from "./Chapter3/TreeInnerScene";
 import Excalibur from "../GameSystems/ItemSystem/Items/Excalibur";
@@ -275,6 +276,7 @@ export default class MainMenu extends Scene {
         this.receiver.subscribe("level10");
         this.receiver.subscribe("level11");
         this.receiver.subscribe("level12");
+        this.receiver.subscribe("level13");
 
         this.mainMenu.setResumeEnabled(this.gameSessionManager.hasSavedSession());
         this.mainMenu.show();
@@ -596,6 +598,29 @@ export default class MainMenu extends Scene {
                 emeraldPondLevelLoadTransition
             );
             break;
+
+        case "level13":
+            this.enterLevel(
+                "level13",
+                UndergroundCaveScene,
+                () => {
+                    this.gameSessionManager.startNewChapter4Game();
+
+                    const chapter4 = this.gameSessionManager.getStoryState().chapter4;
+                    if (!chapter4) {
+                        throw new Error("Chapter 4 story state was not initialized.");
+                    }
+
+                    chapter4.mainQuestStep = Chapter4MainQuestStep.UNDERGROUND_CAVE;
+                    this.gameSessionManager.setResumePoint("UndergroundCaveScene", "CaveInner");
+                },
+                {
+                    cheatsEnabled: this.cheatsEnabled,
+                    spawnName: "CaveInner"
+                },
+                () => this.ensurePlayerHasExcalibur()
+            );
+            break;
         }
     }
 
@@ -859,6 +884,9 @@ export function changeToResumePointScene(
             return true;
         case "EmeraldPondScene":
             sceneManager.changeToScene(EmeraldPondScene, initData, undefined, transition);
+            return true;
+        case "UndergroundCaveScene":
+            sceneManager.changeToScene(UndergroundCaveScene, initData, undefined, transition);
             return true;
         default:
             return false;

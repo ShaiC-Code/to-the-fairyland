@@ -8,12 +8,12 @@ import BubbleParticleBehavior, { BubbleParticleSettings } from "../../AI/BubbleP
 import AnimatedSprite from "../../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
 import { TiledObject, TiledTilemapData } from "../../../Wolfie2D/DataTypes/Tilesets/TiledData";
 import DolphinPathBehavior from "../../AI/NPC/NPCBehavior/DolphinPathBehavior";
-import MainMenu from "../MainMenu";
 import AmbienceController from "../../GameSystems/WorldSystem/AmbienceController";
 import { AudioChannelType } from "../../../Wolfie2D/Sound/AudioManager";
 import StoryManager from "../../GameSystems/StorySystem/StoryManager";
 import TitleOverlay from "../../Overlays/TitleOverlay";
 import { dialogue } from "../../GameSystems/InteractionSystem/InteractionDatabase";
+import UndergroundCaveScene from "./UndergroundCaveScene";
 
 export default class EmeraldPondScene extends MappedAdventureScene {
     protected readonly tilemap = {
@@ -84,16 +84,14 @@ export default class EmeraldPondScene extends MappedAdventureScene {
     private readonly fishRevealTitleDurationSeconds = 2.5;
     private readonly fishRevealDolphinDelaySeconds = 1;
     private readonly fishRevealTitleLayerName = "FishRevealTitleOverlay";
-    private readonly endingTitleLayerName = "EndingTitleOverlay";
-    private readonly endingTitleDurationSeconds = 3;
     private readonly rescueCompleteFadeOutMs = 2000;
+    private readonly undergroundCaveSpawnName = "CaveInner";
     private readonly dolphinParticleLayerName = "DolphinFairyParticles";
     private readonly dolphinCinematicZoomLevel = 0.88;
     private readonly dolphinCinematicZoomDurationSeconds = 5;
 
     private dolphin: AnimatedSprite | null = null;
     private fishRevealTitleOverlay!: TitleOverlay;
-    private endingTitleOverlay!: TitleOverlay;
     private fishRevealTimer = 0;
     private fishRevealSequenceStarted = false;
     private sceneActive = false;
@@ -170,17 +168,6 @@ export default class EmeraldPondScene extends MappedAdventureScene {
                 pauseScene: true
             }
         );
-        this.endingTitleOverlay = new TitleOverlay(
-            this.endingTitleLayerName,
-            this,
-            () => this.viewport.getCenter(),
-            () => this.viewport.getHalfSize(),
-            {
-                fontSize: 72,
-                pauseScene: true,
-                pauseDuringTransition: true
-            }
-        );
     }
 
     public override unloadScene(): void {
@@ -193,7 +180,6 @@ export default class EmeraldPondScene extends MappedAdventureScene {
     public override updateScene(deltaT: number): void {
         super.updateScene(deltaT);
         this.fishRevealTitleOverlay.update(deltaT);
-        this.endingTitleOverlay.update(deltaT);
     }
 
     // =============== Update Scene =======================
@@ -338,7 +324,7 @@ export default class EmeraldPondScene extends MappedAdventureScene {
             particleSpriteKey: this.assets.sprites.fairyParticle2.key,
             particleLayerName: this.dolphinParticleLayerName,
             onPlayerGrabbed: () => this.holdCameraForDolphinRescue(),
-            onRescueComplete: () => void this.transitionToMainMenu()
+            onRescueComplete: () => this.transitionToUndergroundCave()
         });
         this.startDolphinCinematicCamera();
     }
@@ -512,39 +498,28 @@ export default class EmeraldPondScene extends MappedAdventureScene {
         return min + Math.random() * (max - min);
     }
     
-    private async transitionToMainMenu(): Promise<void> {
+    private transitionToUndergroundCave(): void {
         if (this.transitioning) {
             return;
         }
     
         this.transitioning = true;
-
-        await new Promise<void>(resolve => {
-            void this.endingTitleOverlay.showTitle(
-                "TO THE FAIRYLAND",
-                undefined,
-                "white",
-                {
-                    fadeInSeconds: 1,
-                    fadeOutSeconds: 0,
-                    onFullyVisible: resolve
-                }
-            );
-        });
-
-        if (!this.sceneActive) {
-            return;
+        if (this.gameSessionManager.getStoryState().chapter4) {
+            this.storyManager.chapter4.markEnteredUndergroundCave();
         }
-
-        await this.waitSeconds(this.endingTitleDurationSeconds);
-
-        if (!this.sceneActive) {
-            return;
-        }
+        this.gameSessionManager.setResumePoint(
+            "UndergroundCaveScene",
+            this.undergroundCaveSpawnName,
+            this.cheatsEnabled
+        );
+        this.gameSessionManager.saveCurrentSession();
     
         this.sceneManager.changeToScene(
-            MainMenu,
-            {},
+            UndergroundCaveScene,
+            {
+                cheatsEnabled: this.cheatsEnabled,
+                spawnName: this.undergroundCaveSpawnName
+            },
             undefined,
             {
                 showLoadingOverlay: true,
