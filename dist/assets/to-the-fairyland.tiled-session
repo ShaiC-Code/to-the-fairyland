@@ -1,16 +1,16 @@
 {
-    "activeFile": "tilemaps/Chapter1/Chapter1.json",
+    "activeFile": "tilemaps/Chapter7/UndergroundCave.json",
     "expandedProjectPaths": [
-        "tilemaps/Chapter4",
-        "tilemaps/Chapter3",
         ".",
-        "tilemaps/Chapter2",
-        "spritesheets",
+        "tilemaps",
         "tilemaps/Chapter6",
-        "tilemaps/Chapter7",
+        "spritesheets",
         "tilemaps/Chapter1",
         "tilemaps/Chapter5",
-        "tilemaps"
+        "tilemaps/Chapter3",
+        "tilemaps/Chapter4",
+        "tilemaps/Chapter7",
+        "tilemaps/Chapter2"
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
@@ -195,6 +195,9 @@
             "scaleInDock": 1
         },
         "tilemaps/Chapter3/TreeInner.json": {
+            "expandedObjectLayers": [
+                4
+            ],
             "scale": 3,
             "selectedLayer": 10,
             "viewCenter": {
@@ -431,20 +434,21 @@
         },
         "tilemaps/Chapter7/UndergroundCave.json": {
             "expandedObjectLayers": [
-                4
+                4,
+                11
             ],
-            "scale": 0.75,
+            "scale": 1,
             "selectedLayer": 6,
             "viewCenter": {
-                "x": 948,
-                "y": 864.6666666666665
+                "x": 986,
+                "y": 997.5
             }
         },
         "tilemaps/Chapter7/UndergroundCave.json#EmeraldPond": {
             "scaleInDock": 1
         },
         "tilemaps/Chapter7/UndergroundCave.json#UndergroundCave": {
-            "scaleInDock": 1
+            "scaleInDock": 0.5
         }
     },
     "last.externalTilesetPath": "D:/GameDev/CSE380/Project/to-the-fairyland/dist/assets/tilemaps/Chapter7",
@@ -460,27 +464,27 @@
         "tilemaps/Chapter1/Shelter.json",
         "tilemaps/Chapter4/DesertLand.json",
         "tilemaps/Chapter4/DesertLandParallax.json",
-        "tilemaps/Chapter4/DesertPond.json",
-        "tilemaps/Chapter4/DesertPath1.json",
-        "tilemaps/Chapter7/EmeraldPond.json",
-        "tilemaps/Chapter1/Chapter1.json",
-        "tilemaps/Chapter2/Road1.json"
+        "tilemaps/Chapter3/CliffBottom.json",
+        "tilemaps/Chapter3/DeeperForest.json",
+        "tilemaps/Chapter3/GreatTree.json",
+        "tilemaps/Chapter3/TreeInner.json",
+        "tilemaps/Chapter7/UndergroundCave.json"
     ],
     "project": "to-the-fairyland.tiled-project",
     "property.type": "int",
     "recentFiles": [
-        "tilemaps/Chapter4/DesertPond.json",
-        "tilemaps/Chapter4/DesertPath1.json",
-        "tilemaps/Chapter7/EmeraldPond.json",
-        "tilemaps/Chapter1/Chapter1.json",
-        "tilemaps/Chapter2/Road1.json",
-        "tilemaps/Chapter5/UndergroundTunnel.json",
-        "tilemaps/Chapter7/EmeraldPond - Copy.json",
         "tilemaps/Chapter2/Cliff.json",
         "tilemaps/Chapter2/Road.json",
         "tilemaps/Chapter1/Shelter.json",
         "tilemaps/Chapter4/DesertLand.json",
-        "tilemaps/Chapter4/DesertLandParallax.json"
+        "tilemaps/Chapter4/DesertLandParallax.json",
+        "tilemaps/Chapter3/CliffBottom.json",
+        "tilemaps/Chapter3/DeeperForest.json",
+        "tilemaps/Chapter3/GreatTree.json",
+        "tilemaps/Chapter3/TreeInner.json",
+        "tilemaps/Chapter7/UndergroundCave.json",
+        "tilemaps/Chapter4/DesertPond.json",
+        "tilemaps/Chapter4/DesertPath1.json"
     ],
     "resizeMap.removeObjects": false,
     "tileset.embedInMap": true,

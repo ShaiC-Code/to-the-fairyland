@@ -18,7 +18,7 @@ export type TitleOverlayOptions = OverlayLayerOptions & {
     startDelaySeconds?: number;
 };
 
-export type TitleOverlayTextColor = "white" | "red" | "green";
+export type TitleOverlayTextColor = "white" | "red" | "green" | "black";
 
 export type TitleOverlayShowOptions = {
     fadeInSeconds?: number;
@@ -343,6 +343,8 @@ export default class TitleOverlay extends OverlayLayer {
 
     private getTextColor(textColor: TitleOverlayTextColor): Color {
         switch (textColor) {
+            case "black":
+                return Color.BLACK;
             case "white":
                 return Color.WHITE;
             case "green":

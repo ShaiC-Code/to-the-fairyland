@@ -191,6 +191,9 @@ export default class MainMenu extends Scene {
     }
 
     public startScene(): void {
+        this.viewport.setZoomLevel(1);
+        this.viewport.setCenter(this.viewport.getHalfSize().clone());
+
         const storedCheats = CookieStorage.getItem(CHEATS_ENABLED_SETTING_KEY);
         if (typeof storedCheats === "boolean") {
             this.cheatsEnabled = storedCheats;
