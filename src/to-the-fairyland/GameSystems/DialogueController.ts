@@ -15,6 +15,7 @@ import { DialogueChoiceOption, DialogueInteraction } from "./InteractionSystem/I
 
 export type DialogueStartOptions = {
     layoutMode?: DialogueLayoutMode;
+    onLineStart?: (lineIndex: number, line: string) => void;
 };
 
 export default class DialogueController implements Updateable {
@@ -160,6 +161,7 @@ export default class DialogueController implements Updateable {
         this.textDisplay.showLine(
             this.activeDialogue.lines[this.currentDialogueLine]
         );
+        this.invokeLineStartCallback();
         this.playDialogueNextSFX();
         this.playDialogueSpeakingSFX();
     }
@@ -193,12 +195,24 @@ export default class DialogueController implements Updateable {
         this.textDisplay.showLine(
             dialogue.lines[this.currentDialogueLine]
         );
+        this.invokeLineStartCallback();
         if (this.cutsceneMode) {
             this.cutsceneBackgroundTintOverlay.show();
         }
 
         this.playDialogueSpeakingSFX();
         this.isActive = true;
+    }
+
+    private invokeLineStartCallback(): void {
+        if (!this.activeDialogue) {
+            return;
+        }
+
+        this.activeStartOptions.onLineStart?.(
+            this.currentDialogueLine,
+            this.activeDialogue.lines[this.currentDialogueLine]
+        );
     }
 
     protected shouldShowDialogueChoice(): boolean {

@@ -11,6 +11,7 @@ import FairyParticleBehavior, {
 } from "../../AI/FairyParticleBehavior";
 import PlayerAI from "../../AI/Player/PlayerAI";
 import { PlayerControlMode } from "../../AI/Player/PlayerController";
+import { dialogue } from "../../GameSystems/InteractionSystem/InteractionDatabase";
 import TitleOverlay from "../../Overlays/TitleOverlay";
 import MappedAdventureScene, {
     AssetBundle,
@@ -118,13 +119,16 @@ export default class UndergroundCaveScene extends MappedAdventureScene {
     private readonly caveDarknessStartAlpha = 0.68;
     private readonly caveDarknessEndAlpha = 0.24;
     private readonly caveDarknessFadeEasePower = 1.65;
-    private readonly fairyRevealStartDelaySeconds = 3;
+    private readonly caveIntroDialogueDelaySeconds = 4;
+    private readonly introFirstFairyDialogueLineIndex = 3;
+    private readonly fairyRevealStartDelaySeconds = 0;
     private readonly fairyRevealDurationSeconds = 28;
     private readonly fairyRevealSpawnAcceleration = 4;
     private readonly fairyRevealZoomLevel = 0.72;
     private readonly fairyRevealZoomDurationSeconds = this.fairyRevealDurationSeconds;
     private readonly fairyGatherStartDelaySeconds = 0.55;
     private readonly fairyGatherDurationSeconds = 7.5;
+    private readonly fairyGatherDashCompleteProgress = 0.86;
     private readonly fairyGatherAcceleration = 3.4;
     private readonly fairyDashDurationMin = 0.42;
     private readonly fairyDashDurationMax = 1.05;
@@ -217,6 +221,10 @@ export default class UndergroundCaveScene extends MappedAdventureScene {
     private fairyCinematicPhase: FairyCinematicPhase = "reveal";
     private fairyRevealStarted = false;
     private finalTitleShown = false;
+    private introFairySpawned = false;
+    private caveIntroDialogueDelayRemaining = 0;
+    private caveIntroDialogueStarted = false;
+    private sceneActive = false;
 
     protected override combinedAssetBundles(): AssetBundle {
         return this.mergeAssetBundles(super.combinedAssetBundles(), UndergroundCaveScene.assetBundle);
@@ -260,12 +268,14 @@ export default class UndergroundCaveScene extends MappedAdventureScene {
 
     public override startScene(): void {
         this.spawnName = this.spawnName ?? this.caveSpawnName;
+        this.sceneActive = true;
         super.startScene();
         this.player.position.y += 25;
         this.putPlayerInDrownMode();
         this.setupCaveDarkness();
         this.setupCaveFinalLight();
-        this.setupFairyCinematic();
+        this.setupFairyIntro();
+        this.caveIntroDialogueDelayRemaining = this.caveIntroDialogueDelaySeconds;
     }
 
     public override updateScene(deltaT: number): void {
@@ -274,6 +284,7 @@ export default class UndergroundCaveScene extends MappedAdventureScene {
     }
 
     public override unloadScene(): void {
+        this.sceneActive = false;
         this.cameraController.zoomTo(1, 0);
         this.viewport.setZoomLevel(1);
         super.unloadScene();
@@ -288,6 +299,7 @@ export default class UndergroundCaveScene extends MappedAdventureScene {
         this.updateDolphinParticleEmission(deltaT);
         this.updateCaveDarkness();
         this.updateCaveFinalLight();
+        this.updateCaveIntroDialogueDelay(deltaT);
         this.updateFairyCinematic(deltaT);
     }
 
@@ -484,6 +496,96 @@ export default class UndergroundCaveScene extends MappedAdventureScene {
         return this.caveFinalLightMaxAlpha * progress;
     }
 
+    private setupFairyIntro(): void {
+        this.fairyRevealElapsed = 0;
+        this.fairyGatherElapsed = 0;
+        this.fairyCinematicPhase = "reveal";
+        this.fairyRevealStarted = false;
+        this.finalTitleShown = false;
+        this.introFairySpawned = false;
+        this.caveIntroDialogueStarted = false;
+        this.setupFairyShinePool();
+        this.setupFairyParticlePool();
+    }
+
+    private updateCaveIntroDialogueDelay(deltaT: number): void {
+        if (this.caveIntroDialogueStarted || !this.sceneActive) {
+            return;
+        }
+
+        this.caveIntroDialogueDelayRemaining -= deltaT;
+
+        if (this.caveIntroDialogueDelayRemaining <= 0) {
+            this.caveIntroDialogueStarted = true;
+            this.startCaveIntroDialogue();
+        }
+    }
+
+    private startCaveIntroDialogue(): void {
+        this.startDialogue(
+            dialogue(
+                [
+                    "The cave is completely dark.",
+                    "The water is still.",
+                    "Fate cannot move.",
+                    "Then, a small light appears.",
+                    "Its glow warms Fate in the dark.",
+                    "More lights answer from somewhere deep within the cave."
+                ],
+                { onComplete: () => this.finishCaveIntroDialogue() }
+            ),
+            undefined,
+            {
+                layoutMode: "topRightQuarter",
+                onLineStart: lineIndex => this.handleCaveIntroDialogueLineStart(lineIndex)
+            }
+        );
+    }
+
+    private handleCaveIntroDialogueLineStart(lineIndex: number): void {
+        if (lineIndex !== this.introFirstFairyDialogueLineIndex
+            || !this.sceneActive
+            || this.introFairySpawned
+        ) {
+            return;
+        }
+
+        this.spawnIntroFairy();
+    }
+
+    private finishCaveIntroDialogue(): void {
+        if (!this.sceneActive) {
+            return;
+        }
+
+        if (!this.introFairySpawned) {
+            this.spawnIntroFairy();
+        }
+
+        this.setupFairyCinematic();
+    }
+
+    private spawnIntroFairy(): void {
+        this.introFairySpawned = true;
+        const introFairy = this.spawnCaveFairy(
+            this.getIntroFairySpawnPoint(),
+            new Vec2(-3, -1)
+        );
+
+        introFairy.glowBaseScale = 3.2;
+        introFairy.glowPulseScale = 1.7;
+        introFairy.glowAlphaMin = 0.28;
+        introFairy.glowAlphaMax = 0.78;
+        introFairy.fadeInSeconds = 0.85;
+    }
+
+    private getIntroFairySpawnPoint(): Vec2 {
+        return new Vec2(
+            Math.max(0, Math.min(this.ground.size.x, this.player.position.x + 56)),
+            Math.max(0, Math.min(this.ground.size.y, this.player.position.y - 44))
+        );
+    }
+
     private setupFairyCinematic(): void {
         this.cameraController.holdAtCurrentViewCenter();
         this.cameraController.expandBoundsToFullMap();
@@ -493,7 +595,6 @@ export default class UndergroundCaveScene extends MappedAdventureScene {
         this.fairyGatherElapsed = 0;
         this.fairyCinematicPhase = "reveal";
         this.fairyRevealStarted = true;
-        this.finalTitleShown = false;
         this.setupFairyShinePool();
         this.setupFairyParticlePool();
     }
@@ -544,14 +645,17 @@ export default class UndergroundCaveScene extends MappedAdventureScene {
             }
         }
 
-        if (this.getAbsorbedFairyCount() >= this.caveFairies.length) {
+        if (this.getAbsorbedFairyCount() >= this.caveFairies.length
+            && this.getFairyGatherLightProgress() >= 1
+        ) {
             this.showFinalTitle();
         }
     }
 
-    private spawnCaveFairy(): void {
-        const position = this.getRandomPointInCameraView();
-        const velocity = this.getRandomFairyVelocity();
+    private spawnCaveFairy(
+        position: Vec2 = this.getRandomPointInCameraView(),
+        velocity: Vec2 = this.getRandomFairyVelocity()
+    ): CaveFairy {
         const glow = this.add.sprite(
             this.assets.sprites.fairyParticle3.key,
             this.caveFairyShineLayerName
@@ -577,7 +681,7 @@ export default class UndergroundCaveScene extends MappedAdventureScene {
         fairy.setSortOrder(3);
         fairy.animation.play(velocity.x < 0 ? "IDLE_LEFT" : "IDLE_RIGHT", true);
 
-        this.caveFairies.push({
+        const caveFairy: CaveFairy = {
             sprite: fairy,
             glow,
             origin: position.clone(),
@@ -599,10 +703,14 @@ export default class UndergroundCaveScene extends MappedAdventureScene {
             dashElapsed: 0,
             dashDuration: 0,
             dashTrailTimer: 0
-        });
+        };
+
+        this.caveFairies.push(caveFairy);
 
         this.spawnFairyShine(position);
         this.spawnFairyParticleBurst(position);
+
+        return caveFairy;
     }
 
     private updateCaveFairies(deltaT: number): void {
@@ -933,7 +1041,7 @@ export default class UndergroundCaveScene extends MappedAdventureScene {
     }
 
     private getTargetFairyDashCountForGatherProgress(): number {
-        const progress = this.getFairyGatherDashProgress();
+        const progress = this.getFairyGatherDashWaveProgress();
 
         if (progress <= 0) {
             return 0;
@@ -952,6 +1060,13 @@ export default class UndergroundCaveScene extends MappedAdventureScene {
     private getFairyGatherDashProgress(): number {
         const gatherDuration = Math.max(0.001, this.fairyGatherDurationSeconds);
         const progress = (this.fairyGatherElapsed - this.fairyGatherStartDelaySeconds) / gatherDuration;
+
+        return Math.max(0, Math.min(1, progress));
+    }
+
+    private getFairyGatherDashWaveProgress(): number {
+        const progress = this.getFairyGatherDashProgress()
+            / Math.max(0.001, this.fairyGatherDashCompleteProgress);
 
         return Math.max(0, Math.min(1, progress));
     }
