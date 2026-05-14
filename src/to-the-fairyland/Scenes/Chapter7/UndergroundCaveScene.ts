@@ -5,13 +5,12 @@ import { GraphicType } from "../../../Wolfie2D/Nodes/Graphics/GraphicTypes";
 import AnimatedSprite from "../../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
 import Sprite from "../../../Wolfie2D/Nodes/Sprites/Sprite";
 import Color from "../../../Wolfie2D/Utils/Color";
-import Input from "../../../Wolfie2D/Input/Input";
 import FairyParticleBehavior, {
     defaultFairyParticleSettings,
     FairyParticleSettings
 } from "../../AI/FairyParticleBehavior";
 import PlayerAI from "../../AI/Player/PlayerAI";
-import { PlayerControlMode, PlayerInput } from "../../AI/Player/PlayerController";
+import { PlayerControlMode } from "../../AI/Player/PlayerController";
 import { dialogue } from "../../GameSystems/InteractionSystem/InteractionDatabase";
 import CreditsScene from "../CreditsScene";
 import TitleOverlay from "../../Overlays/TitleOverlay";
@@ -22,6 +21,7 @@ import MappedAdventureScene, {
     ChapterSceneDefinition
 } from "../MappedAdventureScene";
 import AudioController from "../../GameSystems/AudioController";
+import AmbienceController from "../../GameSystems/WorldSystem/AmbienceController";
 
 type CaveFairyFinaleState = "drifting" | "dashing" | "absorbed";
 type FairyCinematicPhase = "reveal" | "gather" | "title";
@@ -104,6 +104,10 @@ export default class UndergroundCaveScene extends MappedAdventureScene {
                 key: "fairies-absorbing",
                 path: "/assets/sounds/fairies-absorbing.ogg"
             },
+            caveAmbienceSFX: {
+                key: "ambience-cave",
+                path: "/assets/sounds/ambience-cave.ogg"
+            }
         },
         images: {}
     };
@@ -156,7 +160,7 @@ export default class UndergroundCaveScene extends MappedAdventureScene {
     private readonly caveFinalLightStartProgress = 0.48;
     private readonly caveFinalLightEasePower = 2.15;
     private readonly finalTitleFadeInSeconds = 2;
-    private readonly finalTitleAutoProceedSeconds = 8;
+    private readonly finalTitleAutoProceedSeconds = 7;
     private readonly finalMainMenuFadeOutMs = 900;
     private readonly finalMainMenuFadeInMs = 900;
     private readonly maxCaveFairies = 180;
@@ -285,7 +289,6 @@ export default class UndergroundCaveScene extends MappedAdventureScene {
             position: viewportHalfSize.clone()
         }) as ClickableOverlay;
         this.finalTitleClickOverlay.size.set(viewportSize.x, viewportSize.y);
-        this.finalTitleClickOverlay.onClick = () => this.proceedFromFinalTitle();
     }
 
     protected override spawnMapObjects(tilemapData: TiledTilemapData): void {
@@ -307,6 +310,8 @@ export default class UndergroundCaveScene extends MappedAdventureScene {
         this.setupCaveFinalLight();
         this.setupFairyIntro();
         this.caveIntroDialogueDelayRemaining = this.caveIntroDialogueDelaySeconds;
+
+        AmbienceController.getInstance().playAmbience(this.ambienceChannel, this.assets.sounds.caveAmbienceSFX.key);
     }
 
     public override updateScene(deltaT: number): void {
@@ -314,11 +319,6 @@ export default class UndergroundCaveScene extends MappedAdventureScene {
         this.finalTitleOverlay.update(deltaT);
 
         if (this.finalTitleOverlay.getIsVisible()) {
-            if (Input.isJustPressed(PlayerInput.INTERACT)) {
-                this.proceedFromFinalTitle();
-                return;
-            }
-
             this.finalTitleAutoProceedElapsed += deltaT;
             if (this.finalTitleAutoProceedElapsed >= this.finalTitleAutoProceedSeconds) {
                 this.proceedFromFinalTitle();
@@ -575,7 +575,11 @@ export default class UndergroundCaveScene extends MappedAdventureScene {
                     "Its glow warms you in the depths.",
                     "More lights appear from deeper within the cave."
                 ],
-                { onComplete: () => this.finishCaveIntroDialogue() }
+                { onComplete: () => {
+                    AmbienceController.getInstance().stopAmbience(this.ambienceChannel);
+                    this.lockPlayerInput();
+                    this.finishCaveIntroDialogue();
+                }}
             ),
             undefined,
             {

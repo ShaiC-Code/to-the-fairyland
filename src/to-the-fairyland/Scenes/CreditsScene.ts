@@ -35,14 +35,14 @@ const CREDITS_TEXT = [
     "## Art and Animation",
     "Yucan Chen",
     "",
-    "## Sound Effects and Music",
+    "## Sound Design and Music",
     "Shai Crespo",
     "",
     "## Special Thanks",
     "Professor McKenna",
     "TAs",
     "Playtesters",
-    "You, the player (Thanks for checking it out!)",
+    "And YOU, the player (Thank you for checking out our game)",
     "",
     "## Made with Wolfie2D"
 ].join("\n");
