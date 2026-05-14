@@ -19,7 +19,7 @@ export default class LevelSelectionScreen extends UIScreen {
         ["level10", "Desert Path"],
         ["level11", "Desert Pond"],
         ["level12", "Drowning"],
-        ["level13", "Underground Cave"]
+        ["level13", "Underwater Cave"]
     ]);
     
     private unlockedLevels = new Set<LevelSelectionId>();

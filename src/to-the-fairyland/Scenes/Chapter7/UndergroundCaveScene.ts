@@ -12,13 +12,16 @@ import FairyParticleBehavior, {
 import PlayerAI from "../../AI/Player/PlayerAI";
 import { PlayerControlMode } from "../../AI/Player/PlayerController";
 import { dialogue } from "../../GameSystems/InteractionSystem/InteractionDatabase";
+import CreditsScene from "../CreditsScene";
 import TitleOverlay from "../../Overlays/TitleOverlay";
+import { CustomUIElementType } from "../../UI/CustomUIElements/CustomUIElementTypes";
+import ClickableOverlay from "../../UI/CustomUIElements/ClickableOverlay";
 import MappedAdventureScene, {
     AssetBundle,
     ChapterSceneDefinition
 } from "../MappedAdventureScene";
-import MainMenu from "../MainMenu";
 import AudioController from "../../GameSystems/AudioController";
+import AmbienceController from "../../GameSystems/WorldSystem/AmbienceController";
 
 type CaveFairyFinaleState = "drifting" | "dashing" | "absorbed";
 type FairyCinematicPhase = "reveal" | "gather" | "title";
@@ -101,6 +104,10 @@ export default class UndergroundCaveScene extends MappedAdventureScene {
                 key: "fairies-absorbing",
                 path: "/assets/sounds/fairies-absorbing.ogg"
             },
+            caveAmbienceSFX: {
+                key: "ambience-cave",
+                path: "/assets/sounds/ambience-cave.ogg"
+            }
         },
         images: {}
     };
@@ -130,7 +137,7 @@ export default class UndergroundCaveScene extends MappedAdventureScene {
     private readonly caveDarknessEndAlpha = 0.24;
     private readonly caveDarknessFadeEasePower = 1.65;
     private readonly caveIntroDialogueDelaySeconds = 4;
-    private readonly introFirstFairyDialogueLineIndex = 3;
+    private readonly introFirstFairyDialogueLineIndex = 4;
     private readonly fairyRevealStartDelaySeconds = 0;
     private readonly fairyRevealDurationSeconds = 28;
     private readonly fairyRevealSpawnAcceleration = 4;
@@ -153,7 +160,7 @@ export default class UndergroundCaveScene extends MappedAdventureScene {
     private readonly caveFinalLightStartProgress = 0.48;
     private readonly caveFinalLightEasePower = 2.15;
     private readonly finalTitleFadeInSeconds = 2;
-    private readonly finalTitleHoldSeconds = 5;
+    private readonly finalTitleAutoProceedSeconds = 7;
     private readonly finalMainMenuFadeOutMs = 900;
     private readonly finalMainMenuFadeInMs = 900;
     private readonly maxCaveFairies = 180;
@@ -223,6 +230,7 @@ export default class UndergroundCaveScene extends MappedAdventureScene {
     private caveDarkness!: Rect;
     private caveFinalLight!: Rect;
     private finalTitleOverlay!: TitleOverlay;
+    private finalTitleClickOverlay!: ClickableOverlay;
     private caveFairies: CaveFairy[] = [];
     private fairyShines: CaveFairyShine[] = [];
     private fairyParticles: Sprite[] = [];
@@ -231,6 +239,7 @@ export default class UndergroundCaveScene extends MappedAdventureScene {
     private fairyCinematicPhase: FairyCinematicPhase = "reveal";
     private fairyRevealStarted = false;
     private finalTitleShown = false;
+    private finalTitleAutoProceedElapsed = 0;
     private introFairySpawned = false;
     private caveIntroDialogueDelayRemaining = 0;
     private caveIntroDialogueStarted = false;
@@ -238,6 +247,14 @@ export default class UndergroundCaveScene extends MappedAdventureScene {
 
     protected override combinedAssetBundles(): AssetBundle {
         return this.mergeAssetBundles(super.combinedAssetBundles(), UndergroundCaveScene.assetBundle);
+    }
+
+    public override loadScene(): void {
+        super.loadScene();
+
+        this.add.registerCustomUIElement(CustomUIElementType.CLICKABLE_OVERLAY, (options?: Record<string, any>) => {
+            return new ClickableOverlay(options!.position);
+        });
     }
 
     protected override configureLayers(): void {
@@ -265,6 +282,13 @@ export default class UndergroundCaveScene extends MappedAdventureScene {
                 fadeOutSeconds: 0
             }
         );
+
+        const viewportHalfSize = this.viewport.getHalfSize();
+        const viewportSize = viewportHalfSize.clone().scale(2);
+        this.finalTitleClickOverlay = this.add.uiElement(CustomUIElementType.CLICKABLE_OVERLAY, this.finalTitleLayerName, {
+            position: viewportHalfSize.clone()
+        }) as ClickableOverlay;
+        this.finalTitleClickOverlay.size.set(viewportSize.x, viewportSize.y);
     }
 
     protected override spawnMapObjects(tilemapData: TiledTilemapData): void {
@@ -286,11 +310,20 @@ export default class UndergroundCaveScene extends MappedAdventureScene {
         this.setupCaveFinalLight();
         this.setupFairyIntro();
         this.caveIntroDialogueDelayRemaining = this.caveIntroDialogueDelaySeconds;
+
+        AmbienceController.getInstance().playAmbience(this.ambienceChannel, this.assets.sounds.caveAmbienceSFX.key);
     }
 
     public override updateScene(deltaT: number): void {
         super.updateScene(deltaT);
         this.finalTitleOverlay.update(deltaT);
+
+        if (this.finalTitleOverlay.getIsVisible()) {
+            this.finalTitleAutoProceedElapsed += deltaT;
+            if (this.finalTitleAutoProceedElapsed >= this.finalTitleAutoProceedSeconds) {
+                this.proceedFromFinalTitle();
+            }
+        }
     }
 
     public override unloadScene(): void {
@@ -535,14 +568,18 @@ export default class UndergroundCaveScene extends MappedAdventureScene {
         this.startDialogue(
             dialogue(
                 [
-                    "The cave is completely dark.",
-                    "The water is still.",
-                    "Fate cannot move.",
+                    "You awake in a dark cave.",
+                    "The moisture in the air is suffocating, and the water is oddly still.",
+                    "You are unable to move...",
                     "Then, a small light appears.",
-                    "Its glow warms Fate in the dark.",
-                    "More lights answer from somewhere deep within the cave."
+                    "Its glow warms you in the depths.",
+                    "More lights appear from deeper within the cave."
                 ],
-                { onComplete: () => this.finishCaveIntroDialogue() }
+                { onComplete: () => {
+                    AmbienceController.getInstance().stopAmbience(this.ambienceChannel);
+                    this.lockPlayerInput();
+                    this.finishCaveIntroDialogue();
+                }}
             ),
             undefined,
             {
@@ -1106,9 +1143,16 @@ export default class UndergroundCaveScene extends MappedAdventureScene {
         }
 
         this.finalTitleShown = true;
+        this.finalTitleAutoProceedElapsed = 0;
         this.fairyCinematicPhase = "title";
         this.caveDarkness.alpha = 0;
         this.caveFinalLight.alpha = this.caveFinalLightMaxAlpha;
+
+        const viewportHalfSize = this.viewport.getHalfSize();
+        const viewportSize = viewportHalfSize.clone().scale(2);
+        this.finalTitleClickOverlay.position.copy(viewportHalfSize);
+        this.finalTitleClickOverlay.size.set(viewportSize.x, viewportSize.y);
+
         this.finalTitleOverlay.showTitle(
             "TO THE FAIRYLAND",
             undefined,
@@ -1118,13 +1162,26 @@ export default class UndergroundCaveScene extends MappedAdventureScene {
                 fadeOutSeconds: 0
             }
         );
-        void this.transitionToMainMenuAfterFinalTitle();
     }
 
-    private async transitionToMainMenuAfterFinalTitle(): Promise<void> {
-        await this.waitSeconds(this.finalTitleFadeInSeconds + this.finalTitleHoldSeconds);
+    private proceedFromFinalTitle(): void {
+        if (this.transitioning) {
+            return;
+        }
+
+        this.finalTitleOverlay.hide();
+        this.transitionToCreditsAfterFinalTitle();
+    }
+
+    private transitionToCreditsAfterFinalTitle(): void {
+        if (this.transitioning) {
+            return;
+        }
+
+        this.transitioning = true;
+
         this.sceneManager.changeToScene(
-            MainMenu,
+            CreditsScene,
             undefined,
             undefined,
             {

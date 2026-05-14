@@ -101,8 +101,18 @@ export default class TestScreen extends UIScreen {
             }
         );
 
+        this.addButton(
+            "viewCreditsBtn",
+            new Vec2(screenCenter.x + 180, listTop + 480),
+            new Vec2(380, 40),
+            "View Credits",
+            {
+                onClickEventId: "viewCredits",
+            }
+        );
+
         const buttonSize = new Vec2(280, 60);
-        const buttonsY = listTop + 540;
+        const buttonsY = listTop + 600;
         const buttonsGap = 40;
         const buttonOffsetX = (buttonSize.x / 2) + (buttonsGap / 2);
 
@@ -126,6 +136,7 @@ export default class TestScreen extends UIScreen {
             "activateCheatsBtn",
             "unlockAllLevelsBtn",
             "clearDataBtn",
+            "viewCreditsBtn",
             "goBackBtn",
             "mainMenuBtn"
         ]);

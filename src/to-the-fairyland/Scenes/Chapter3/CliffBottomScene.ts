@@ -122,7 +122,7 @@ export default class CliffBottomScene extends ForestSceneBase {
                 [
                     "Your body fall through the air.",
                     "Then the ground finds you.",
-                    "You can only felt pain..."
+                    "You can only feel pain..."
                 ],
                 {
                     onComplete: () => {

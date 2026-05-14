@@ -48,6 +48,7 @@ import DesertLandParallaxScene from "./Chapter4/DesertLandParallaxScene";
 import DesertPath1Scene from "./Chapter4/DesertPath1Scene";
 import DesertPondScene from "./Chapter4/DesertPondScene";
 import { CookieStorage } from "../GameSystems/GameSessionSystem/CookieStorage";
+import CreditsScene from "./CreditsScene";
 
 type AssetRef = Readonly<{
     readonly key: string;
@@ -264,6 +265,7 @@ export default class MainMenu extends Scene {
         this.receiver.subscribe("openTestMenu");
         this.receiver.subscribe("activateCheats");
         this.receiver.subscribe("unlockAllLevels");
+        this.receiver.subscribe("viewCredits");
         this.receiver.subscribe("backToMain");
         this.receiver.subscribe("currentLevel");
         this.receiver.subscribe("newGame");
@@ -329,6 +331,15 @@ export default class MainMenu extends Scene {
         case "unlockAllLevels":
             this.unlockAllLevels();
             this.levelMenu.setUnlockedLevels(this.unlockedLevels);
+            break;
+
+        case "viewCredits":
+            this.sceneManager.changeToScene(CreditsScene, {
+                showLoadingOverlay: false,
+                useFadeTransition: true,
+                fadeOutMs: 500,
+                fadeInMs: 500
+            });
             break;
 
         case "backToMain":
