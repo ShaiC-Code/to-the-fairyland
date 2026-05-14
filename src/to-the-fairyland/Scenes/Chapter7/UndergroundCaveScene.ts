@@ -133,7 +133,7 @@ export default class UndergroundCaveScene extends MappedAdventureScene {
     private readonly caveDarknessEndAlpha = 0.24;
     private readonly caveDarknessFadeEasePower = 1.65;
     private readonly caveIntroDialogueDelaySeconds = 4;
-    private readonly introFirstFairyDialogueLineIndex = 3;
+    private readonly introFirstFairyDialogueLineIndex = 4;
     private readonly fairyRevealStartDelaySeconds = 0;
     private readonly fairyRevealDurationSeconds = 28;
     private readonly fairyRevealSpawnAcceleration = 4;
@@ -156,6 +156,7 @@ export default class UndergroundCaveScene extends MappedAdventureScene {
     private readonly caveFinalLightStartProgress = 0.48;
     private readonly caveFinalLightEasePower = 2.15;
     private readonly finalTitleFadeInSeconds = 2;
+    private readonly finalTitleAutoProceedSeconds = 8;
     private readonly finalMainMenuFadeOutMs = 900;
     private readonly finalMainMenuFadeInMs = 900;
     private readonly maxCaveFairies = 180;
@@ -234,6 +235,7 @@ export default class UndergroundCaveScene extends MappedAdventureScene {
     private fairyCinematicPhase: FairyCinematicPhase = "reveal";
     private fairyRevealStarted = false;
     private finalTitleShown = false;
+    private finalTitleAutoProceedElapsed = 0;
     private introFairySpawned = false;
     private caveIntroDialogueDelayRemaining = 0;
     private caveIntroDialogueStarted = false;
@@ -311,8 +313,16 @@ export default class UndergroundCaveScene extends MappedAdventureScene {
         super.updateScene(deltaT);
         this.finalTitleOverlay.update(deltaT);
 
-        if (this.finalTitleOverlay.getIsVisible() && Input.isJustPressed(PlayerInput.INTERACT)) {
-            this.proceedFromFinalTitle();
+        if (this.finalTitleOverlay.getIsVisible()) {
+            if (Input.isJustPressed(PlayerInput.INTERACT)) {
+                this.proceedFromFinalTitle();
+                return;
+            }
+
+            this.finalTitleAutoProceedElapsed += deltaT;
+            if (this.finalTitleAutoProceedElapsed >= this.finalTitleAutoProceedSeconds) {
+                this.proceedFromFinalTitle();
+            }
         }
     }
 
@@ -558,12 +568,12 @@ export default class UndergroundCaveScene extends MappedAdventureScene {
         this.startDialogue(
             dialogue(
                 [
-                    "The cave is completely dark.",
-                    "The water is still.",
-                    "Fate cannot move.",
+                    "You awake in a dark cave.",
+                    "The moisture in the air is suffocating, and the water is oddly still.",
+                    "You are unable to move...",
                     "Then, a small light appears.",
-                    "Its glow warms Fate in the dark.",
-                    "More lights answer from somewhere deep within the cave."
+                    "Its glow warms you in the depths.",
+                    "More lights appear from deeper within the cave."
                 ],
                 { onComplete: () => this.finishCaveIntroDialogue() }
             ),
@@ -1129,11 +1139,11 @@ export default class UndergroundCaveScene extends MappedAdventureScene {
         }
 
         this.finalTitleShown = true;
+        this.finalTitleAutoProceedElapsed = 0;
         this.fairyCinematicPhase = "title";
         this.caveDarkness.alpha = 0;
         this.caveFinalLight.alpha = this.caveFinalLightMaxAlpha;
 
-        // Sync the click overlay once at show-time (viewport size can differ due to zoom).
         const viewportHalfSize = this.viewport.getHalfSize();
         const viewportSize = viewportHalfSize.clone().scale(2);
         this.finalTitleClickOverlay.position.copy(viewportHalfSize);

@@ -10,6 +10,8 @@ import { PlayerInput } from "../AI/Player/PlayerController";
 import { CustomUIElementType } from "../UI/CustomUIElements/CustomUIElementTypes";
 import ClickableOverlay from "../UI/CustomUIElements/ClickableOverlay";
 import MainMenu from "./MainMenu";
+import AudioController from "../GameSystems/AudioController";
+import { AssetBundle, AssetRef } from "./MappedAdventureScene";
 
 type CreditLineStyle = "title" | "section" | "name" | "spacer";
 
@@ -24,12 +26,38 @@ export type CreditsSceneInit = {
 };
 
 const CREDITS_TEXT = [
-    "# CREDITS",
+    "# To The Fairyland",
+    "", 
+    "## Game Design and Programming",
+    "Yucan Chen",
+    "Shai Crespo",
     "",
-    "(Replace this placeholder with your provided credits text)",
+    "## Art and Animation",
+    "Yucan Chen",
+    "",
+    "## Sound Effects and Music",
+    "Shai Crespo",
+    "",
+    "## Special Thanks",
+    "Professor McKenna",
+    "TAs",
+    "Playtesters",
+    "You, the player (Thanks for checking it out!)",
+    "",
+    "## Made with Wolfie2D"
 ].join("\n");
 
 export default class CreditsScene extends Scene {
+    protected assets: AssetBundle = {
+        tilemaps: {},
+        spritesheets: {},
+        sprites: {},
+        sounds: {
+            endCreditsMusic: { key: "end-credits-music", path: "/assets/sounds/main-screen-music.ogg" }
+        },
+        images: {}
+    };
+
     private readonly creditsLayerName = "Credits";
 
     private readonly scrollSpeedPxPerSecond = 70;
@@ -60,9 +88,50 @@ export default class CreditsScene extends Scene {
     }
 
     public loadScene(): void {
+        this.loadAssets(this.assets);
+        
         this.add.registerCustomUIElement(CustomUIElementType.CLICKABLE_OVERLAY, (options?: Record<string, any>) => {
             return new ClickableOverlay(options!.position);
         });
+    }
+    
+    public unloadScene(): void {
+        AudioController.getInstance().stopMusic();
+    }
+
+    protected assetBundleToKeyArrays(bundle: AssetBundle): {
+        tilemaps: ReadonlyArray<AssetRef>;
+        spritesheets: ReadonlyArray<AssetRef>;
+        sprites: ReadonlyArray<AssetRef>;
+        sounds: ReadonlyArray<AssetRef>;
+        images: ReadonlyArray<AssetRef>;
+    } {
+        const tilemaps = Object.values(bundle.tilemaps ?? {});
+        const spritesheets = Object.values(bundle.spritesheets ?? {});
+        const sprites = Object.values(bundle.sprites ?? {});
+        const sounds = Object.values(bundle.sounds ?? {});
+        const images = Object.values(bundle.images ?? {});
+        return {tilemaps, spritesheets, sprites, sounds, images};
+    }
+    
+    protected loadAssets(assets: AssetBundle): void {
+        const { tilemaps, spritesheets, sprites, sounds, images } = this.assetBundleToKeyArrays(assets);
+
+        tilemaps
+            .filter(tilemap => !this.resourceManager.getTilemap(tilemap.key))
+            .forEach(tilemap => this.load.tilemap(tilemap.key, tilemap.path));
+        spritesheets
+            .filter(spritesheet => !this.resourceManager.getSpritesheet(spritesheet.key))
+            .forEach(spritesheet => this.load.spritesheet(spritesheet.key, spritesheet.path));
+        sprites
+            .filter(sprite => !this.resourceManager.getImage(sprite.key))
+            .forEach(sprite => this.load.image(sprite.key, sprite.path));
+        sounds
+            .filter(sound => !this.resourceManager.getAudio(sound.key))
+            .forEach(sound => this.load.audio(sound.key, sound.path));
+        images
+            .filter(image => !this.resourceManager.getImage(image.key))
+            .forEach(image => this.load.image(image.key, image.path));
     }
 
     public startScene(): void {
@@ -86,6 +155,8 @@ export default class CreditsScene extends Scene {
         this.clickOverlay.onClick = () => this.exitToMainMenu();
 
         this.labels = this.createCreditsLabels(viewportSize);
+        
+        AudioController.getInstance().playMusic(this.assets.sounds.endCreditsMusic.key, true, true, 3);
     }
 
     public updateScene(deltaT: number): void {
@@ -179,10 +250,15 @@ export default class CreditsScene extends Scene {
                 continue;
             }
 
-            const headingMatch = /^(#{1,6})\s+(.*)$/.exec(trimmed);
+            const headingMatch = /^(#{1,6})\s*(.*)$/.exec(trimmed);
             if (headingMatch) {
                 const level = headingMatch[1].length;
                 const headingText = headingMatch[2].trim();
+
+                if (!headingText) {
+                    lines.push({ text: "", style: "spacer" });
+                    continue;
+                }
 
                 if (level === 1) {
                     lines.push({ text: headingText, style: "title" });
