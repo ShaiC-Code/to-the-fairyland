@@ -5,19 +5,22 @@ import { GraphicType } from "../../../Wolfie2D/Nodes/Graphics/GraphicTypes";
 import AnimatedSprite from "../../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
 import Sprite from "../../../Wolfie2D/Nodes/Sprites/Sprite";
 import Color from "../../../Wolfie2D/Utils/Color";
+import Input from "../../../Wolfie2D/Input/Input";
 import FairyParticleBehavior, {
     defaultFairyParticleSettings,
     FairyParticleSettings
 } from "../../AI/FairyParticleBehavior";
 import PlayerAI from "../../AI/Player/PlayerAI";
-import { PlayerControlMode } from "../../AI/Player/PlayerController";
+import { PlayerControlMode, PlayerInput } from "../../AI/Player/PlayerController";
 import { dialogue } from "../../GameSystems/InteractionSystem/InteractionDatabase";
+import CreditsScene from "../CreditsScene";
 import TitleOverlay from "../../Overlays/TitleOverlay";
+import { CustomUIElementType } from "../../UI/CustomUIElements/CustomUIElementTypes";
+import ClickableOverlay from "../../UI/CustomUIElements/ClickableOverlay";
 import MappedAdventureScene, {
     AssetBundle,
     ChapterSceneDefinition
 } from "../MappedAdventureScene";
-import MainMenu from "../MainMenu";
 import AudioController from "../../GameSystems/AudioController";
 
 type CaveFairyFinaleState = "drifting" | "dashing" | "absorbed";
@@ -153,7 +156,6 @@ export default class UndergroundCaveScene extends MappedAdventureScene {
     private readonly caveFinalLightStartProgress = 0.48;
     private readonly caveFinalLightEasePower = 2.15;
     private readonly finalTitleFadeInSeconds = 2;
-    private readonly finalTitleHoldSeconds = 5;
     private readonly finalMainMenuFadeOutMs = 900;
     private readonly finalMainMenuFadeInMs = 900;
     private readonly maxCaveFairies = 180;
@@ -223,6 +225,7 @@ export default class UndergroundCaveScene extends MappedAdventureScene {
     private caveDarkness!: Rect;
     private caveFinalLight!: Rect;
     private finalTitleOverlay!: TitleOverlay;
+    private finalTitleClickOverlay!: ClickableOverlay;
     private caveFairies: CaveFairy[] = [];
     private fairyShines: CaveFairyShine[] = [];
     private fairyParticles: Sprite[] = [];
@@ -238,6 +241,14 @@ export default class UndergroundCaveScene extends MappedAdventureScene {
 
     protected override combinedAssetBundles(): AssetBundle {
         return this.mergeAssetBundles(super.combinedAssetBundles(), UndergroundCaveScene.assetBundle);
+    }
+
+    public override loadScene(): void {
+        super.loadScene();
+
+        this.add.registerCustomUIElement(CustomUIElementType.CLICKABLE_OVERLAY, (options?: Record<string, any>) => {
+            return new ClickableOverlay(options!.position);
+        });
     }
 
     protected override configureLayers(): void {
@@ -265,6 +276,14 @@ export default class UndergroundCaveScene extends MappedAdventureScene {
                 fadeOutSeconds: 0
             }
         );
+
+        const viewportHalfSize = this.viewport.getHalfSize();
+        const viewportSize = viewportHalfSize.clone().scale(2);
+        this.finalTitleClickOverlay = this.add.uiElement(CustomUIElementType.CLICKABLE_OVERLAY, this.finalTitleLayerName, {
+            position: viewportHalfSize.clone()
+        }) as ClickableOverlay;
+        this.finalTitleClickOverlay.size.set(viewportSize.x, viewportSize.y);
+        this.finalTitleClickOverlay.onClick = () => this.proceedFromFinalTitle();
     }
 
     protected override spawnMapObjects(tilemapData: TiledTilemapData): void {
@@ -291,6 +310,10 @@ export default class UndergroundCaveScene extends MappedAdventureScene {
     public override updateScene(deltaT: number): void {
         super.updateScene(deltaT);
         this.finalTitleOverlay.update(deltaT);
+
+        if (this.finalTitleOverlay.getIsVisible() && Input.isJustPressed(PlayerInput.INTERACT)) {
+            this.proceedFromFinalTitle();
+        }
     }
 
     public override unloadScene(): void {
@@ -1109,6 +1132,13 @@ export default class UndergroundCaveScene extends MappedAdventureScene {
         this.fairyCinematicPhase = "title";
         this.caveDarkness.alpha = 0;
         this.caveFinalLight.alpha = this.caveFinalLightMaxAlpha;
+
+        // Sync the click overlay once at show-time (viewport size can differ due to zoom).
+        const viewportHalfSize = this.viewport.getHalfSize();
+        const viewportSize = viewportHalfSize.clone().scale(2);
+        this.finalTitleClickOverlay.position.copy(viewportHalfSize);
+        this.finalTitleClickOverlay.size.set(viewportSize.x, viewportSize.y);
+
         this.finalTitleOverlay.showTitle(
             "TO THE FAIRYLAND",
             undefined,
@@ -1118,13 +1148,26 @@ export default class UndergroundCaveScene extends MappedAdventureScene {
                 fadeOutSeconds: 0
             }
         );
-        void this.transitionToMainMenuAfterFinalTitle();
     }
 
-    private async transitionToMainMenuAfterFinalTitle(): Promise<void> {
-        await this.waitSeconds(this.finalTitleFadeInSeconds + this.finalTitleHoldSeconds);
+    private proceedFromFinalTitle(): void {
+        if (this.transitioning) {
+            return;
+        }
+
+        this.finalTitleOverlay.hide();
+        this.transitionToCreditsAfterFinalTitle();
+    }
+
+    private transitionToCreditsAfterFinalTitle(): void {
+        if (this.transitioning) {
+            return;
+        }
+
+        this.transitioning = true;
+
         this.sceneManager.changeToScene(
-            MainMenu,
+            CreditsScene,
             undefined,
             undefined,
             {
