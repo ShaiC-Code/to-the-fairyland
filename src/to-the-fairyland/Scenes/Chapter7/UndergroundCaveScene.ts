@@ -18,6 +18,7 @@ import MappedAdventureScene, {
     ChapterSceneDefinition
 } from "../MappedAdventureScene";
 import MainMenu from "../MainMenu";
+import AudioController from "../../GameSystems/AudioController";
 
 type CaveFairyFinaleState = "drifting" | "dashing" | "absorbed";
 type FairyCinematicPhase = "reveal" | "gather" | "title";
@@ -91,7 +92,16 @@ export default class UndergroundCaveScene extends MappedAdventureScene {
                 path: "/assets/sprites/particles/FairyParticle3.png"
             }
         },
-        sounds: {},
+        sounds: {
+            fairiesSpawningSFX: {
+                key: "fairies-spawning",
+                path: "/assets/sounds/fairies-spawning.ogg"
+            },
+            fairiesAbsorbingSFX: {
+                key: "fairies-absorbing",
+                path: "/assets/sounds/fairies-absorbing.ogg"
+            },
+        },
         images: {}
     };
 
@@ -143,7 +153,7 @@ export default class UndergroundCaveScene extends MappedAdventureScene {
     private readonly caveFinalLightStartProgress = 0.48;
     private readonly caveFinalLightEasePower = 2.15;
     private readonly finalTitleFadeInSeconds = 2;
-    private readonly finalTitleHoldSeconds = 3;
+    private readonly finalTitleHoldSeconds = 5;
     private readonly finalMainMenuFadeOutMs = 900;
     private readonly finalMainMenuFadeInMs = 900;
     private readonly maxCaveFairies = 180;
@@ -632,6 +642,7 @@ export default class UndergroundCaveScene extends MappedAdventureScene {
     private startFairyGatherPhase(): void {
         this.fairyCinematicPhase = "gather";
         this.fairyGatherElapsed = 0;
+        AudioController.getInstance().playSFX(this.assets.sounds.fairiesAbsorbingSFX.key);
     }
 
     private updateFairyGatherPhase(deltaT: number): void {
@@ -709,6 +720,8 @@ export default class UndergroundCaveScene extends MappedAdventureScene {
 
         this.spawnFairyShine(position);
         this.spawnFairyParticleBurst(position);
+
+        AudioController.getInstance().playSFX(this.assets.sounds.fairiesSpawningSFX.key);
 
         return caveFairy;
     }
